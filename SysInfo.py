@@ -46,7 +46,6 @@ def copy_to_clipboard(system_info):
 def main():
     """Основная функция программы."""
 
-
     # Проверяем, существует ли уже файл блокировки
 if path.exists(LOCK_FILE):
     print("Программа уже запущена!")
