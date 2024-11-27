@@ -9,8 +9,6 @@ from datetime import datetime
 from pyperclip import copy
 from ctypes import windll
 
-LOCK_FILE = "sysinfo.lock"
-
 
 def get_system_info():
     """Собирает статическую информацию о системе."""
