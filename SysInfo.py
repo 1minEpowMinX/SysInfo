@@ -7,7 +7,7 @@ from pystray import Icon, Menu, MenuItem
 from PIL import Image
 from datetime import datetime
 from pyperclip import copy
-from signal import signal, SIGINT, SIGTERM
+from ctypes import windll
 
 LOCK_FILE = "sysinfo.lock"
 
@@ -42,32 +42,17 @@ def copy_to_clipboard(system_info):
     copy(system_info)
 
 
-def cleanup():
-    """Удаляет лок-файл при завершении программы."""
-    if path.exists(LOCK_FILE):
-        remove(LOCK_FILE)
-
-
-def signal_handler(sig, frame):
-    """Обработчик сигналов для корректного завершения."""
-    cleanup()
-    sys.exit(0)
-
-
 def main():
     """Основная функция программы."""
-    # Проверяем, существует ли уже файл блокировки
-    if path.exists(LOCK_FILE):
+    # Создаем мьютекс
+    mutex_name = "MyUniqueMutexName"
+    handle = windll.kernel32.CreateMutexW(None, False, mutex_name)
+    last_error = windll.kernel32.GetLastError()
+
+    # Если мьютекс уже существует, программа завершает работу
+    if last_error == 183:  # ERROR_ALREADY_EXISTS
         print("Программа уже запущена!")
         sys.exit()
-
-    # Создаем лок-файл
-    with open(LOCK_FILE, "w") as lock_file:
-        lock_file.write("locked")
-
-    # Устанавливаем обработчики сигналов
-    signal(SIGINT, signal_handler)  # Ctrl+C
-    signal(SIGTERM, signal_handler)  # Завершение через диспетчер задач
 
     try:
         # Получаем данные о системе
@@ -84,7 +69,8 @@ def main():
 
         icon.run()
     finally:
-        cleanup()
+        # Освобождаем мьютекс
+        windll.kernel32.ReleaseMutex(handle)
 
 
 if __name__ == "__main__":
