@@ -1,12 +1,23 @@
 from socket import gethostname, gethostbyname
-from os import path
+from os import path, remove
 import sys
 from platform import node
-from psutil import users, boot_time
+from psutil import users, boot_time, Process, process_iter
 from pystray import Icon, Menu, MenuItem
 from PIL import Image
 from datetime import datetime
 from tkinter import Tk
+
+LOCK_FILE = "sysinfo.lock"
+
+# Проверяем, существует ли уже файл блокировки
+if path.exists(LOCK_FILE):
+    print("Программа уже запущена!")
+    sys.exit()
+
+# Создаём файл блокировки
+with open(LOCK_FILE, "w") as lock_file:
+    lock_file.write("locked")
 
 
 def get_system_info():
@@ -60,3 +71,6 @@ menu = Menu(
 icon = Icon("System Info", load_tray_icon(), menu=menu, title=system_info)
 
 icon.run()
+
+# В конце программы удаляем файл блокировки
+remove(LOCK_FILE)
