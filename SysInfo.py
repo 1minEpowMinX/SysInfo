@@ -1,5 +1,5 @@
 from socket import gethostname, gethostbyname
-from os import path, remove
+from os import path
 import sys
 from platform import node
 from psutil import users, boot_time
