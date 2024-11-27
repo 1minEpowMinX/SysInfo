@@ -6,7 +6,7 @@ from psutil import users, boot_time, Process, process_iter
 from pystray import Icon, Menu, MenuItem
 from PIL import Image
 from datetime import datetime
-from tkinter import Tk
+from pyperclip import copy
 
 LOCK_FILE = "sysinfo.lock"
 
@@ -48,12 +48,7 @@ def load_tray_icon():
 
 def copy_to_clipboard(icon):
     """Копирует информацию о системе в буфер обмена."""
-    tk = Tk()
-    tk.withdraw()  # скрываем окно
-    tk.clipboard_clear()  # очищаем буфер
-    tk.clipboard_append(system_info)  # копируем в буфер
-    tk.update()  # обновляем
-    tk.destroy()  # удаляем
+    pyperclip.copy(system_info)
 
     # Показываем уведомление
     icon.notify("Інформація скопійована в буфер обміну!")
