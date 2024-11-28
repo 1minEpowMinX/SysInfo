@@ -36,6 +36,7 @@
 <p align="center">
   <img src="https://github.com/user-attachments/assets/458d85de-78ad-405f-90a2-38eda285c87c" alt="Контекстное меню">
 </p>
+
 ---
 
 ## **🔧 Установка и использование**
