@@ -31,7 +31,7 @@ def resource_path(relative_path):
 
 def load_tray_icon():
     """Загружает иконку для трея из ресурсов."""
-    icon_path = resource_path("bginfo-icon.ico")
+    icon_path = resource_path("SysInfo-DALL.E.ico")
     return Image.open(icon_path)
 
 
