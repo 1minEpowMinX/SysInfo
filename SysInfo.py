@@ -57,9 +57,9 @@ def main():
         system_info = get_system_info()
 
         menu = Menu(
-            MenuItem("Copy to Clipboard", lambda icon, _: (copy_to_clipboard(
+            MenuItem("Скопіювати до буферу обміну", lambda icon, _: (copy_to_clipboard(
                 system_info), icon.notify("Інформація скопійована в буфер обміну!"))),
-            MenuItem("Exit", lambda icon, _: icon.stop())
+            MenuItem("Вихід", lambda icon, _: icon.stop())
         )
 
         icon = Icon("System Info", load_tray_icon(),
