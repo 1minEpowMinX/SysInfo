@@ -24,17 +24,17 @@
 
 Иконка приложения в трее:
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/59a9349d-88e2-4da5-bf29-a1e86bcc47e9" alt="Значок в трее">
+  <img src="https://github.com/user-attachments/assets/28220dc4-007a-42a5-98bf-fd2fb8effad6" alt="Значок в трее">
 </p>  
 
 Подсказка с информацией при наведении на иконку:  
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d2640219-62dd-4baf-8d24-205474950ee0" alt="Информация при наведении на иконку">
+  <img src="https://github.com/user-attachments/assets/45308020-86d2-4f6d-8839-86f7ec8ac59c" alt="Информация при наведении на иконку">
 </p>
 
 Контекстное меню при клике на иконку:  
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/458d85de-78ad-405f-90a2-38eda285c87c" alt="Контекстное меню">
+  <img src="https://github.com/user-attachments/assets/88ccc9cd-aa2a-4d27-b365-74c1dce5febc" alt="Контекстное меню">
 </p>
 
 ---
