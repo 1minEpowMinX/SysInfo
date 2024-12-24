@@ -65,8 +65,7 @@
 - Нет необходимости в установленном Python и завимостях.
 
 **Установка**:
-1. Скачайте `.zip`-архив из раздела [Releases](https://github.com/1minEpowMinX/SysInfo/releases).
-2. Распакуйте архив в удобное для вас место.
+1. Скачайте `.exe`-файл из раздела [Releases](https://github.com/1minEpowMinX/SysInfo/releases).
 3. Запустите файл `SystemInfo.exe`.
 
 **Использование**:
