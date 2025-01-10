@@ -8,17 +8,32 @@ from pystray import Icon, Menu, MenuItem
 from PIL import Image
 from datetime import datetime
 from ctypes import windll
+from collections import namedtuple
+
+# Определяем компактную структуру для системной информации
+SystemInfo = namedtuple(
+    "SystemInfo", ["pc_name", "user_name", "ip_address", "boot_time"])
 
 
 def get_system_info():
     """Собирает статическую информацию о системе."""
-    pc_name = node()  # Имя компьютера
-    user_name = users()[0].name  # Имя пользователя
-    ip_address = gethostbyname(gethostname())  # IP-адрес
-    sys_boot_time = datetime.fromtimestamp(boot_time()).strftime(
-        "%d.%m.%Y %H:%M")  # Время включения
+    return SystemInfo(
+        pc_name=node(),
+        user_name=users()[0].name,
+        ip_address=gethostbyname(gethostname()),
+        boot_time=datetime.fromtimestamp(
+            boot_time()).strftime("%d.%m.%Y %H:%M")
+    )
 
-    return f"Ім’я ПК: {pc_name}\nЛогін: {user_name}\nIP-адреса: {ip_address}\nЧас вмикання ПК: {sys_boot_time}"
+
+def format_system_info(info):
+    """Форматирует информацию о системе для отображения."""
+    return (
+        f"Ім’я ПК: {info.pc_name}\n"
+        f"Логін: {info.user_name}\n"
+        f"IP-адреса: {info.ip_address}\n"
+        f"Час вмикання ПК: {info.boot_time}"
+    )
 
 
 def resource_path(relative_path):
@@ -132,6 +147,23 @@ def show_first_run_message():
     Thread(target=display_window, daemon=True).start()
 
 
+def confirm_exit(icon):
+    """Подтверждает выход пользователя из программы через MessageBox."""
+    MB_YESNO = 0x04  # Флаги для кнопок "Yes" и "No"
+    MB_ICONQUESTION = 0x20  # Иконка вопроса
+    IDYES = 6  # Возвращаемое значение для кнопки "Yes"
+
+    result = windll.user32.MessageBoxW(
+        None,
+        "Ви впевнені, що хочете вийти?",
+        "Підтвердження виходу",
+        MB_YESNO | MB_ICONQUESTION
+    )
+
+    if result == IDYES:
+        icon.stop()
+
+
 def main():
     """Основная функция программы."""
     # Создаем мьютекс
@@ -153,11 +185,11 @@ def main():
         menu = Menu(
             MenuItem("Скопіювати до буферу обміну", lambda icon, _: (copy_to_clipboard(
                 get_system_info()), icon.notify("Інформація скопійована в буфер обміну!", title="Системна інформація"))),
-            MenuItem("Вихід", lambda icon, _: icon.stop())
+            MenuItem("Вихід", lambda icon, _: confirm_exit(icon))
         )
 
         icon = Icon("System Info", load_tray_icon(),
-                    menu=menu, title=get_system_info())
+                    menu=menu, title=format_system_info(get_system_info()))
 
         icon.run()
     finally:
