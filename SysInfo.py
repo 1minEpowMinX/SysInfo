@@ -46,9 +46,9 @@ def resource_path(relative_path):
 
 def load_tray_icon(icon_path=None):
     """Загружает иконку для трея из ресурсов."""
-    if not icon_path:
-        icon_path = resource_path("SysInfo-DALL.E.ico")
-    return Image.open(icon_path)
+    icon_path = icon_path or resource_path("SysInfo-DALL.E.ico")
+    with Image.open(icon_path) as img:
+        return img.copy()
 
 
 def copy_to_clipboard(system_info):
