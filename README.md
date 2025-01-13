@@ -55,7 +55,7 @@
 **Уведомление при первом запуске**
 Программа покажет подробное сообщение о закреплении значка в трее и использовании основных функций:
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6ed0db68-4147-483b-885a-4b9c5496509d" alt="Контекстное меню">
+  <img src="https://github.com/user-attachments/assets/292625e6-05ac-463a-ba23-f04caf8d7f01" alt="Контекстное меню">
 </p>
 
 ---
