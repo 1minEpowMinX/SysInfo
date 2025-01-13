@@ -127,7 +127,7 @@ def show_first_run_message():
 
         # Загрузка png
         try:
-            # Ауть к вашему png-файлу
+            # Ауть к png-файлу
             png = PhotoImage(file="instructions.png")
             Label(container, image=png).pack(side=RIGHT, padx=10)
         except Exception as e:
@@ -197,7 +197,7 @@ def main():
     try:
         menu = Menu(
             MenuItem("Скопіювати до буферу обміну", lambda icon, _: (copy_to_clipboard(
-                get_system_info()), icon.notify("Інформація скопійована в буфер обміну!", title="Системна інформація"))),
+                format_system_info(get_system_info())), icon.notify("Інформація скопійована в буфер обміну!", title="Системна інформація"))),
             MenuItem("Вихід", lambda icon, _: confirm_exit(icon))
         )
 
