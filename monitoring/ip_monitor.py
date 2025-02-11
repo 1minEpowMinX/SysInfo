@@ -7,7 +7,7 @@ def get_current_ip():
     """Получает текущий IP-адрес с обработкой ошибок."""
     try:
         return gethostbyname(gethostname())
-    except gaierror as e:
+    except gaierror as e:  # Обработка ошибки в случае проблем получения IP
         sleep(5)
         return get_current_ip()  # Повторная попытка получения IP
 
