@@ -1,4 +1,4 @@
-import sys
+from sys import exit
 from ctypes import windll
 from tray.tray_icon import create_tray_icon
 from config.config import is_first_run, set_first_run_complete
@@ -12,7 +12,7 @@ def main():
     last_error = windll.kernel32.GetLastError()
 
     if last_error == 183:  # ERROR_ALREADY_EXISTS
-        sys.exit()
+        exit()  # Мягкий выход при повторном запуске
 
     if is_first_run():
         show_first_run_message()
