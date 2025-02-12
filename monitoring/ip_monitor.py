@@ -1,4 +1,3 @@
-from ctypes import windll, c_ulong, byref
 from socket import gethostbyname, gethostname, gaierror
 from time import sleep
 
@@ -13,17 +12,11 @@ def get_current_ip():
 
 
 def monitor_ip_change(icon, get_system_info, format_system_info):
-    """Следит за изменением IP через Windows API и обновляет трей."""
-    iphlpapi = windll.iphlpapi
-    event = c_ulong()
-
-    iphlpapi.NotifyAddrChange(byref(event), None)
-
+    """Следит за изменением IP через регулярный опрос и обновляет трей."""
     # Сохраняем начальную информацию о системе
     system_info = get_system_info()
 
     while True:
-        windll.kernel32.WaitForSingleObject(event, -1)  # Ожидание изменения IP
         new_ip = get_current_ip()
 
         if new_ip != system_info.ip_address:
