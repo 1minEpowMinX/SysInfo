@@ -1,5 +1,6 @@
 from sys import exit
 from ctypes import windll
+
 from tray.tray_icon import create_tray_icon
 from config.config import is_first_run, set_first_run_complete
 from messages.first_run import show_first_run_message
