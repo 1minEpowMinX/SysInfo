@@ -83,7 +83,7 @@ def create_tray_icon():
         "System Info",
         load_tray_icon(),
         menu=menu,
-        title=f"IP: {format_system_info(system_info)}",
+        title=f"{format_system_info(system_info)}",
     )
 
     # Запускаем поток для мониторинга IP
