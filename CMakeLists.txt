@@ -16,8 +16,8 @@ set(TS_FILES SysInfo_uk_UA.ts)
 
 set(PROJECT_SOURCES
         main.cpp
-        app.cpp
-        app.h
+        app/app.cpp
+        app/app.h
         ${TS_FILES}
 )
 
