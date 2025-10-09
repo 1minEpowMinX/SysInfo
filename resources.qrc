@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/SysInfo-DALL.E.ico</file>
+        <file>i18n/SysInfo_uk_UA.ts</file>
     </qresource>
 </RCC>
