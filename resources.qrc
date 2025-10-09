@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/SysInfo-DALL.E.ico</file>
+    </qresource>
+</RCC>
