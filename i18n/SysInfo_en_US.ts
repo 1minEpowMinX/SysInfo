@@ -14,7 +14,7 @@
         <translation>System tray is not available.</translation>
     </message>
     <message>
-        <location filename="../app/app.cpp" line="44"/>
+        <location filename=".../utils/utils.cpp" line="59"/>
         <source>Имя устройства: %1
 Пользователь: %2
 IP-адрес: %3

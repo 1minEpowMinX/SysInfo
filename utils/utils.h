@@ -4,10 +4,11 @@
 #include <QString>
 
 namespace Utils {
-QString getHostname();
-QString getUsername();
-QString getActiveIPAddress();
-QString getLastBootTime();
+QString GetHostname();
+QString GetUsername();
+QString GetActiveIPAddress();
+QString GetLastBootTime();
+QString GetSystemInfo();
 }
 
 #endif // UTILS_H

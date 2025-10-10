@@ -20,9 +20,11 @@ private:
     QString cachedInfo;
 
     void SystemTraySupportCheck();
-    void getSystemInfo();
-    void LoadTrayIcon(const QString &iconPath);
+    void CreateTrayIcon(const QString &iconPath);
+    void LoadTrayApp();
     void CreateContextMenu();
+    void startTrayUpdateTimer();
+
 
 private slots:
     void CopyToClipboard();

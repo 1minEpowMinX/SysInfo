@@ -15,8 +15,10 @@ App::App(QObject *parent)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 
+    cachedInfo = Utils::GetSystemInfo();
+
     SystemTraySupportCheck();
-    LoadTrayIcon(":/assets/SysInfo-DALL.E.ico");
+    LoadTrayApp();
     CreateContextMenu();
 
     trayIcon->show();
@@ -34,34 +36,28 @@ void App::SystemTraySupportCheck() {
     }
 }
 
-void App::getSystemInfo()
-{
-    QString hostname = Utils::getHostname();
-    QString username = Utils::getUsername();
-    QString ip = Utils::getActiveIPAddress();
-    QString uptime = Utils::getLastBootTime();
-
-    cachedInfo = QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
-    .arg(hostname, username, ip, uptime);
-}
-
-void App::LoadTrayIcon(const QString &iconPath) {
-    trayIcon = new QSystemTrayIcon(QIcon(iconPath), this);
-    trayIcon->setVisible(true);
-
-    App::getSystemInfo();
-    trayIcon->setToolTip(cachedInfo);
-
+void App::startTrayUpdateTimer() {
     // Timer for periodic information updates
     QTimer *updateTimer = new QTimer(this);
-
     connect(updateTimer, &QTimer::timeout, this, [this]() {
         QString oldInfo = cachedInfo;
-        getSystemInfo();
+        Utils::GetSystemInfo();
         if (cachedInfo != oldInfo)
             trayIcon->setToolTip(cachedInfo);
     });
     updateTimer->start(30 * 1000);
+}
+
+void App::CreateTrayIcon(const QString &iconPath) {
+    trayIcon = new QSystemTrayIcon(QIcon(iconPath), this);
+    trayIcon->setVisible(true);
+}
+
+
+void App::LoadTrayApp() {
+    App::CreateTrayIcon(":/assets/SysInfo-DALL.E.ico");
+    trayIcon->setToolTip(cachedInfo);
+    App::startTrayUpdateTimer();
 }
 
 void App::CreateContextMenu() {
