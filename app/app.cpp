@@ -1,11 +1,13 @@
 #include "app.h"
 #include "../utils/utils.h"
 
+#include <QObject>
 #include <QApplication>
 #include <QMessageBox>
 #include <QAction>
 #include <QClipboard>
 #include <QTimer>
+#include <QString>
 
 
 App::App(QObject *parent)
@@ -27,7 +29,7 @@ App::~App() {
 
 void App::SystemTraySupportCheck() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-        QMessageBox::critical(nullptr, "Ошибка", "Системный трей недоступен!");
+        QMessageBox::critical(nullptr, QObject::tr("Ошибка"), QObject::tr("Системный трей недоступен."));
         qApp->quit();
     }
 }
@@ -39,7 +41,7 @@ void App::getSystemInfo()
     QString ip = Utils::getActiveIPAddress();
     QString uptime = Utils::getLastBootTime();
 
-    cachedInfo = QString("Имя компьютера: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
+    cachedInfo = QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
     .arg(hostname, username, ip, uptime);
 }
 
@@ -64,8 +66,8 @@ void App::LoadTrayIcon(const QString &iconPath) {
 
 void App::CreateContextMenu() {
     trayMenu = new QMenu();
-    QAction *actionShow = trayMenu->addAction("Скопировать в буфер обмена");
-    QAction *actionQuit = trayMenu->addAction("Выход");
+    QAction *actionShow = trayMenu->addAction(QObject::tr("Скопировать в буфер обмена"));
+    QAction *actionQuit = trayMenu->addAction(QObject::tr("Выход"));
 
     QObject::connect(actionShow, &QAction::triggered, this, &App::CopyToClipboard);
     QObject::connect(actionQuit, &QAction::triggered, this, &App::QuitApp);
@@ -78,12 +80,12 @@ void App::CopyToClipboard() {
     if (!clipBoard) return;
     clipBoard->setText(cachedInfo);
 
-    trayIcon->showMessage("Системная информация", "Информация скопирована в буфер обмена.");
+    trayIcon->showMessage(QObject::tr("Системная информация"), QObject::tr("Информация скопирована в буфер обмена."));
 }
 
 void App::QuitApp() {
-    auto reply = QMessageBox::question(nullptr, "Выход",
-                                       "Мониторинг собирает данные, которые помогут в устранении неполадок.\nВсё равно закрыть приложение?",
+    auto reply = QMessageBox::question(nullptr, QObject::tr("Выход"),
+                                       QObject::tr("Мониторинг собирает данные, которые помогут в устранении неполадок.\nВсё равно закрыть приложение?"),
                                        QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes)
         qApp->quit();

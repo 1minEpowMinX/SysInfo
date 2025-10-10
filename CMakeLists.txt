@@ -13,7 +13,8 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Network)
 
-set(TS_FILES i18n/SysInfo_uk_UA.ts)
+set(TS_FILES i18n/SysInfo_uk_UA.ts
+    i18n/SysInfo_en_US.ts)
 
 set_source_files_properties(resources.rc PROPERTIES LANGUAGE RC)
 

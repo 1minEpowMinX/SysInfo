@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <QObject>
 #include <QString>
 #include <QHostInfo>
 #include <QNetworkInterface>
@@ -39,7 +40,7 @@ QString getActiveIPAddress() {
         }
     }
 
-    return !vpnIp.isEmpty() ? vpnIp : (!lanIp.isEmpty() ? lanIp : "Нет IP");
+    return !vpnIp.isEmpty() ? vpnIp : (!lanIp.isEmpty() ? lanIp : QObject::tr("Нет IP"));
 }
 
 QString getLastBootTime() {
