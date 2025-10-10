@@ -15,6 +15,8 @@ find_package(Qt6 REQUIRED COMPONENTS Network)
 
 set(TS_FILES i18n/SysInfo_uk_UA.ts)
 
+set_source_files_properties(resources.rc PROPERTIES LANGUAGE RC)
+
 set(PROJECT_SOURCES
         main.cpp
         app/app.cpp
@@ -30,6 +32,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         .gitignore
         resources.qrc
         utils/utils.h utils/utils.cpp
+        resources.rc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SysInfo APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -55,6 +58,8 @@ endif()
 
 target_link_libraries(SysInfo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(SysInfo PRIVATE Qt6::Network)
+
+target_sources(SysInfo PRIVATE resources.rc)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
