@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QSystemTrayIcon>
+#include <QString>
 #include <QMenu>
 
 class App : public QObject
@@ -16,8 +17,10 @@ public:
 private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayMenu;
+    QString cachedInfo;
 
     void SystemTraySupportCheck();
+    void getSystemInfo();
     void LoadTrayIcon(const QString &iconPath);
     void CreateContextMenu();
 

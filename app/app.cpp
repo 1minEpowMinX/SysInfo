@@ -1,8 +1,12 @@
 #include "app.h"
+#include "../utils/utils.h"
 
 #include <QApplication>
 #include <QMessageBox>
 #include <QAction>
+#include <QClipboard>
+#include <QTimer>
+
 
 App::App(QObject *parent)
     : QObject(parent)
@@ -28,10 +32,34 @@ void App::SystemTraySupportCheck() {
     }
 }
 
+void App::getSystemInfo()
+{
+    QString hostname = Utils::getHostname();
+    QString username = Utils::getUsername();
+    QString ip = Utils::getActiveIPAddress();
+    QString uptime = Utils::getLastBootTime();
+
+    cachedInfo = QString("Имя компьютера: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
+    .arg(hostname, username, ip, uptime);
+}
+
 void App::LoadTrayIcon(const QString &iconPath) {
     trayIcon = new QSystemTrayIcon(QIcon(iconPath), this);
     trayIcon->setVisible(true);
-    trayIcon->setToolTip("Имя компьютера:\nЛогин:\nIP-адрес:\nВремя включения компьютера:");
+
+    App::getSystemInfo();
+    trayIcon->setToolTip(cachedInfo);
+
+    // Timer for periodic information updates
+    QTimer *updateTimer = new QTimer(this);
+
+    connect(updateTimer, &QTimer::timeout, this, [this]() {
+        QString oldInfo = cachedInfo;
+        getSystemInfo();
+        if (cachedInfo != oldInfo)
+            trayIcon->setToolTip(cachedInfo);
+    });
+    updateTimer->start(30 * 1000);
 }
 
 void App::CreateContextMenu() {
@@ -46,7 +74,10 @@ void App::CreateContextMenu() {
 }
 
 void App::CopyToClipboard() {
-    // TODO: реализовать функцию
+    QClipboard *clipBoard = QApplication::clipboard();
+    if (!clipBoard) return;
+    clipBoard->setText(cachedInfo);
+
     trayIcon->showMessage("Системная информация", "Информация скопирована в буфер обмена.");
 }
 
