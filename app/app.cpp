@@ -55,7 +55,7 @@ void App::createTrayIcon(const QString &iconPath) {
 
 
 void App::loadTrayApp() {
-    App::createTrayIcon(":/assets/SysInfo-DALL.E.ico");
+    App::createTrayIcon(":/assets/SysInfo_Icon.ico");
     trayIcon->setToolTip(cachedInfo);
     App::startTrayUpdateTimer();
 }

@@ -30,7 +30,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(SysInfo
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        assets/instructions.png assets/SysInfo-DALL.E.ico
+        assets/SysInfo_Icon.ico
         .gitignore
         resources.qrc
         utils/utils.h utils/utils.cpp
