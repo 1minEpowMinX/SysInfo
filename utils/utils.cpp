@@ -10,15 +10,15 @@
 
 namespace Utils {
 
-QString GetHostname() {
+QString getHostname() {
     return QHostInfo::localHostName();
 }
 
-QString GetUsername() {
+QString getUsername() {
     return qEnvironmentVariable("USERNAME");
 }
 
-QString GetActiveIPAddress() {
+QString getActiveIPAddress() {
     QString vpnIp, lanIp;
 
     const auto &interfaces = QNetworkInterface::allInterfaces();
@@ -43,18 +43,18 @@ QString GetActiveIPAddress() {
     return !vpnIp.isEmpty() ? vpnIp : (!lanIp.isEmpty() ? lanIp : QObject::tr("Нет IP"));
 }
 
-QString GetLastBootTime() {
+QString getLastBootTime() {
     ULONGLONG uptimeMs = GetTickCount64();
     QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs)); // curr time - boot time
     return bootTime.toString("dd.MM.yyyy HH:mm");
 }
 
-QString GetSystemInfo()
+QString getSystemInfo()
 {
-    QString hostname = Utils::GetHostname();
-    QString username = Utils::GetUsername();
-    QString ip = Utils::GetActiveIPAddress();
-    QString uptime = Utils::GetLastBootTime();
+    QString hostname = Utils::getHostname();
+    QString username = Utils::getUsername();
+    QString ip = Utils::getActiveIPAddress();
+    QString uptime = Utils::getLastBootTime();
 
     return QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
                      .arg(hostname, username, ip, uptime);

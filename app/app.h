@@ -19,15 +19,15 @@ private:
     QMenu *trayMenu;
     QString cachedInfo;
 
-    void SystemTraySupportCheck();
-    void CreateTrayIcon(const QString &iconPath);
-    void LoadTrayApp();
-    void CreateContextMenu();
+    void systemTraySupportCheck();
+    void createTrayIcon(const QString &iconPath);
+    void loadTrayApp();
+    void createContextMenu();
     void startTrayUpdateTimer();
 
 
 private slots:
-    void CopyToClipboard();
-    void QuitApp();
+    void copyToClipboard();
+    void quitApp();
 };
 #endif // APP_H
