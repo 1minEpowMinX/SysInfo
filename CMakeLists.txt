@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Network)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 set(TS_FILES i18n/SysInfo_uk_UA.ts
     i18n/SysInfo_en_US.ts)
@@ -34,7 +35,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources.qrc
         utils/utils.h utils/utils.cpp
         resources.rc
-        tray/trayguide.h tray/trayguide.cpp
+        settings/settingsmanager.h settings/settingsmanager.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SysInfo APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -60,6 +61,7 @@ endif()
 
 target_link_libraries(SysInfo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_libraries(SysInfo PRIVATE Qt6::Network)
+target_link_libraries(SysInfo PRIVATE Qt6::Core)
 
 target_sources(SysInfo PRIVATE resources.rc)
 
