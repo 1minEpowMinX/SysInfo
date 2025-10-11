@@ -5,8 +5,19 @@
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QDateTime>
-#include <windows.h>
+#include <QTextStream>
+#include <QProcess>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#elif defined(Q_OS_LINUX)
+#include <sys/sysinfo.h>
+#elif defined(Q_OS_MAC)
+#include <sys/sysctl.h>
+#include <mach/mach.h>
+#include <mach/clock.h>
+#include <mach/mach_host.h>
+#endif
 
 namespace Utils {
 
@@ -15,7 +26,11 @@ QString getHostname() {
 }
 
 QString getUsername() {
+#ifdef Q_OS_WIN
     return qEnvironmentVariable("USERNAME");
+#else
+    return qEnvironmentVariable("USER");
+#endif
 }
 
 QString getActiveIPAddress() {
@@ -44,9 +59,33 @@ QString getActiveIPAddress() {
 }
 
 QString getLastBootTime() {
+#ifdef Q_OS_WIN
     ULONGLONG uptimeMs = GetTickCount64();
-    QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs)); // curr time - boot time
+    QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
     return bootTime.toString("dd.MM.yyyy HH:mm");
+
+#elif defined(Q_OS_LINUX)
+    struct sysinfo s_info;
+    if (sysinfo(&s_info) == 0) {
+        QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
+        return bootTime.toString("dd.MM.yyyy HH:mm");
+    }
+    return QObject::tr("Недоступно");
+
+#elif defined(Q_OS_MAC)
+    // macOS does not have sysinfo, so we use sysctl
+    struct timeval boottime;
+    size_t len = sizeof(boottime); // Buffer size
+    int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+    if (sysctl(mib, 2, &boottime, &len, nullptr, 0) == 0) {
+        QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
+        return bootTime.toString("dd.MM.yyyy HH:mm");
+    }
+    return QObject::tr("Недоступно");
+
+#else
+    return QObject::tr("Не поддерживается");
+#endif
 }
 
 QString getSystemInfo()
