@@ -9,8 +9,8 @@ class SettingsManager : public QObject
 public:
     static SettingsManager& instance();
 
-    bool showGuide() const;
-    void setShowGuide(bool value);
+    bool showWelcome() const;
+    void setShowWelcome(bool value);
 
 private:
     explicit SettingsManager(QObject *parent = nullptr);

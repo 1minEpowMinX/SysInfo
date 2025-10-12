@@ -9,10 +9,10 @@ SettingsManager::SettingsManager(QObject *parent)
     : QObject{parent}, m_settings("Pivdenny", "SysInfo")
 {}
 
-bool SettingsManager::showGuide() const {
-    return m_settings.value("General/ShowGuide", true).toBool();
+bool SettingsManager::showWelcome() const {
+    return m_settings.value("General/ShowWelcome", true).toBool();
 }
 
-void SettingsManager::setShowGuide(bool value) {
-    m_settings.setValue("General/ShowGuide", value);
+void SettingsManager::setShowWelcome(bool value) {
+    m_settings.setValue("General/ShowWelcome", value);
 }
