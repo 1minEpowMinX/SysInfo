@@ -15,8 +15,8 @@ find_package(Qt6 REQUIRED COMPONENTS Network Core)
 
 # Translations
 set(TS_FILES
-    i18n/SysInfo_uk_UA.ts
-    i18n/SysInfo_en_US.ts
+    resources/i18n/SysInfo_uk_UA.ts
+    resources/i18n/SysInfo_en_US.ts
 )
 
 set(PROJECT_SOURCES
