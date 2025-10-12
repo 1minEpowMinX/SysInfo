@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=2.0
+Name=SysInfo
+Comment=System information utility
+Exec=/usr/bin/sysinfo
+Icon=sysinfo
+Terminal=false
+Categories=Utility;System;
+StartupNotify=true
