@@ -16,3 +16,11 @@ bool SettingsManager::showWelcome() const {
 void SettingsManager::setShowWelcome(bool value) {
     m_settings.setValue("General/ShowWelcome", value);
 }
+
+bool SettingsManager::showTrayGuide() const {
+    return m_settings.value("General/ShowTrayGuide", true).toBool();
+}
+
+void SettingsManager::setShowTrayGuide(bool value) {
+    m_settings.setValue("General/ShowTrayGuide", value);
+}

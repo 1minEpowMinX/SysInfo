@@ -11,6 +11,8 @@ public:
 
     bool showWelcome() const;
     void setShowWelcome(bool value);
+    bool showTrayGuide() const;
+    void setShowTrayGuide(bool value);
 
 private:
     explicit SettingsManager(QObject *parent = nullptr);
