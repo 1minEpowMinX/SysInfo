@@ -61,20 +61,29 @@ endif()
 
 # Windows: resources.rc + ico
 if(WIN32)
-    set_source_files_properties(resources/resources.rc PROPERTIES LANGUAGE RC)
     target_sources(SysInfo PRIVATE resources/resources.rc)
+    set_source_files_properties(resources/resources.rc PROPERTIES LANGUAGE RC)
+    set_target_properties(SysInfo PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        )
 endif()
 
 # macOS: Info.plist + icns
 if(APPLE)
+    target_sources(SysInfo PRIVATE
+        "${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns"
+    )
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns"
+        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
+    )
     set_target_properties(SysInfo PROPERTIES
         MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/Info.plist"
-    )
-
-    set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns.icns"
-        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
-    )
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.pivdenny.SysInfo"
+        MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
+        MACOSX_BUNDLE_ICON_FILE "SysInfo_Icon.icns"
+)
 endif()
 
 # Linux: .desktop + png
@@ -89,26 +98,15 @@ if(UNIX AND NOT APPLE)
         "${CMAKE_BINARY_DIR}/resources/icons/SysInfo_Icon.png"
         COPYONLY
     )
+    set_target_properties(SysInfo PROPERTIES
+        OUTPUT_NAME "SysInfo"
+    )
 endif()
 
 target_link_libraries(SysInfo PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt6::Network
     Qt6::Core
-)
-
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
-if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.pivdenny.SysInfo)
-endif()
-
-set_target_properties(SysInfo PROPERTIES
-    ${BUNDLE_ID_OPTION}
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    WIN32_EXECUTABLE TRUE
 )
 
 include(GNUInstallDirs)
