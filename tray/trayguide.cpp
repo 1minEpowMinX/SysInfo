@@ -7,7 +7,7 @@
 TrayGuide::TrayGuide(QWidget* parent)
     : QDialog(parent)
 {
-    setWindowTitle(tr("Как закрепить значок в трее?"));
+    setWindowTitle(tr("Как закрепить значок в трее"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
     setModal(true);
     resize(400, 300);
