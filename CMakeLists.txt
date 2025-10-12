@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SysInfo VERSION 0.1 LANGUAGES CXX)
+project(SysInfo VERSION 2.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -11,18 +11,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt6 REQUIRED COMPONENTS Network)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Network Core)
 
-set(TS_FILES i18n/SysInfo_uk_UA.ts
-    i18n/SysInfo_en_US.ts)
-
-set_source_files_properties(resources.rc PROPERTIES LANGUAGE RC)
+# Translations
+set(TS_FILES
+    i18n/SysInfo_uk_UA.ts
+    i18n/SysInfo_en_US.ts
+)
 
 set(PROJECT_SOURCES
         main.cpp
         app/app.cpp
         app/app.h
+        utils/utils.h utils/utils.cpp
+        tray/trayguide.h tray/trayguide.cpp
+        settings/settingsmanager.h settings/settingsmanager.cpp
+        resources/icons/SysInfo_Icon.ico
+        resources.qrc
+        .gitignore
         ${TS_FILES}
 )
 
@@ -30,12 +36,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(SysInfo
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        assets/SysInfo_Icon.ico
-        .gitignore
-        resources.qrc
-        utils/utils.h utils/utils.cpp
-        resources.rc
-        settings/settingsmanager.h settings/settingsmanager.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SysInfo APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -59,23 +59,55 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(SysInfo PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(SysInfo PRIVATE Qt6::Network)
-target_link_libraries(SysInfo PRIVATE Qt6::Core)
+# Windows: resources.rc + ico
+if(WIN32)
+    set_source_files_properties(resources/resources.rc PROPERTIES LANGUAGE RC)
+    target_sources(SysInfo PRIVATE resources/resources.rc)
+endif()
 
-target_sources(SysInfo PRIVATE resources.rc)
+# macOS: Info.plist + icns
+if(APPLE)
+    set_target_properties(SysInfo PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/Info.plist"
+    )
+
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns.icns"
+        PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
+    )
+endif()
+
+# Linux: .desktop + png
+if(UNIX AND NOT APPLE)
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/resources/sysinfo.desktop"
+        "${CMAKE_BINARY_DIR}/resources/sysinfo.desktop"
+        COPYONLY
+    )
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.png"
+        "${CMAKE_BINARY_DIR}/resources/icons/SysInfo_Icon.png"
+        COPYONLY
+    )
+endif()
+
+target_link_libraries(SysInfo PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt6::Network
+    Qt6::Core
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.SysInfo)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.pivdenny.SysInfo)
 endif()
+
 set_target_properties(SysInfo PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
