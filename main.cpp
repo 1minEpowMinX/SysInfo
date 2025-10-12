@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    App app;
+    App::instance().startApp();
 
     return a.exec();
 }

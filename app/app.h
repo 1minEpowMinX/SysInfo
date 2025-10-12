@@ -11,10 +11,14 @@ class App : public QObject
     Q_OBJECT
 
 public:
+    static App& instance();
+
+    void startApp();
+
+private:
     explicit App(QObject *parent = nullptr);
     ~App();
 
-private:
     QSystemTrayIcon *trayIcon;
     QMenu *trayMenu;
     QString cachedInfo;

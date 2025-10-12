@@ -9,24 +9,31 @@
 #include <QTimer>
 #include <QString>
 
+App& App::instance() {
+    static App inst;
+    return inst;
+}
 
 App::App(QObject *parent)
     : QObject(parent)
 {
     QApplication::setQuitOnLastWindowClosed(false);
-
-    cachedInfo = Utils::getSystemInfo();
-
-    App::systemTraySupportCheck();
-    App::loadTrayApp();
-    App::createContextMenu();
-
-    trayIcon->show();
 }
 
 App::~App() {
     delete trayMenu;
     delete trayIcon;
+}
+
+void App::startApp()
+{
+    cachedInfo = Utils::getSystemInfo();
+
+    systemTraySupportCheck();
+    loadTrayApp();
+    createContextMenu();
+
+    trayIcon->show();
 }
 
 void App::systemTraySupportCheck() {
