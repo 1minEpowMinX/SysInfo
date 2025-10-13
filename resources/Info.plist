@@ -10,6 +10,7 @@
     <key>CFBundleShortVersionString</key>  <string>2.0.0</string>
     <key>CFBundleExecutable</key>          <string>SysInfo</string>
     <key>CFBundleIconFile</key>            <string>SysInfo_Icon.icns</string>
-    <key>NSHumanReadableCopyright</key>    <string>© github.com/1minEpowMinX. All rights reserved.</string>
+    <key>NSHumanReadableCopyright</key>    <string>© 2025 Kirill Bitskyi for Pivdenny</string>
+    <key>GitHub</key>                      <string>https://github.com/1minEpowMinX/SysInfo</string>   
 </dict>
 </plist>

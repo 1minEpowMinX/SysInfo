@@ -19,7 +19,8 @@ BEGIN
             VALUE "FileDescription", "SysInfo\0"
             VALUE "FileVersion", "2.0.0.0\0"
             VALUE "InternalName", "SysInfo\0"
-            VALUE "LegalCopyright", "\xA9 github.com/1minEpowMinX. All rights reserved.\0" // "\xA9" – ©
+            VALUE "LegalCopyright", "\xA9 2025 Kirill Bitskyi for Pivdenny\0" // "\xA9" – ©
+            VALUE "Comments", "Source code available at github.com/1minEpowMinX/SysInfo\0"
             VALUE "OriginalFilename", "SysInfo.exe\0"
             VALUE "ProductName", "SysInfo\0"
             VALUE "ProductVersion", "2.0.0.0\0"
