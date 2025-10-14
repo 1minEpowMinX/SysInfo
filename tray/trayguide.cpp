@@ -14,7 +14,7 @@ TrayGuide::TrayGuide(QWidget* parent)
 
     m_gifLabel = new QLabel(this);
     m_gifLabel->setAlignment(Qt::AlignCenter);
-    QMovie* movie = new QMovie(":/resources/animations/tray_guide.gif");
+    QMovie* movie = new QMovie(":/resources/animations/Tray_Guide.gif");
     m_gifLabel->setMovie(movie);
     movie->start();
 
