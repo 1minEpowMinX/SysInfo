@@ -1,5 +1,6 @@
 #include "app.h"
 #include "../settings/settingsmanager.h"
+#include "../tray/aboutdialog.h"
 #include "../tray/trayguide.h"
 #include "../utils/utils.h"
 
@@ -41,7 +42,8 @@ void App::startApp()
     if (SettingsManager::instance().showWelcome()) {
         trayIcon->showMessage(
             QObject::tr("SysInfo работает в фоне"),
-            QObject::tr("Приложение собирает системную информацию и помогает в диагностике."),
+            QObject::tr("Приложение собирает системную информацию и помогает в диагностике.\n"
+                        "Подробнее см. раздел \"Справка\"."),
             QSystemTrayIcon::Information,
             8000
             );
@@ -54,7 +56,7 @@ void App::startApp()
         trayIcon->showMessage(
             QObject::tr("Сделайте значок видимым в трее"),
             QObject::tr("Перетащите значок SysInfo в область уведомлений.\n"
-               "Нажмите сюда, чтобы открыть подробную инструкцию."),
+                        "Нажмите сюда, чтобы открыть подробную инструкцию."),
             QSystemTrayIcon::Information,
             15000
             );
@@ -99,10 +101,13 @@ void App::loadTrayApp() {
 void App::createContextMenu() {
     trayMenu = new QMenu();
     QAction *actionShow = trayMenu->addAction(QObject::tr("Скопировать в буфер обмена"));
+    QAction *actionHelp = trayMenu->addAction(tr("Справка"));
     QAction *aboutApp = trayMenu->addAction(QObject::tr("О программе"));
     QAction *actionQuit = trayMenu->addAction(QObject::tr("Выход"));
 
     QObject::connect(actionShow, &QAction::triggered, this, &App::copyToClipboard);
+    QObject::connect(actionHelp, &QAction::triggered, this, &App::showHelp);
+    QObject::connect(aboutApp, &QAction::triggered, this, &App::showAboutDialog);
     QObject::connect(actionQuit, &QAction::triggered, this, &App::quitApp);
 
     trayIcon->setContextMenu(trayMenu);
@@ -121,9 +126,29 @@ void App::copyToClipboard() {
     trayIcon->showMessage(QObject::tr("Системная информация"), QObject::tr("Информация скопирована в буфер обмена."));
 }
 
+void App::showHelp() {
+    QString text = QObject::tr(
+        "<b>Приложение собирает системную информацию и помогает в диагностике:</b><br>"
+        "• Отображает сведения о устройстве (имя, пользователь, IP, время работы).<br>"
+        "• Работает в фоновом режиме через системный трей.<br>"
+        "• Нажмите правой кнопкой на значке, чтобы открыть меню действий.<br>"
+        "• Пункт «Скопировать в буфер» копирует текущие сведения.<br><br>"
+        "Если значок в трее не виден – перетащите его в область уведомлений."
+        );
+
+    QMessageBox::information(nullptr, QObject::tr("Справка"), text);
+}
+
+void App::showAboutDialog() {
+    AboutDialog dlg;
+    dlg.exec();
+}
+
 void App::quitApp() {
-    auto reply = QMessageBox::question(nullptr, QObject::tr("Выход"),
-                                       QObject::tr("Приложение собирает системную информацию и помогает в диагностике.\nВсё равно закрыть приложение?"),
+    QString text = QObject::tr(
+        "Приложение собирает системную информацию и помогает в диагностике.\nВсё равно закрыть приложение?");
+
+    auto reply = QMessageBox::question(nullptr, QObject::tr("Выход"), text,
                                        QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes)
         qApp->quit();
