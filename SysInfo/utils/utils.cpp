@@ -88,14 +88,47 @@ QString getLastBootTime() {
 #endif
 }
 
-QString getSystemInfo()
+SystemInfo collectSystemInfo()
 {
-    QString hostname = Utils::getHostname();
-    QString username = Utils::getUsername();
-    QString ip = Utils::getActiveIPAddress();
-    QString uptime = Utils::getLastBootTime();
-
-    return QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
-                     .arg(hostname, username, ip, uptime);
+    SystemInfo s;
+    s.hostname = Utils::getHostname();
+    s.username = Utils::getUsername();
+    s.ip = Utils::getActiveIPAddress();
+    s.uptime = Utils::getLastBootTime();
+    return s;
 }
+
+QJsonObject toJson(const SystemInfo &s, bool includeLabels = false)
+{
+    QJsonObject obj;
+    obj["hostname"] = s.hostname;
+    obj["username"] = s.username;
+    obj["ip"] = s.ip;
+    obj["uptime"] = s.uptime;
+
+    // Optionally add labels for localization
+    if (includeLabels) {
+        QJsonObject labels;
+        labels["hostname"] = QObject::tr("Имя устройства");
+        labels["username"] = QObject::tr("Пользователь");
+        labels["ip"]       = QObject::tr("IP-адрес");
+        labels["uptime"]   = QObject::tr("Время включения");
+        obj["labels"] = labels;
+    }
+
+    return obj;
+}
+
+
+QString toText(const SystemInfo &s)
+{
+    return QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
+        .arg(s.hostname, s.username, s.ip, s.uptime);
+}
+
+// QString toJsonString(const SystemInfo &s, bool includeLabels = false)
+// {
+//     QJsonDocument doc(toJson(s, includeLabels));
+//     return QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
+// }
 }

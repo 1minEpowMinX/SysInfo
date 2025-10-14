@@ -30,7 +30,7 @@ App::~App() {
 
 void App::startApp()
 {
-    cachedInfo = Utils::getSystemInfo();
+    cachedInfo = Utils::toText(Utils::collectSystemInfo());
 
     systemTraySupportCheck();
     loadTrayApp();
@@ -64,6 +64,11 @@ void App::startApp()
         connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &App::showTrayGuide);
     }
 #endif
+
+    integrationServer = new IntegrationServer(this);
+    if (!integrationServer->start()) {
+        QMessageBox::critical(nullptr, QObject::tr("Ошибка"), QObject::tr("Не удалось запустить локальный сервер. Интеграция с Jira недоступна."));
+    }
 }
 
 void App::systemTraySupportCheck() {
@@ -77,7 +82,7 @@ void App::startTrayUpdateTimer() {
     // Timer for periodic information updates
     QTimer *updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, [this]() {
-        QString newInfo = Utils::getSystemInfo();
+        QString newInfo = Utils::toText(Utils::collectSystemInfo());
         if (newInfo != cachedInfo) {
             cachedInfo = newInfo;
             trayIcon->setToolTip(cachedInfo);

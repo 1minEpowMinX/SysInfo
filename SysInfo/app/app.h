@@ -1,6 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
+#include "../integrationserver/integrationserver.h"
+
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <QString>
@@ -23,12 +25,13 @@ private:
     QMenu *trayMenu;
     QString cachedInfo;
 
+    IntegrationServer *integrationServer = nullptr;
+
     void systemTraySupportCheck();
     void createTrayIcon(const QString &iconPath);
     void loadTrayApp();
     void createContextMenu();
     void startTrayUpdateTimer();
-
 
 private slots:
     void showTrayGuide();

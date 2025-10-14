@@ -17,6 +17,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt6 REQUIRED COMPONENTS Network Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 
 # Translations
 set(TS_FILES
@@ -30,7 +32,9 @@ set(PROJECT_SOURCES
         app/app.h
         utils/utils.h utils/utils.cpp
         tray/trayguide.h tray/trayguide.cpp
+        tray/aboutdialog.h tray/aboutdialog.cpp
         settings/settingsmanager.h settings/settingsmanager.cpp
+        integrationServer/integrationserver.h integrationServer/integrationserver.cpp
         resources/icons/SysInfo_Icon.ico
         resources.qrc
         .gitignore
@@ -41,7 +45,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(SysInfo
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        tray/aboutdialog.h tray/aboutdialog.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SysInfo APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -113,6 +116,7 @@ target_link_libraries(SysInfo PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt6::Network
     Qt6::Core
+    Qt6::HttpServer
 )
 
 include(GNUInstallDirs)
@@ -137,7 +141,7 @@ endif()
 # macOS: add dependencies
 if(APPLE)
     add_custom_command(TARGET SysInfo POST_BUILD
-        COMMAND /usr/local/opt/qt/bin/macdeployqt $<TARGET_FILE:SysInfo> -verbose=2
+        COMMAND /usr/local/opt/qt/bin/macdeployqt $<TARGET_FILE:SysInfo>
         COMMENT "Running macdeployqt to bundle Qt dependencies..."
     )
 endif()
