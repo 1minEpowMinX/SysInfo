@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SysInfo VERSION 2.0 LANGUAGES CXX)
+project(SysInfo VERSION 2.0.0 LANGUAGES CXX)
+
+# Add a variable to the compiler for the build version
+add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
+string(TIMESTAMP BUILD_DATETIME "%Y%m%d" UTC)
+add_compile_definitions(BUILD_DATETIME="${BUILD_DATETIME}")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -36,6 +41,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(SysInfo
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        tray/aboutdialog.h tray/aboutdialog.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SysInfo APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -83,7 +89,7 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         MACOSX_BUNDLE_ICON_FILE "SysInfo_Icon.icns"
-)
+    )
 endif()
 
 # Linux: .desktop + png
@@ -118,4 +124,20 @@ install(TARGETS SysInfo
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SysInfo)
+endif()
+
+# Windows: add dependencies
+if(WIN32)
+    add_custom_command(TARGET SysInfo POST_BUILD
+            COMMAND "${Qt6_DIR}/../../../bin/windeployqt.exe" $<TARGET_FILE:SysInfo>
+            COMMENT "Running windeployqt to bundle Qt dependencies..."
+        )
+endif()
+
+# macOS: add dependencies
+if(APPLE)
+    add_custom_command(TARGET SysInfo POST_BUILD
+        COMMAND /usr/local/opt/qt/bin/macdeployqt $<TARGET_FILE:SysInfo> -verbose=2
+        COMMENT "Running macdeployqt to bundle Qt dependencies..."
+    )
 endif()
