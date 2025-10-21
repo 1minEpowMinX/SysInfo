@@ -11,12 +11,27 @@ IntegrationServer::IntegrationServer(QObject *parent)
     // Route: /systeminfo
     IntegrationServer::httpServer.route("/systeminfo", [this]() {
         const QJsonObject info = Utils::toJson(Utils::collectSystemInfo(), true); // Include labels for translation
-        return QHttpServerResponse("application/json", QJsonDocument(info).toJson());
+
+        QHttpServerResponse response("application/json; charset=utf-8", QJsonDocument(info).toJson());
+
+        auto h = response.headers();
+        h.append("Access-Control-Allow-Origin", "*");
+        h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
+        h.append("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeaders(std::move(h));
+        return response;
     });
 
     // Status check route
     IntegrationServer::httpServer.route("/status", [this]() {
-        return QHttpServerResponse("OK", "Active");
+        QHttpServerResponse response("OK");
+
+        auto h = response.headers();
+        h.append("Access-Control-Allow-Origin", "*");
+        h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
+        h.append("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeaders(std::move(h));
+        return response;
     });
 }
 
