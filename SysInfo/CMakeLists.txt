@@ -37,7 +37,7 @@ set(PROJECT_SOURCES
         integrationServer/integrationserver.h integrationServer/integrationserver.cpp
         resources/icons/SysInfo_Icon.ico
         resources.qrc
-        .gitignore
+        ../.gitignore
         ${TS_FILES}
 )
 
