@@ -19,9 +19,9 @@ TrayGuide::TrayGuide(QWidget* parent)
     movie->start();
 
     m_textLabel = new QLabel(QObject::tr(
-        "To keep the app visible in the notification area:\n"
-        "1. Open hidden icons by clicking the up arrow next to the system tray.\n"
-        "2️. Find the SysInfo icon and drag it to the visible area of the panel.\n"
+        "<p><b>To keep the app visible in the notification area:</b><br>"
+        "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
+        "2️. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
         ));
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
