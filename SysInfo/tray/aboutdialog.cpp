@@ -14,6 +14,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     aboutLabel(new QLabel(this))
 {
     setWindowTitle(QObject::tr("About"));
+    resize(625, 625);
 
     QPixmap bg(":/resources/icons/SysInfo_Background.png");
     backgroundLabel->setPixmap(bg);
@@ -21,29 +22,36 @@ AboutDialog::AboutDialog(QWidget *parent)
     backgroundLabel->setGeometry(this->rect());
     backgroundLabel->lower(); // Send to background
 
-    aboutLabel->adjustSize();
     aboutLabel->setWordWrap(true);
     aboutLabel->setTextFormat(Qt::RichText); // Enable HTML
     aboutLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    aboutLabel->setStyleSheet("font-size: 10pt; font-family: sans-serif;"); // Use sans-serif family for better compatibility
+    aboutLabel->setStyleSheet("font-size: 10pt; font-family: 'Segoe UI', sans-serif"); // Use sans-serif family for better compatibility
     aboutLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
     aboutLabel->setOpenExternalLinks(true);
 
     QString aboutText = QObject::tr(
-        "<h2><b>SysInfo</b></h2>"
-        "<p><b>Version:</b> %1 (build %2)</p>" // TODO: automate build creation
-        "<p><b>Developer:</b> Kirill Bitskyi </p>"
-        "<p><b>Company:</b> Pivdenny </p>"
-        "<p><b>Source code:</b> <a href='https://github.com/1minEpowMinX/SysInfo'>GitHub</a></p>"
-        "<p><b>Core:</b> Qt %3, C++17</p>"
-        "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>LGPL v3.0</a></p>"
-        "<hr>"
-        "<p><small>© 2025 Kirill Bitskyi for Pivdenny. All rights reserved.</small></p>"
-        ).arg(PROJECT_VERSION, BUILD_DATETIME, QT_VERSION_STR);
+                            "<h2><b>SysInfo</b></h2>"
+                            "<p><b>The application collects system information and assists in diagnostics:</b><br>"
+                            "• Displays device information (device name, user, IP address, uptime).<br>"
+                            "• Runs in the background via the system tray.<br>"
+                            "• Right-click on the icon to open the action menu.<br>"
+                            "• The ”Copy to clipboard“ option copies the current information.<p>"
+                            "<b>If the icon is not visible in the tray, drag it to the notification area.<b>"
+                            "<hr>"
+                            "<p><b>Version:</b> %1 (build %2)</p>"
+                            "<p><b>Developer:</b> Kirill Bitskyi </p>"
+                            "<p><b>Company:</b> Pivdenny </p>"
+                            "<p><b>Source code:</b> <a href='https://github.com/1minEpowMinX/SysInfo'>GitHub</a></p>"
+                            "<p><b>Core:</b> Qt %3, C++17</p>"
+                            "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>LGPL v3.0</a></p>"
+                            "<hr>"
+                            "<p><small>© 2025 Kirill Bitskyi for Pivdenny. All rights reserved.</small></p>"
+                            ).arg(PROJECT_VERSION, BUILD_DATETIME, QT_VERSION_STR);
 
     QString detailsLabel = getSystemDetails();
 
     aboutLabel->setText(aboutText + detailsLabel);
+    aboutLabel->adjustSize();
 }
 
 void AboutDialog::resizeEvent(QResizeEvent *event)

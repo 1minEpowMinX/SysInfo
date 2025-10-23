@@ -36,7 +36,6 @@ private:
 private slots:
     void showTrayGuide();
     void copyToClipboard();
-    void showHelp();
     void showAboutDialog();
     void quitApp();
 };

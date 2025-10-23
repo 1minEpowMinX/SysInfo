@@ -67,7 +67,8 @@ void App::startApp()
 
     integrationServer = new IntegrationServer(this);
     if (!integrationServer->start()) {
-        QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Failed to start the local server. Integration with Jira is unavailable."));
+        QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Failed to start the local server. "
+                                                                         "Integration with Jira is unavailable."));
     }
 }
 
@@ -106,12 +107,10 @@ void App::loadTrayApp() {
 void App::createContextMenu() {
     trayMenu = new QMenu();
     QAction *actionShow = trayMenu->addAction(QObject::tr("Copy to clipboard"));
-    QAction *actionHelp = trayMenu->addAction(tr("Help"));
     QAction *aboutApp = trayMenu->addAction(QObject::tr("About"));
     QAction *actionQuit = trayMenu->addAction(QObject::tr("Exit"));
 
     QObject::connect(actionShow, &QAction::triggered, this, &App::copyToClipboard);
-    QObject::connect(actionHelp, &QAction::triggered, this, &App::showHelp);
     QObject::connect(aboutApp, &QAction::triggered, this, &App::showAboutDialog);
     QObject::connect(actionQuit, &QAction::triggered, this, &App::quitApp);
 
@@ -129,19 +128,6 @@ void App::copyToClipboard() {
     clipBoard->setText(cachedInfo);
 
     trayIcon->showMessage(QObject::tr("System information"), QObject::tr("Information copied to the clipboard."));
-}
-
-void App::showHelp() {
-    QString text = QObject::tr(
-        "<p><b>The application collects system information and assists in diagnostics:</b><br>"
-        "• Displays device information (device name, user, IP, uptime).<br>"
-        "• Runs in the background via the system tray.<br>"
-        "• Right-click on the icon to open the action menu.<br>"
-        "• The ”Copy to clipboard“ option copies the current information.<p>"
-        "<b>If the icon is not visible in the tray, drag it to the notification area.<b>"
-        );
-
-    QMessageBox::information(nullptr, QObject::tr("Help"), text);
 }
 
 void App::showAboutDialog() {
