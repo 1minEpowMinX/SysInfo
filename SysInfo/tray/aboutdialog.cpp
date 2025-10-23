@@ -14,7 +14,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     aboutLabel(new QLabel(this))
 {
     setWindowTitle(QObject::tr("About"));
-    resize(625, 625);
+    resize(650, 650);
 
     QPixmap bg(":/resources/icons/SysInfo_Background.png");
     backgroundLabel->setPixmap(bg);

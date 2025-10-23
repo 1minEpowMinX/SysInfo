@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/i18n/SysInfo_en_US.qm</file>
         <file>resources/i18n/SysInfo_ru_RU.qm</file>
         <file>resources/i18n/SysInfo_uk_UA.qm</file>
         <file>resources/icons/SysInfo_Icon.ico</file>
