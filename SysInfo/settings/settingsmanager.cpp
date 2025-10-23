@@ -1,5 +1,7 @@
 #include "settingsmanager.h"
 
+#include <QObject>
+
 SettingsManager& SettingsManager::instance() {
     static SettingsManager inst;
     return inst;

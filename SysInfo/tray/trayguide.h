@@ -1,9 +1,9 @@
 #ifndef TRAYGUIDE_H
 #define TRAYGUIDE_H
 
+#include <QCheckBox>
 #include <QDialog>
 #include <QLabel>
-#include <QCheckBox>
 #include <QPushButton>
 
 class TrayGuide : public QDialog {

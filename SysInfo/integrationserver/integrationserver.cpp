@@ -1,9 +1,9 @@
 #include "integrationserver.h"
 #include "../utils/utils.h"
 
-#include <QJsonObject>
-#include <QHttpServerResponse>
 #include <QHostAddress>
+#include <QHttpServerResponse>
+#include <QJsonObject>
 
 IntegrationServer::IntegrationServer(QObject *parent)
     : QObject{parent}

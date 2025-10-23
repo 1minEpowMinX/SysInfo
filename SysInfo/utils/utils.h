@@ -1,8 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <QString>
 #include <QJsonObject>
+#include <QString>
 
 namespace Utils {
 

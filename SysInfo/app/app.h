@@ -3,10 +3,10 @@
 
 #include "../integrationserver/integrationserver.h"
 
-#include <QObject>
-#include <QSystemTrayIcon>
-#include <QString>
 #include <QMenu>
+#include <QObject>
+#include <QString>
+#include <QSystemTrayIcon>
 
 class App : public QObject
 {

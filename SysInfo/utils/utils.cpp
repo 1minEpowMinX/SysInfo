@@ -1,12 +1,12 @@
 #include "utils.h"
 
-#include <QObject>
-#include <QString>
+#include <QDateTime>
 #include <QHostInfo>
 #include <QNetworkInterface>
-#include <QDateTime>
-#include <QTextStream>
+#include <QObject>
 #include <QProcess>
+#include <QString>
+#include <QTextStream>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -70,7 +70,7 @@ QString getLastBootTime() {
         QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
         return bootTime.toString("dd.MM.yyyy HH:mm");
     }
-    return QObject::tr("Недоступно");
+    return QObject::tr("Unavailable");
 
 #elif defined(Q_OS_MAC)
     // macOS does not have sysinfo, so we use sysctl
@@ -81,7 +81,7 @@ QString getLastBootTime() {
         QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
         return bootTime.toString("dd.MM.yyyy HH:mm");
     }
-    return QObject::tr("Недоступно");
+    return QObject::tr("Unavailable");
 
 #else
     return QObject::tr("Не поддерживается");
@@ -109,10 +109,10 @@ QJsonObject toJson(const SystemInfo &s, bool includeLabels = false)
     // Optionally add labels for localization
     if (includeLabels) {
         QJsonObject labels;
-        labels["hostname"] = QObject::tr("Имя устройства");
-        labels["username"] = QObject::tr("Пользователь");
-        labels["ip"]       = QObject::tr("IP-адрес");
-        labels["uptime"]   = QObject::tr("Время включения");
+        labels["hostname"] = QObject::tr("Device name");
+        labels["username"] = QObject::tr("User");
+        labels["ip"]       = QObject::tr("IP address");
+        labels["uptime"]   = QObject::tr("Uptime");
         obj["labels"] = labels;
     }
 
@@ -122,13 +122,7 @@ QJsonObject toJson(const SystemInfo &s, bool includeLabels = false)
 
 QString toText(const SystemInfo &s)
 {
-    return QObject::tr("Имя устройства: %1\nПользователь: %2\nIP-адрес: %3\nВремя включения: %4")
+    return QObject::tr("Device name: %1\nUser: %2\nIP address: %3\nUptime: %4")
         .arg(s.hostname, s.username, s.ip, s.uptime);
 }
-
-// QString toJsonString(const SystemInfo &s, bool includeLabels = false)
-// {
-//     QJsonDocument doc(toJson(s, includeLabels));
-//     return QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
-// }
 }

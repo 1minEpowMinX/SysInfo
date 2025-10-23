@@ -2,15 +2,15 @@
 #include "../settings/settingsmanager.h"
 
 #include <QMovie>
+#include <QObject>
 #include <QVBoxLayout>
 
 TrayGuide::TrayGuide(QWidget* parent)
     : QDialog(parent)
 {
-    setWindowTitle(tr("Как закрепить значок в трее"));
+    setWindowTitle(QObject::tr("How to pin an icon to the tray"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
     setModal(true);
-    resize(400, 300);
 
     m_gifLabel = new QLabel(this);
     m_gifLabel->setAlignment(Qt::AlignCenter);
@@ -18,16 +18,16 @@ TrayGuide::TrayGuide(QWidget* parent)
     m_gifLabel->setMovie(movie);
     movie->start();
 
-    m_textLabel = new QLabel(tr(
-        "Чтобы приложение всегда было видно в области уведомлений:\n"
-        "1. Откройте скрытые значки, нажав стрелку вверх рядом с системным треем.\n"
-        "2️. Найдите значок SysInfo и перетащите его в видимую область панели.\n"
+    m_textLabel = new QLabel(QObject::tr(
+        "To keep the app visible in the notification area:\n"
+        "1. Open hidden icons by clicking the up arrow next to the system tray.\n"
+        "2️. Find the SysInfo icon and drag it to the visible area of the panel.\n"
         ));
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
 
-    m_dontShowAgain = new QCheckBox(tr("Больше не показывать"));
-    m_closeButton = new QPushButton(tr("Закрыть"));
+    m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"));
+    m_closeButton = new QPushButton(QObject::tr("Close"));
 
     connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
 
@@ -37,6 +37,8 @@ TrayGuide::TrayGuide(QWidget* parent)
     layout->addWidget(m_dontShowAgain, 0, Qt::AlignCenter);
     layout->addWidget(m_closeButton, 0, Qt::AlignCenter);
     setLayout(layout);
+
+    this->adjustSize();
 }
 
 void TrayGuide::onCloseClicked()

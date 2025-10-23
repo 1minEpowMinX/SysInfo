@@ -1,8 +1,8 @@
 #ifndef INTEGRATIONSERVER_H
 #define INTEGRATIONSERVER_H
 
-#include <QObject>
 #include <QHttpServer>
+#include <QObject>
 #include <QTcpServer>
 
 class IntegrationServer : public QObject
