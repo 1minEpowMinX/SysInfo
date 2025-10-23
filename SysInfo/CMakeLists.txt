@@ -22,7 +22,6 @@ find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 
 # Translations
 set(TS_FILES
-    resources/i18n/SysInfo_en_US.ts
     resources/i18n/SysInfo_ru_RU.ts
     resources/i18n/SysInfo_uk_UA.ts
 )

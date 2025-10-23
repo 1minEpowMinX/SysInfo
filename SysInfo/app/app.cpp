@@ -43,7 +43,7 @@ void App::startApp()
         trayIcon->showMessage(
             QObject::tr("SysInfo runs in the background"),
             QObject::tr("The application collects system information and assists in diagnostics.\n"
-                        "For more details, see the \"Help\" section."),
+                        "For more details, see the \"About\" section."),
             QSystemTrayIcon::Information,
             8000
             );
@@ -68,7 +68,7 @@ void App::startApp()
     integrationServer = new IntegrationServer(this);
     if (!integrationServer->start()) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Failed to start the local server. "
-                                                                         "Integration with Jira is unavailable."));
+                                                                         "Integration with Jira SM is unavailable."));
     }
 }
 

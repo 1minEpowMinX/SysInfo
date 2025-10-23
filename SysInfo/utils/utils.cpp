@@ -84,7 +84,7 @@ QString getLastBootTime() {
     return QObject::tr("Unavailable");
 
 #else
-    return QObject::tr("Не поддерживается");
+    return QObject::tr("Not supported");
 #endif
 }
 
