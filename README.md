@@ -89,7 +89,7 @@ You may need to adapt its settings or source code (e.g. URLs, ticket field mappi
 
 ## 📘 Author
 
-👤 **Kirill Bitskyi**
+### 👤 Kirill Bitskyi
 
 * Github: [@1minEpowMinX](https://github.com/1minEpowMinX)
 * LinkedIn: [@Kirill Bitskyi](https://www.linkedin.com/in/kirill-bitskyi-025672284/)
