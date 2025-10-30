@@ -1,105 +1,104 @@
-# SystemInfo  
-
-**SystemInfo** — это утилита для Windows, которая предоставляет пользователю ключевую информацию о системе в удобном формате. Программа работает в системном трее, позволяя получать данные одним кликом, а также копировать их в буфер обмена.
-
----
-
-## **⚙ Функционал**
-
-### **Основные возможности**:
-
-- **Отображение системной информации**:  
-  - Имя компьютера.
-  - Имя пользователя.
-  - Локальный IP-адрес.
-  - Время последнего включения компьютера.
-
-- **Интерактивная работа с системным треем**:
-  - Всплывающая подсказка с информацией о системе.
-  - Контекстное меню:
-    - Копирование данных в буфер обмена.
-    - Выход из программы.
-- **Уведомление при первом запуске**:
-  - Описание функционала программы.
-  - Инструкция по закреплению иконки в области уведомлений.
-
-### **Технические особенности**:
-- Поддержка автономного запуска (EXE-файл не требует установки Python).
-- Оптимизированная загрузка ресурсов (путь к файлам адаптирован для использования Cx_Freeze).
-- Программа поставляется в виде ZIP-архива, содержащего исполняемый файл и необходимые зависимости.
-- Обработка ошибок: программа завершает работу, если уже запущена другая копия.
-
----
-
-  ## **📸 Скриншоты**
-
-**Иконка в трее**  
-Иконка отображается рядом с часами и позволяет легко получить доступ к функции программы:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/28220dc4-007a-42a5-98bf-fd2fb8effad6" alt="Значок в трее">
-</p>  
-
-**Всплывающая подсказка**  
-При наведении на иконку всплывает подсказка с информационной сводкой программы:  
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/45308020-86d2-4f6d-8839-86f7ec8ac59c" alt="Информация при наведении на иконку">
+<h1 align="center">Welcome to SysInfo 👋</h1>
+<p>
+  <a href="https://github.com/1minEpowMinX/InvBinderBot#readme" target="_blank">
+    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
+  </a>
+  <a href="https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE" target="_blank">
+    <img alt="GitHub License" src="https://img.shields.io/github/license/1minEpowMinX/InvBinderBot">
+  </a>
+  </a>
 </p>
 
-**Контекстное меню**  
-Щелчок правой кнопкой по иконке открывает меню с функциями копирования данных и завершения программы:  
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/88ccc9cd-aa2a-4d27-b365-74c1dce5febc" alt="Контекстное меню">
-</p>
+> SysInfo is a cross-platform utility that provides users with key system information in a convenient format. The program runs in the system tray, allowing you to retrieve data with a single click and copy it to the clipboard. It can also be integrated with Jira SM using a browser extension.
 
-**Уведомление при первом запуске**
-Программа покажет подробное сообщение о закреплении значка в трее и использовании основных функций:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/6ed0db68-4147-483b-885a-4b9c5496509d" alt="Контекстное меню">
-</p>
+## ✨ Features
 
----
+* Collects and displays system information (device name, user, IP address, uptime).
+* Operates silently in the background through the system tray.
+* Provides quick access via right-click menu on the tray icon.
+* Allows copying current system information to the clipboard.
+* Offers a minimal, lightweight, and responsive design for everyday diagnostics.
+* Adds integration with Jira SM via a browser extension.
+* Automatically attaches system information to Jira SM tickets (**available only with the extension installed**).
 
-## **🔧 Установка и использование**
+## 🛠️ Built With
 
-**Системные требования**:
-- Windows 7/10/11.
-- Нет необходимости в установленном Python и завимостях.
+![Qt](https://img.shields.io/badge/Qt%206.10.0-009639?logo=Qt&logoColor=fff)
+![C++17](https://img.shields.io/badge/C++%2017-%2300599C.svg?logo=c%2B%2B&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=fff)
+![Chrome extension](https://img.shields.io/badge/Google%20Chrome%20Extension-4285F4?logo=GoogleChrome&logoColor=white)
+![Edge extension](https://custom-icon-badges.demolab.com/badge/Microsoft%20Edge%20Extension-2771D8?logo=edge-white&logoColor=white)
+![Firefox extension](https://img.shields.io/badge/Firefox%20Extension-FF7139?logo=Firefox&logoColor=white)
 
-**Установка**:
-1. Скачайте `.zip`-архив с программой из раздела [Releases](https://github.com/1minEpowMinX/SysInfo/releases).
-2. Распакуйте архив в удобное для вас место.
-3. Запустите файл `SysInfo.exe`.
+## ⚙️ Install
 
-**Использование**:
-1. При запуске программа добавляется в область уведомлений (рядом с часами).
-2. Наведите курсор на значок, чтобы увидеть системную информацию.
-3. Щёлкните правой кнопкой по значку для доступа к меню.
+### 1. Download the latest release  
 
----
+👉 [SysInfo Releases on GitHub](https://github.com/1minEpowMinX/SysInfo/releases/latest)
 
-## **📖 Подробности реализации**
+### 2. Extract the archive  
 
-**Сбор и обновление информации**:
-Используются стандартные библиотеки Python (`platform`, `socket`, `psutil`) для получения системных данных.
+```sh
+# Linux / macOS:
+sudo apt install p7zip-full
+7z x SysInfo.7z -o/usr/bin/SysInfo
+# Windows:
+"C:\Program Files\7-Zip\7z.exe" x SysInfo.7z -oC:\Path\To\SysInfo
+```
 
-**Работа с треем**:
-- Для управления иконкой и меню используется библиотека `pystray` вместе с `Pillow`.
-- Всплывающие подсказки реализованы встроенными методами `pystray.Icon`.
+### 3. Add to startup
 
-**Упаковка**:
-- Программа упакована с помощью Cx_Freeze 7.2.
-- Файлы и зависимости упакованы в ZIP-архив для удобства распространения.
-- Оптимизированы пути к ресурсам для работы в собранной версии программы.
+```sh
+# Linux
+curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/dev/SysInfo/resources/sysinfo.desktop
 
----
+# macOS:
+curl -L -o /Library/LaunchAgents/com.pivdenny.sysinfo.plist https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/main/SysInfo/extras/com.pivdenny.sysinfo.plist
+launchctl load /Library/LaunchAgents/com.pivdenny.sysinfo.plist
 
-## **🚧 Известные проблемы**
+# Windows:
+$source = "C:\Path\To\SysInfo.exe"
+$shortcut = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\SysInfo.lnk"
 
-1. Программа не предупреждает о недоступности файлов ресурса (например, иконки), если они отсутствуют.
-2. Для поддержки сложных сетевых конфигураций потребуется доработка.
+$WshShell = New-Object -ComObject WScript.Shell
+$shortcutObj = $WshShell.CreateShortcut($shortcut)
+$shortcutObj.TargetPath = $source
+$shortcutObj.WorkingDirectory = Split-Path $source
+$shortcutObj.Save()
+```
 
----
+## 🚀 Usage
 
-## **📜 Лицензия**
+After installation, SysInfo runs silently in the background via the system tray.
 
-Этот проект распространяется под лицензией [MIT](https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE).
+### 🖥️ Quick Start
+
+* Launch SysInfo manually or let it start automatically at login (see [Add to startup](#3-add-to-startup)).
+* Look for the SysInfo icon in the system tray (notification area).
+* Right-click the icon to open the action menu.
+
+### 🧩 Integration
+
+If the browser extension is installed, SysInfo automatically attaches system details to Jira SM tickets.
+
+### ⚠️ Notes
+
+* The path examples in this guide assume default installation paths. Always check them and replace if necessary (**Including source files**).
+* The Jira Service Management integration requires the optional browser extension.
+You may need to adapt its settings or source code (e.g. URLs, ticket field mapping) to match your company’s Jira instance.
+
+## 📘 Author
+
+👤 **Kirill Bitskyi**
+
+* Github: [@1minEpowMinX](https://github.com/1minEpowMinX)
+* LinkedIn: [@Kirill Bitskyi](https://www.linkedin.com/in/kirill-bitskyi-025672284/)
+
+## 🤝 Contributing
+
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/1minEpowMinX/InvBinderBot/issues).
+
+## 📝 License
+
+Copyright © 2025 [1minEpowMinX](https://github.com/1minEpowMinX).<br />
+This project is [LGPL V3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.
