@@ -2,9 +2,11 @@
 Type=Application
 Version=2.0
 Name=SysInfo
-Comment=System information utility
+Comment=Collects and displays system information
 Exec=/usr/bin/sysinfo
 Icon=sysinfo
 Terminal=false
 Categories=Utility;System;
 StartupNotify=true
+X-GNOME-Autostart-enabled=true
+Hidden=false
