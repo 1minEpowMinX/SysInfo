@@ -38,32 +38,35 @@ void App::startApp()
 
     trayIcon->show();
 
-    // General information for all operating systems
-    if (SettingsManager::instance().showWelcome()) {
-        trayIcon->showMessage(
-            QObject::tr("SysInfo runs in the background"),
-            QObject::tr("The application collects system information and assists in diagnostics.\n"
-                        "For more details, see the \"About\" section."),
-            QSystemTrayIcon::Information,
-            8000
-            );
-        SettingsManager::instance().setShowWelcome(false);
-    }
+    QTimer::singleShot(60000, [this]() {
 
-    // Instructions for pinning the icon to the taskbar — Windows only
-#ifdef Q_OS_WINDOWS
-    if (SettingsManager::instance().showTrayGuide()) {
-        trayIcon->showMessage(
-            QObject::tr("Make the icon visible in the tray"),
-            QObject::tr("Drag the SysInfo icon to the notification area.\n"
-                        "Click here to open detailed instructions."),
-            QSystemTrayIcon::Information,
-            15000
-            );
+        // General information for all operating systems
+        if (SettingsManager::instance().showWelcome()) {
+            trayIcon->showMessage(
+                QObject::tr("SysInfo runs in the background"),
+                QObject::tr("The application collects system information and assists in diagnostics.\n"
+                            "For more details, see the \"About\" section."),
+                QSystemTrayIcon::Information,
+                15000
+                );
+            SettingsManager::instance().setShowWelcome(false);
+        }
 
-        connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &App::showTrayGuide);
-    }
-#endif
+        // Instructions for pinning the icon to the taskbar — Windows only
+    #ifdef Q_OS_WINDOWS
+        if (SettingsManager::instance().showTrayGuide()) {
+            trayIcon->showMessage(
+                QObject::tr("Make the icon visible in the tray"),
+                QObject::tr("Drag the SysInfo icon to the notification area.\n"
+                            "Click here to open detailed instructions."),
+                QSystemTrayIcon::Information,
+                25000
+                );
+
+            connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &App::showTrayGuide);
+        }
+    #endif
+    });
 
     integrationServer = new IntegrationServer(this);
     if (!integrationServer->start()) {
@@ -127,7 +130,10 @@ void App::copyToClipboard() {
     if (!clipBoard) return;
     clipBoard->setText(cachedInfo);
 
-    trayIcon->showMessage(QObject::tr("System information"), QObject::tr("Information copied to the clipboard."));
+    trayIcon->showMessage(QObject::tr("System information"),
+                          QObject::tr("Information copied to the clipboard."),
+                          QSystemTrayIcon::Information,
+                          5000);
 }
 
 void App::showAboutDialog() {
