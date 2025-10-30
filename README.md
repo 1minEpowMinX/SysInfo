@@ -42,6 +42,7 @@
 # Linux / macOS:
 sudo apt install p7zip-full
 7z x SysInfo.7z -o/usr/bin/SysInfo
+
 # Windows:
 "C:\Program Files\7-Zip\7z.exe" x SysInfo.7z -oC:\Path\To\SysInfo
 ```
