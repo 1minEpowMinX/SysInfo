@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to SysInfo 👋</h1>
 <p>
-  <a href="https://github.com/1minEpowMinX/InvBinderBot#readme" target="_blank">
+  <a href="https://github.com/1minEpowMinX/SysInfo#readme" target="_blank">
     <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
   </a>
   <a href="https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE" target="_blank">
