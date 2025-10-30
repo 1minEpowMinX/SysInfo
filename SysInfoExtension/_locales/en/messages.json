@@ -1,0 +1,47 @@
+{
+	"extName": {
+		"message": "SysInfo for Jira SM"
+	},
+	"extDesc": {
+		"message": "Adds system information from SysInfo to a Jira SM ticket."
+	},
+	"extTitle": {
+		"message": "SysInfo"
+	},
+	"agentActive": {
+		"message": "🟢 Agent is active"
+	},
+	"agentInactive": {
+		"message": "🔴 Could not connect to local agent."
+	},
+	"agentHint": {
+		"message": "Make sure the SysInfo application is running."
+	},
+	"loading": {
+		"message": "Loading..."
+	},
+	"sysinfoHeader": {
+		"message": "*Please describe your issue here*"
+	},
+	"sysinfoDivider": {
+		"message": "--------------------------------------------------------------------------------"
+	},
+	"sysinfoHostname": {
+		"message": "Device name"
+	},
+	"sysinfoUsername": {
+		"message": "User"
+	},
+	"sysinfoIP": {
+		"message": "IP address"
+	},
+	"sysinfoUptime": {
+		"message": "Uptime"
+	},
+	"toastReceived": {
+		"message": "Received data from SysInfo. Please do not remove it."
+	},
+	"agentError": {
+		"message": "Error while receiving SysInfo data. Please check if the SysInfo application is running."
+	}
+}

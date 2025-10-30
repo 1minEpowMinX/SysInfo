@@ -1,0 +1,55 @@
+{
+	"manifest_version": 3,
+	"name": "__MSG_extName__",
+	"version": "1.0",
+	"description": "__MSG_extDesc__",
+	"default_locale": "en",
+	"permissions": [
+		"activeTab",
+		"storage",
+		"scripting"
+	],
+	"host_permissions": [
+		"http://localhost:8734/*",
+		"https://jira-t.company.local/*"
+	],
+	"action": {
+		"default_popup": "popup/popup.html",
+		"default_icon": {
+			"16": "assets/SysInfo_Ext_Icon_16.png",
+			"32": "assets/SysInfo_Ext_Icon_32.png",
+			"48": "assets/SysInfo_Ext_Icon_48.png",
+			"64": "assets/SysInfo_Ext_Icon_64.png",
+			"128": "assets/SysInfo_Ext_Icon_128.png",
+			"256": "assets/SysInfo_Ext_Icon_256.png",
+			"512": "assets/SysInfo_Ext_Icon_512.png",
+			"1024": "assets/SysInfo_Ext_Icon_1024.png"
+		}
+	},
+	"icons": {
+		"16": "assets/SysInfo_Ext_Icon_16.png",
+		"32": "assets/SysInfo_Ext_Icon_32.png",
+		"48": "assets/SysInfo_Ext_Icon_48.png",
+		"64": "assets/SysInfo_Ext_Icon_64.png",
+		"128": "assets/SysInfo_Ext_Icon_128.png",
+		"256": "assets/SysInfo_Ext_Icon_256.png",
+		"512": "assets/SysInfo_Ext_Icon_512.png",
+		"1024": "assets/SysInfo_Ext_Icon_1024.png"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"https://jira-t.company.local/*"
+			],
+			"js": [
+				"content/content_script.js"
+			],
+			"css": [
+				"content/content_script.css"
+			]
+		}
+	],
+	"background": {
+		"service_worker": "background/service_worker.js"
+	}
+}
