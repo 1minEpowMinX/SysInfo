@@ -22,8 +22,8 @@ find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 
 # Translations
 set(TS_FILES
-    resources/i18n/SysInfo_ru_RU.ts
-    resources/i18n/SysInfo_uk_UA.ts
+    resources/i18n/sysinfo_ru_RU.ts
+    resources/i18n/sysinfo_uk_UA.ts
 )
 
 set(PROJECT_SOURCES
@@ -31,11 +31,10 @@ set(PROJECT_SOURCES
         app/app.cpp
         app/app.h
         utils/utils.h utils/utils.cpp
-        tray/trayguide.h tray/trayguide.cpp
-        tray/aboutdialog.h tray/aboutdialog.cpp
-        settings/settingsmanager.h settings/settingsmanager.cpp
-        integrationServer/integrationserver.h integrationServer/integrationserver.cpp
-        resources/icons/SysInfo_Icon.ico
+        tray/tray_guide.h tray/tray_guide.cpp
+        tray/about_dialog.h tray/about_dialog.cpp
+        settings/settings_manager.h settings/settings_manager.cpp
+        integration_server/integration_server.h integration_server/integration_server.cpp
         resources.qrc
         ../.gitignore
         ${TS_FILES}
@@ -68,10 +67,15 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-# Windows: resources.rc + ico
+# Windows: resources.rc (ico in .rc file)
 if(WIN32)
-    target_sources(SysInfo PRIVATE resources/resources.rc)
-    set_source_files_properties(resources/resources.rc PROPERTIES LANGUAGE RC)
+    target_sources(SysInfo PRIVATE
+        "${CMAKE_SOURCE_DIR}/resources/resources.rc"
+    )
+    set_source_files_properties(
+        "${CMAKE_SOURCE_DIR}/resources/resources.rc"
+        PROPERTIES LANGUAGE RC
+    )
     set_target_properties(SysInfo PROPERTIES
         WIN32_EXECUTABLE TRUE
         )
@@ -80,9 +84,9 @@ endif()
 # macOS: Info.plist + icns
 if(APPLE)
     target_sources(SysInfo PRIVATE
-        "${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns"
+        "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.icns"
     )
-    set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.icns"
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.icns"
         PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
     )
     set_target_properties(SysInfo PROPERTIES

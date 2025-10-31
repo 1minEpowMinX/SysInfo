@@ -1,4 +1,4 @@
-#include "aboutdialog.h"
+#include "about_dialog.h"
 #include "../utils/utils.h"
 
 #include <QDialog>
@@ -16,7 +16,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     setWindowTitle(QObject::tr("About"));
     resize(650, 650);
 
-    QPixmap bg(":/resources/icons/SysInfo_Background.png");
+    QPixmap bg(":/resources/icons/sysinfo_background.png");
     backgroundLabel->setPixmap(bg);
     backgroundLabel->setScaledContents(true);
     backgroundLabel->setGeometry(this->rect());

@@ -1,7 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
-#include "../integrationserver/integrationserver.h"
+#include "../integration_server/integration_server.h"
 
 #include <QMenu>
 #include <QObject>

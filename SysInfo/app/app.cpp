@@ -1,7 +1,8 @@
 #include "app.h"
-#include "../settings/settingsmanager.h"
-#include "../tray/aboutdialog.h"
-#include "../tray/trayguide.h"
+#include "../integration_server/integration_server.h"
+#include "../settings/settings_manager.h"
+#include "../tray/about_dialog.h"
+#include "../tray/tray_guide.h"
 #include "../utils/utils.h"
 
 #include <QAction>
@@ -102,7 +103,7 @@ void App::createTrayIcon(const QString &iconPath) {
 
 
 void App::loadTrayApp() {
-    App::createTrayIcon(":/resources/icons/SysInfo_Icon.ico");
+    App::createTrayIcon(":/resources/icons/sysinfo_icon.png");
     trayIcon->setToolTip(cachedInfo);
     App::startTrayUpdateTimer();
 }
