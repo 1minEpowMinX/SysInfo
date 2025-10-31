@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>resources/i18n/sysinfo_ru_RU.qm</file>
-        <file>resources/i18n/sysinfo_uk_UA.qm</file>
-        <file>resources/animations/tray_guide.gif</file>
-        <file>resources/icons/sysinfo_background.png</file>
-        <file>resources/icons/sysinfo_icon.png</file>
-    </qresource>
-</RCC>
