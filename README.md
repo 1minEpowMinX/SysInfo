@@ -43,7 +43,7 @@ sudo apt install p7zip-full
 sudo 7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/
 
 # Windows:
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -oC:\Path\To\
+"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -o"C:\Program Files\"
 ```
 
 ### 3. Add to startup
