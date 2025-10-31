@@ -40,10 +40,10 @@
 ```sh
 # Linux / macOS:
 sudo apt install p7zip-full
-7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/SysInfo
+sudo 7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/
 
 # Windows:
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -oC:\Path\To\SysInfo
+"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -oC:\Path\To\
 ```
 
 ### 3. Додати до автозавантаження
