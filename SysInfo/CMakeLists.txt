@@ -107,8 +107,8 @@ if(UNIX AND NOT APPLE)
         COPYONLY
     )
     configure_file(
-        "${CMAKE_SOURCE_DIR}/resources/icons/SysInfo_Icon.png"
-        "${CMAKE_BINARY_DIR}/resources/icons/SysInfo_Icon.png"
+        "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.png"
+        "${CMAKE_BINARY_DIR}/resources/icons/sysinfo_icon.png"
         COPYONLY
     )
     set_target_properties(SysInfo PROPERTIES
