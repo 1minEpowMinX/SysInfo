@@ -1,12 +1,10 @@
 <h1 align="center">Welcome to SysInfo 👋</h1>
-<p>
-  <a href="https://github.com/1minEpowMinX/SysInfo#readme" target="_blank">
-    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
-  </a>
-  <a href="https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE" target="_blank">
-    <img alt="GitHub License" src="https://img.shields.io/github/license/1minEpowMinX/InvBinderBot">
-  </a>
-  </a>
+
+<p align="center">
+  🌐 <b>Available languages:</b><br>
+  <a href="README.md"><img src="https://img.shields.io/badge/English-blue?style=flat-square"></a>
+  <a href="docs/README.ru.md"><img src="https://img.shields.io/badge/Русский-green?style=flat-square"></a>
+  <a href="docs/README.uk.md"><img src="https://img.shields.io/badge/Українська-yellow?style=flat-square"></a>
 </p>
 
 > SysInfo is a cross-platform utility that provides users with key system information in a convenient format. The program runs in the system tray, allowing you to retrieve data with a single click and copy it to the clipboard. It can also be integrated with Jira SM using a browser extension.
@@ -99,7 +97,7 @@ You may need to adapt its settings or source code (e.g. URLs, ticket field mappi
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome!  
-Feel free to check [Issues page](https://github.com/1minEpowMinX/InvBinderBot/issues).
+Feel free to check [issues page](https://github.com/1minEpowMinX/InvBinderBot/issues).
 
 ## 📝 License
 
