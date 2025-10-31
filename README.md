@@ -20,6 +20,7 @@
 * Offers a minimal, lightweight, and responsive design for everyday diagnostics.
 * Adds integration with Jira SM via a browser extension.
 * Automatically attaches system information to Jira SM tickets (**available only with the extension installed**).
+* Inherits localization from browser and system language settings (English, Russian, Ukrainian).
 
 ## 🛠️ Built With
 
@@ -41,10 +42,10 @@
 ```sh
 # Linux / macOS:
 sudo apt install p7zip-full
-7z x SysInfo.7z -o/usr/bin/SysInfo
+7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/SysInfo
 
 # Windows:
-"C:\Program Files\7-Zip\7z.exe" x SysInfo.7z -oC:\Path\To\SysInfo
+"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -oC:\Path\To\SysInfo
 ```
 
 ### 3. Add to startup
@@ -97,9 +98,10 @@ You may need to adapt its settings or source code (e.g. URLs, ticket field mappi
 
 ## 🤝 Contributing
 
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/1minEpowMinX/InvBinderBot/issues).
+Contributions, issues and feature requests are welcome!  
+Feel free to check [Issues page](https://github.com/1minEpowMinX/InvBinderBot/issues).
 
 ## 📝 License
 
-Copyright © 2025 [1minEpowMinX](https://github.com/1minEpowMinX).<br />
+Copyright © 2025 [1minEpowMinX](https://github.com/1minEpowMinX).  
 This project is [LGPL V3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.
