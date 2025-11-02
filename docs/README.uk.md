@@ -38,9 +38,13 @@
 ### 2. Вилучити архів  
 
 ```sh
-# Linux / macOS:
+# Linux
 sudo apt install p7zip-full
 sudo 7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/
+
+# MacOS:
+brew install p7zip
+sudo 7z x SysInfo-2.0.0-linux-x64.7z -o/usr/local/bin/
 
 # Windows:
 "C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -o"C:\Program Files\"
