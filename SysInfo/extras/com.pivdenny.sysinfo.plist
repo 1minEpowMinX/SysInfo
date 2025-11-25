@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.pivdenny.sysinfo</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Applications/SysInfo.app/Contents/MacOS/SysInfo</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Applications/SysInfo.app/Contents/MacOS</string>
+    <key>Comment</key>
+    <string>SysInfo 2.0.0 — https://github.com/1minEpowMinX/SysInfo</string>
+  </dict>
+</plist>

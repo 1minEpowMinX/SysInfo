@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" 
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+	<string>SysInfo</string>
+    <key>CFBundleDisplayName</key>
+	<string>SysInfo</string>
+    <key>CFBundleIdentifier</key>
+	<string>com.pivdenny.sysinfo</string>
+    <key>CFBundleVersion</key>
+	<string>2.0.0</string>
+    <key>CFBundleShortVersionString</key>
+	<string>2.0.0</string>
+    <key>CFBundleExecutable</key>
+	<string>SysInfo</string>
+    <key>CFBundleIconFile</key>
+	<string>SysInfo_Icon.icns</string>
+    <key>NSHumanReadableCopyright</key>
+	<string>© 2025 Kirill Bitskyi for Pivdenny</string>
+    <key>GitHub</key>
+	<string>https://github.com/1minEpowMinX/SysInfo</string>   
+</dict>
+</plist>

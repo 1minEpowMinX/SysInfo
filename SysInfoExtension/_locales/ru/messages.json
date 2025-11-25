@@ -1,0 +1,47 @@
+{
+	"extName": {
+		"message": "SysInfo для Jira SM"
+	},
+	"extDesc": {
+		"message": "Добавляет системную информацию из SysInfo в тикет Jira SM."
+	},
+	"extTitle": {
+		"message": "SysInfo"
+	},
+	"agentActive": {
+		"message": "🟢 Агент активен"
+	},
+	"agentInactive": {
+		"message": "🔴 Не удалось подключиться к локальному агенту."
+	},
+	"agentHint": {
+		"message": "Убедитесь, что приложение SysInfo запущено."
+	},
+	"loading": {
+		"message": "Загрузка..."
+	},
+	"sysinfoHeader": {
+		"message": "*Пожалуйста, опишите здесь свою проблему*"
+	},
+	"sysinfoDivider": {
+		"message": "--------------------------------------------------------------------------------"
+	},
+	"sysinfoHostname": {
+		"message": "Имя устройства"
+	},
+	"sysinfoUsername": {
+		"message": "Пользователь"
+	},
+	"sysinfoIP": {
+		"message": "IP-адрес"
+	},
+	"sysinfoUptime": {
+		"message": "Время работы"
+	},
+	"toastReceived": {
+		"message": "Получены данные из SysInfo. Пожалуйста, не удаляйте их."
+	},
+	"agentError": {
+		"message": "Ошибка при получении данных SysInfo. Пожалуйста, проверьте, запущено ли приложение SysInfo."
+	}
+}

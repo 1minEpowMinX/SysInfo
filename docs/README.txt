@@ -1,0 +1,2 @@
+This application uses the Qt framework under the terms of the GNU Lesser General Public License (LGPL) v3.0  
+You may replace or relink the Qt libraries with your own compatible versions as permitted by the license.
