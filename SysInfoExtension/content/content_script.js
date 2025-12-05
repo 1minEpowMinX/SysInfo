@@ -58,7 +58,6 @@ function isTicketAllowed(pathname) {
  *     - {string} ip - The label for the IP address
  *     - {string} uptime - The label for the uptime
  */
-
 function insertSysInfoInto(target, data) {
 	const path = location.pathname;
 
@@ -147,6 +146,7 @@ function showToast(message, duration = 3000) {
 	}, duration);
 }
 
+// Request system information from the background script
 browser.runtime.sendMessage({ action: "getSystemInfo" }, (res) => {
 	if (!res.success) {
 		console.error(t("agentError") + ":", res.error);

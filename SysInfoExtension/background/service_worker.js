@@ -3,7 +3,8 @@ if (typeof browser === "undefined") {
 	globalThis.browser = chrome;
 }
 
-browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+// Handle messages from the content script
+browser.runtime.onMessage.addListener((msg, _, sendResponse) => {
 	if (msg.action === "getSystemInfo") {
 		fetch("http://localhost:8734/systeminfo")
 			.then(res => res.json())
