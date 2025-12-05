@@ -11,6 +11,7 @@
 	],
 	"host_permissions": [
 		"http://localhost:8734/*",
+		"https://jira.company.local/*",
 		"https://jira-t.company.local/*"
 	],
 	"action": {
@@ -39,6 +40,7 @@
 	"content_scripts": [
 		{
 			"matches": [
+				"https://jira.company.local/*",
 				"https://jira-t.company.local/*"
 			],
 			"js": [

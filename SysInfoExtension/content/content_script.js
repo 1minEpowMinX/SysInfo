@@ -21,20 +21,26 @@ function t(key) {
  * isTicketAllowed("/servicedesk/customer/portal/141/create/222") // false
  */
 function isTicketAllowed(pathname) {
-	// Verify that this is the IT Services ticket creation page
-	if (!pathname.includes("/servicedesk/customer/portal/141/create/")) {
-		return false;
-	}
+	// Universal regex for extracting portalId and ticketId
+	const match = pathname.match(
+		/\/servicedesk\/customer\/portal\/(\d+)\/create\/(\d+)/
+	);
 
-	// Extract the ticket type number from the URL
-	const match = pathname.match(/\/create\/(\d+)/);
 	if (!match) return false;
 
-	const ticketId = match[1];
+	const portalId = match[1];
+	const ticketId = match[2];
 
-	const allowedIds = ["217", "218", "219", "220", "213", "216", "212"];
+	// Check if the portal type id is allowed
+	const allowedPortals = ["41", "141"];
 
-	return allowedIds.includes(ticketId);
+	if (!allowedPortals.includes(portalId)) return false;
+
+	// Check if the ticket type id is allowed
+	const allowedTestIds = ["217", "218", "219", "220", "213", "216", "212"];
+	const allowedProdIds = ["181", "182", "183", "184", "185", "187", "192"];
+
+	return allowedTestIds.includes(ticketId) || allowedProdIds.includes(ticketId);
 }
 
 
@@ -52,7 +58,6 @@ function isTicketAllowed(pathname) {
  *     - {string} ip - The label for the IP address
  *     - {string} uptime - The label for the uptime
  */
-
 function insertSysInfoInto(target, data) {
 	const path = location.pathname;
 
@@ -141,6 +146,7 @@ function showToast(message, duration = 3000) {
 	}, duration);
 }
 
+// Request system information from the background script
 browser.runtime.sendMessage({ action: "getSystemInfo" }, (res) => {
 	if (!res.success) {
 		console.error(t("agentError") + ":", res.error);
