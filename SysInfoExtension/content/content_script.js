@@ -43,6 +43,41 @@ function isTicketAllowed(pathname) {
 	return allowedTestIds.includes(ticketId) || allowedProdIds.includes(ticketId);
 }
 
+/**
+ * Generates an array of strings representing the system information data
+ * @param {Object} data - The system information data, containing the following properties:
+ *   - {string} hostname - The hostname of the device
+ *   - {string} username - The username of the currently logged in user
+ *   - {string} ip - The IP address of the device
+ *   - {string} uptime - The uptime of the device
+ * @param {Object<string,string>} labelsSafe - The labels for the system information data, containing the following properties:
+ *   - {string} hostname - The label for the hostname
+ *   - {string} username - The label for the username
+ *   - {string} ip - The label for the IP address
+ *   - {string} uptime - The label for the uptime
+ * @returns {Array<string>} - The array of strings representing the system information data
+ */
+function buildSysInfoLines(data, labelsSafe) {
+	return [
+		`${labelsSafe.hostname || t("sysinfoHostname")}: ${data.hostname}`,
+		`${labelsSafe.username || t("sysinfoUsername")}: ${data.username}`,
+		`${labelsSafe.ip || t("sysinfoIP")}: ${data.ip}`,
+		`${labelsSafe.uptime || t("sysinfoUptime")}: ${data.uptime}`
+	];
+}
+
+/**
+ * Generates a divider string based on the maximum length of the given lines
+ * @param {Array<string>} lines - The lines to generate the divider for
+ * @returns {string} - The generated divider string
+ * @example
+ * makeDivider(["Line 1", "Line 2"]) // "────────────"
+ */
+function makeDivider(lines) {
+	// Each divider symbol has its own visual width. It is necessary to adjust it in percentage proportions
+	const maxLen = Math.max(...lines.map(line => line.length));
+	return "─".repeat(Math.floor(maxLen * 0.70));
+}
 
 /**
  * Inserts the system information into the target element
@@ -52,11 +87,11 @@ function isTicketAllowed(pathname) {
  *   - {string} username - The username of the currently logged in user
  *   - {string} ip - The IP address of the device
  *   - {string} uptime - The uptime of the device
- *   - {Object<string,string>} labels - Optional labels for the system information, containing the following properties:
- *     - {string} hostname - The label for the hostname
- *     - {string} username - The label for the username
- *     - {string} ip - The label for the IP address
- *     - {string} uptime - The label for the uptime
+ * @param {Object<string,string>} labels - Optional labels for the system information, containing the following properties:
+ *   - {string} hostname - The label for the hostname
+ *   - {string} username - The label for the username
+ *   - {string} ip - The label for the IP address
+ *   - {string} uptime - The label for the uptime
  */
 function insertSysInfoInto(target, data) {
 	const path = location.pathname;
@@ -67,14 +102,10 @@ function insertSysInfoInto(target, data) {
 	}
 
 	const labelsSafe = data.labels || {};
+	const lines = buildSysInfoLines(data, labelsSafe);
+	const divider = makeDivider(lines);
 
-	const text =
-		`${t("sysinfoHeader")}\n` +
-		`${t("sysinfoDivider")}\n` +
-		`${labelsSafe.hostname || t("sysinfoHostname")}: ${data.hostname}\n` +
-		`${labelsSafe.username || t("sysinfoUsername")}: ${data.username}\n` +
-		`${labelsSafe.ip || t("sysinfoIP")}: ${data.ip}\n` +
-		`${labelsSafe.uptime || t("sysinfoUptime")}: ${data.uptime}`;
+	const text = lines.join("\n") + "\n" + divider + "\n" + t("sysinfoPlaceholder");
 
 	if ('value' in target) {
 		if (target.value.includes(data.hostname)) return;

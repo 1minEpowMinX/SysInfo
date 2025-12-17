@@ -20,11 +20,8 @@
 	"loading": {
 		"message": "Loading..."
 	},
-	"sysinfoHeader": {
-		"message": "*Please describe your issue here*"
-	},
-	"sysinfoDivider": {
-		"message": "--------------------------------------------------------------------------------"
+	"sysinfoPlaceholder": {
+		"message": "Please add a description here..."
 	},
 	"sysinfoHostname": {
 		"message": "Device name"
