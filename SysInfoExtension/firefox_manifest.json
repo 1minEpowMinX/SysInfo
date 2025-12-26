@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "__MSG_extName__",
-	"version": "1.0",
+	"version": "1.0.1",
 	"description": "__MSG_extDesc__",
 	"default_locale": "en",
 	"permissions": [
@@ -58,8 +58,8 @@
 	},
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "sysinfo@company.local",
-			"strict_min_version": "109.0",
+			"id": "sysinfo-addon@company.local",
+			"strict_min_version": "140.0",
 			"data_collection_permissions": {
 				"required": [
 					"browsingActivity",
