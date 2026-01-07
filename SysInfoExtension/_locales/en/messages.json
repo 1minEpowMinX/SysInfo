@@ -21,7 +21,7 @@
 		"message": "Loading..."
 	},
 	"sysinfoPlaceholder": {
-		"message": "Please add a description here..."
+		"message": "Please add a description:"
 	},
 	"sysinfoHostname": {
 		"message": "Device name"

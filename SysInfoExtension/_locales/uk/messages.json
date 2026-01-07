@@ -21,7 +21,7 @@
 		"message": "Завантаження..."
 	},
 	"sysinfoPlaceholder": {
-		"message": "Будь ласка, додайте тут опис..."
+		"message": "Будь ласка, додайте опис:"
 	},
 	"sysinfoHostname": {
 		"message": "Ім'я пристрою"
