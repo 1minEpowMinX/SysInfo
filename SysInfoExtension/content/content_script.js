@@ -16,9 +16,6 @@ function t(key) {
  * Verify that this is the IT Services ticket creation page
  * @param {string} pathname - The current URL path
  * @returns {boolean} - True if the page is allowed, false otherwise
- * @example
- * isTicketAllowed("/servicedesk/customer/portal/141/create/217") // true
- * isTicketAllowed("/servicedesk/customer/portal/141/create/222") // false
  */
 function isTicketAllowed(pathname) {
 	// Universal regex for extracting portalId and ticketId
@@ -55,28 +52,39 @@ function isTicketAllowed(pathname) {
  *   - {string} username - The label for the username
  *   - {string} ip - The label for the IP address
  *   - {string} uptime - The label for the uptime
- * @returns {Array<string>} - The array of strings representing the system information data
+ * @returns {Array<string>} - An array of strings representing system information data in pairs
  */
 function buildSysInfoLines(data, labelsSafe) {
-	return [
+	const raw = [
 		`${labelsSafe.hostname || t("sysinfoHostname")}: ${data.hostname}`,
 		`${labelsSafe.username || t("sysinfoUsername")}: ${data.username}`,
 		`${labelsSafe.ip || t("sysinfoIP")}: ${data.ip}`,
 		`${labelsSafe.uptime || t("sysinfoUptime")}: ${data.uptime}`
 	];
+
+	// Split the array into pairs
+	const result = [];
+	for (let i = 0; i < raw.length; i += 2) {
+		result.push(raw.slice(i, i + 2).join(", "));
+	}
+
+	return result;
 }
 
+
+
 /**
- * Generates a divider string based on the maximum length of the given lines
- * @param {Array<string>} lines - The lines to generate the divider for
+ * Generates a divider string based on the longest line length in the given array
+ * The divider string is repeated until it reaches the specified percentage of the longest line length
+ * @param {Array<string>} lines - The array of lines to get the longest length from
+ * @param {string} [char="─"] - The character to use for the divider string
+ * @param {number} [dividerPercent=0.45] - The percentage of the longest line length to repeat the divider string to
  * @returns {string} - The generated divider string
- * @example
- * makeDivider(["Line 1", "Line 2"]) // "────────────"
  */
-function makeDivider(lines) {
+function makeDivider(lines, char = "─", dividerPercent = 0.45) {
 	// Each divider symbol has its own visual width. It is necessary to adjust it in percentage proportions
 	const maxLen = Math.max(...lines.map(line => line.length));
-	return "─".repeat(Math.floor(maxLen * 0.70));
+	return char.repeat(Math.floor(maxLen * dividerPercent));
 }
 
 /**
@@ -104,15 +112,17 @@ function insertSysInfoInto(target, data) {
 	const labelsSafe = data.labels || {};
 	const lines = buildSysInfoLines(data, labelsSafe);
 	const divider = makeDivider(lines);
+	const sysinfoPlaceholder = t("sysinfoPlaceholder");
+	const indents = "\n\u200B\n\u200B\n\u200B\n"; // Zero-width spaces to create some padding
 
-	const text = lines.join("\n") + "\n" + divider + "\n" + t("sysinfoPlaceholder");
+	const text = `${sysinfoPlaceholder}${indents}${divider}\n${lines.join("\n")}`;
+
+	if (target.innerText.includes(sysinfoPlaceholder)) return;
 
 	if ('value' in target) {
-		if (target.value.includes(data.hostname)) return;
 		target.value = text;
 		target.dispatchEvent(new Event("input", { bubbles: true }));
 	} else {
-		if (target.innerText.includes(data.hostname)) return;
 		target.innerText = text;
 	}
 
@@ -122,11 +132,10 @@ function insertSysInfoInto(target, data) {
 /**
  * Watches for an element matching the given selector and calls the given function when it is found
  * @param {string} selector - The CSS selector to watch for
- * @param {function} onFound - The function to call when the element is found. It will be passed the element as an argument.
- * @example
- * watchElement("#my-element", el => console.log(el));
+ * @param {function} onFound - The function to call when the element is found. It will be passed the element as an argument
+ * @param {number} [intervalMs=2000] - The interval in milliseconds to check for the element
  */
-function watchElement(selector, onFound) {
+function watchElement(selector, onFound, intervalMs = 2000) {
 	let lastElement = null;
 
 	const check = () => {
@@ -137,7 +146,7 @@ function watchElement(selector, onFound) {
 		}
 	};
 
-	setInterval(check, 2000);
+	setInterval(check, intervalMs);
 	const observer = new MutationObserver(check);
 	observer.observe(document.body, { childList: true, subtree: true });
 	check();
@@ -160,8 +169,6 @@ function ensureToastContainer() {
  * Shows a toast message for the given duration
  * @param {string} message - The message to display in the toast
  * @param {number} [duration=3000] - The duration to display the toast for in milliseconds
- * @example
- * showToast("Saved successfully", 5000);
  */
 function showToast(message, duration = 3000) {
 	ensureToastContainer();
