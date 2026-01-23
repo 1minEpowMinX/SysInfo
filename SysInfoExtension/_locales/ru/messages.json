@@ -20,9 +20,6 @@
 	"loading": {
 		"message": "Загрузка..."
 	},
-	"sysinfoPlaceholder": {
-		"message": "Пожалуйста, добавьте описание:"
-	},
 	"sysinfoHostname": {
 		"message": "Имя устройства"
 	},

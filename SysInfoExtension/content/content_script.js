@@ -112,12 +112,11 @@ function insertSysInfoInto(target, data) {
 	const labelsSafe = data.labels || {};
 	const lines = buildSysInfoLines(data, labelsSafe);
 	const divider = makeDivider(lines);
-	const sysinfoPlaceholder = t("sysinfoPlaceholder");
 	const indents = "\n\u200B\n\u200B\n\u200B\n"; // Zero-width spaces to create some padding
 
-	const text = `${sysinfoPlaceholder}${indents}${divider}\n${lines.join("\n")}`;
+	const text = `${indents}${divider}\n${lines.join("\n")}`;
 
-	if (target.innerText.includes(sysinfoPlaceholder)) return;
+	if (target.innerText.includes(divider)) return;
 
 	if ('value' in target) {
 		target.value = text;
