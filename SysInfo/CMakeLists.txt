@@ -81,13 +81,17 @@ if(WIN32)
         )
 endif()
 
-# macOS: Info.plist + icns
+# macOS: Info.plist + icns + Objective-C++ notification helper
 if(APPLE)
     target_sources(SysInfo PRIVATE
         "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.icns"
+        app/macos_notifications.mm
     )
     set_source_files_properties("${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.icns"
         PROPERTIES MACOSX_PACKAGE_LOCATION "Resources"
+    )
+    set_source_files_properties(app/macos_notifications.mm
+        PROPERTIES COMPILE_FLAGS "-fobjc-arc"
     )
     set_target_properties(SysInfo PROPERTIES
         MACOSX_BUNDLE TRUE
@@ -96,6 +100,10 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         MACOSX_BUNDLE_ICON_FILE "SysInfo_Icon.icns"
+    )
+    target_link_libraries(SysInfo PRIVATE
+        "-framework UserNotifications"
+        "-framework AppKit"
     )
 endif()
 

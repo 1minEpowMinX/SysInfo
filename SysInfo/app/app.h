@@ -33,6 +33,10 @@ private:
     void createContextMenu();
     void startTrayUpdateTimer();
 
+#ifdef Q_OS_MAC
+    void checkMacOSNotificationPermission();
+#endif
+
 private slots:
     void showTrayGuide();
     void copyToClipboard();

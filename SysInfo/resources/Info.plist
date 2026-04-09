@@ -20,6 +20,8 @@
     <key>NSHumanReadableCopyright</key>
 	<string>© 2025 Kirill Bitskyi for Pivdenny</string>
     <key>GitHub</key>
-	<string>https://github.com/1minEpowMinX/SysInfo</string>   
+	<string>https://github.com/1minEpowMinX/SysInfo</string>
+    <key>NSUserNotificationUsageDescription</key>
+	<string>SysInfo displays notifications when it starts and when data is copied to the clipboard.</string>
 </dict>
 </plist>

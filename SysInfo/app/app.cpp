@@ -5,6 +5,10 @@
 #include "../tray/tray_guide.h"
 #include "../utils/utils.h"
 
+#ifdef Q_OS_MAC
+#include "macos_notifications.h"
+#endif
+
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -38,6 +42,10 @@ void App::startApp()
     createContextMenu();
 
     trayIcon->show();
+
+#ifdef Q_OS_MAC
+    checkMacOSNotificationPermission();
+#endif
 
     QTimer::singleShot(60000, [this]() {
 
@@ -152,3 +160,55 @@ void App::quitApp() {
     if (reply == QMessageBox::Yes)
         qApp->quit();
 }
+
+#ifdef Q_OS_MAC
+void App::checkMacOSNotificationPermission()
+{
+    MacOSNotifications::getStatus([this](MacOSNotifications::Status status) {
+        if (status == MacOSNotifications::Status::Authorized)
+            return;
+
+        if (status == MacOSNotifications::Status::NotDetermined) {
+            // Permission priming: explain why before the OS dialog appears
+            auto reply = QMessageBox::information(
+                nullptr,
+                QObject::tr("Enable Notifications"),
+                QObject::tr("SysInfo displays notifications when it starts and when data "
+                            "is copied to the clipboard.\n\n"
+                            "Click OK to allow notifications — macOS will ask for confirmation."),
+                QMessageBox::Ok | QMessageBox::Cancel
+            );
+
+            if (reply != QMessageBox::Ok)
+                return;
+
+            MacOSNotifications::requestPermission([](bool granted) {
+                if (!granted) {
+                    auto reply = QMessageBox::warning(
+                        nullptr,
+                        QObject::tr("Notifications Disabled"),
+                        QObject::tr("Notifications were not allowed.\n\n"
+                                    "To enable them later, go to:\n"
+                                    "System Settings → Notifications → SysInfo"),
+                        QMessageBox::Open | QMessageBox::Close
+                    );
+                    if (reply == QMessageBox::Open)
+                        MacOSNotifications::openSystemNotificationSettings();
+                }
+            });
+
+        } else { // Denied
+            auto reply = QMessageBox::warning(
+                nullptr,
+                QObject::tr("Notifications Disabled"),
+                QObject::tr("SysInfo notifications are disabled in System Settings.\n\n"
+                            "To enable them, go to:\n"
+                            "System Settings → Notifications → SysInfo"),
+                QMessageBox::Open | QMessageBox::Close
+            );
+            if (reply == QMessageBox::Open)
+                MacOSNotifications::openSystemNotificationSettings();
+        }
+    });
+}
+#endif
