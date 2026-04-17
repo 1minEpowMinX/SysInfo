@@ -15,7 +15,7 @@ TrayGuide::TrayGuide(QWidget* parent)
 
     m_gifLabel = new QLabel(this);
     m_gifLabel->setAlignment(Qt::AlignCenter);
-    QMovie* movie = new QMovie(":/resources/animations/tray_guide.gif");
+    QMovie* movie = new QMovie(":/resources/animations/tray_guide.gif", QByteArray(), this);
 
     if (!movie->isValid()) {
         Logger::log(Logger::EventId::UiResourceMissing,
@@ -29,12 +29,12 @@ TrayGuide::TrayGuide(QWidget* parent)
         "<p><b>To keep the app visible in the notification area:</b><br>"
         "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
         "2️. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
-        ));
+        ), this);
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
 
-    m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"));
-    m_closeButton = new QPushButton(QObject::tr("Close"));
+    m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"), this);
+    m_closeButton = new QPushButton(QObject::tr("Close"), this);
 
     connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
 
