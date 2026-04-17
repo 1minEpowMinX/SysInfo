@@ -35,7 +35,7 @@ void App::startApp()
 
     trayIcon->show();
 
-    QTimer::singleShot(60000, [this]() {
+    QTimer::singleShot(60000, this, [this]() {
 
         // General information for all operating systems
         if (SettingsManager::instance().showWelcome()) {
