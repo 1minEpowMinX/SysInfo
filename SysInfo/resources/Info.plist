@@ -8,18 +8,22 @@
     <key>CFBundleDisplayName</key>
 	<string>SysInfo</string>
     <key>CFBundleIdentifier</key>
-	<string>com.pivdenny.sysinfo</string>
+	<string>com.pivdenny.SysInfo</string>
     <key>CFBundleVersion</key>
-	<string>2.0.0</string>
+	<string>2.1.0</string>
     <key>CFBundleShortVersionString</key>
-	<string>2.0.0</string>
+	<string>2.1.0</string>
     <key>CFBundleExecutable</key>
 	<string>SysInfo</string>
     <key>CFBundleIconFile</key>
-	<string>SysInfo_Icon.icns</string>
+	<string>sysinfo_icon</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>12.0</string>
+    <key>LSUIElement</key>
+    <true/>
     <key>NSHumanReadableCopyright</key>
-	<string>© 2025 Kirill Bitskyi for Pivdenny</string>
-    <key>GitHub</key>
-	<string>https://github.com/1minEpowMinX/SysInfo</string>   
+	<string>© 2026 Kyrylo Bitskyi for Pivdenny | github.com/1minEpowMinX/SysInfo</string> 
 </dict>
 </plist>

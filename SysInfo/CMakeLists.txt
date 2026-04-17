@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SysInfo VERSION 2.0.0 LANGUAGES CXX)
+project(SysInfo VERSION 2.1.0 LANGUAGES CXX)
 
 # Add a variable to the compiler for the build version
 add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
