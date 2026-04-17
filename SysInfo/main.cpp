@@ -49,6 +49,10 @@ void loadTranslator(QApplication &a, QTranslator &translator)
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("Pivdenny");
+    QCoreApplication::setApplicationName("SysInfo");
+    QCoreApplication::setApplicationVersion(PROJECT_VERSION);
+
     QApplication a(argc, argv);
 
     if (isAlreadyRunning()) {
