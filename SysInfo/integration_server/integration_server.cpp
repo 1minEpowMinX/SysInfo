@@ -2,48 +2,71 @@
 #include "../utils/utils.h"
 
 #include <QHostAddress>
+#include <QHttpServerRequest>
 #include <QHttpServerResponse>
 #include <QJsonObject>
 
 IntegrationServer::IntegrationServer(QObject *parent)
     : QObject{parent}
 {
-    IntegrationServer::httpServer.route("/systeminfo", [this]() {
+    using Method = QHttpServerRequest::Method;
+
+    httpServer.route("/systeminfo", Method::Get,
+                     [](const QHttpServerRequest &req) {
+
         // Include labels for translation
         const QJsonObject info = Utils::toJson(Utils::collectSystemInfo(), true);
-
-        QHttpServerResponse response("application/json; charset=utf-8", QJsonDocument(info).toJson());
-
-        auto h = response.headers();
-        h.append("Access-Control-Allow-Origin", "*");
-        h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
-        h.append("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeaders(std::move(h));
-
+        QHttpServerResponse response("application/json; charset=utf-8",
+                                     QJsonDocument(info).toJson());
+        applyCors(response);
         return response;
     });
 
-    IntegrationServer::httpServer.route("/status", [this]() {
+    httpServer.route("/status", Method::Get,
+                     [](const QHttpServerRequest &req) {
+
         QHttpServerResponse response("OK");
-
-        auto h = response.headers();
-        h.append("Access-Control-Allow-Origin", "*");
-        h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
-        h.append("Access-Control-Allow-Headers", "Content-Type");
-        response.setHeaders(std::move(h));
-
+        applyCors(response);
         return response;
     });
 }
 
-bool IntegrationServer::start(const quint16 targetPort) {
-    if (!tcpServer.listen(QHostAddress::LocalHost, targetPort)) { // Listen only localhost
+IntegrationServer::~IntegrationServer()
+{
+    stop();
+}
+
+bool IntegrationServer::start(quint16 port) {
+    if (!tcpServer.listen(QHostAddress::LocalHost, port)) { // Listen only localhost
         return false;
     }
 
     if (!httpServer.bind(&tcpServer)) {
+        tcpServer.close();
         return false;
     }
 
     return true;
+}
+
+void IntegrationServer::stop() {
+    if (tcpServer.isListening()) {
+        tcpServer.close();
+    }
+}
+
+quint16 IntegrationServer::boundPort() const {
+    return tcpServer.serverPort();
+}
+
+bool IntegrationServer::isListening() const {
+    return tcpServer.isListening();
+}
+
+void IntegrationServer::applyCors(QHttpServerResponse &response) {
+    auto h = response.headers();
+    h.append("Access-Control-Allow-Origin", "*");
+    h.append("Access-Control-Allow-Methods", "GET");
+    h.append("Access-Control-Allow-Headers", "Content-Type");
+    response.setHeaders(std::move(h));
 }
