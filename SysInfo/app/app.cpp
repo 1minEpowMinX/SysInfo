@@ -14,20 +14,15 @@
 #include <QString>
 #include <QTimer>
 
-App& App::instance() {
-    static App inst;
-    return inst;
-}
-
 App::App(QObject *parent)
     : QObject(parent)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
 
-App::~App() {
+App::~App()
+{
     delete trayMenu;
-    delete trayIcon;
 }
 
 void App::startApp()

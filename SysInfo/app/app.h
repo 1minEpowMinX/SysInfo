@@ -13,17 +13,16 @@ class App : public QObject
     Q_OBJECT
 
 public:
-    static App& instance();
+    explicit App(QObject *parent = nullptr);
+    ~App() override;
 
     void startApp();
 
 private:
-    explicit App(QObject *parent = nullptr);
-    ~App();
-
-    QSystemTrayIcon *trayIcon;
-    QMenu *trayMenu;
+    QSystemTrayIcon *trayIcon = nullptr;
+    QMenu *trayMenu = nullptr;
     QString cachedInfo;
+    QMetaObject::Connection trayGuideConn;
 
     IntegrationServer *integrationServer = nullptr;
 

@@ -62,7 +62,8 @@ int main(int argc, char *argv[])
     QTranslator translator;
     loadTranslator(a, translator);
 
-    App::instance().startApp();
+    App app;
+    app.startApp();
     Logger::log(Logger::EventId::AppStart,
                 QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
 
