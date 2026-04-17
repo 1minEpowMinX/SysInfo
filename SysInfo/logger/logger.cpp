@@ -58,6 +58,15 @@ int Logger::toSyslogPrio(LogSeverity severity)
         return LOG_INFO;
     }
 }
+
+static void ensureSyslogOpen()
+{
+    static const bool opened = []() {
+        openlog("SysInfo", LOG_PID | LOG_NDELAY, LOG_USER);
+        return true;
+    }();
+    Q_UNUSED(opened);
+}
 #endif
 
 #ifdef Q_OS_MACOS
@@ -116,8 +125,9 @@ void Logger::log(EventId id, const QString& msg)
     }
 
 #elif defined(Q_OS_LINUX)
+    ensureSyslogOpen();
     const QByteArray utf8Message = fullMessage.toUtf8();
-    syslog(toSyslogPrio(severity) | LOG_USER, "%s", utf8Message.constData());
+    syslog(toSyslogPrio(severity), "%s", utf8Message.constData());
 
 #elif defined(Q_OS_MACOS)
     const QByteArray utf8Message = fullMessage.toUtf8();
