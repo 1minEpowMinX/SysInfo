@@ -8,9 +8,9 @@
 IntegrationServer::IntegrationServer(QObject *parent)
     : QObject{parent}
 {
-    // Route: /systeminfo
     IntegrationServer::httpServer.route("/systeminfo", [this]() {
-        const QJsonObject info = Utils::toJson(Utils::collectSystemInfo(), true); // Include labels for translation
+        // Include labels for translation
+        const QJsonObject info = Utils::toJson(Utils::collectSystemInfo(), true);
 
         QHttpServerResponse response("application/json; charset=utf-8", QJsonDocument(info).toJson());
 
@@ -19,10 +19,10 @@ IntegrationServer::IntegrationServer(QObject *parent)
         h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
         h.append("Access-Control-Allow-Headers", "Content-Type");
         response.setHeaders(std::move(h));
+
         return response;
     });
 
-    // Status check route
     IntegrationServer::httpServer.route("/status", [this]() {
         QHttpServerResponse response("OK");
 
@@ -31,6 +31,7 @@ IntegrationServer::IntegrationServer(QObject *parent)
         h.append("Access-Control-Allow-Methods", "GET, OPTIONS");
         h.append("Access-Control-Allow-Headers", "Content-Type");
         response.setHeaders(std::move(h));
+
         return response;
     });
 }
