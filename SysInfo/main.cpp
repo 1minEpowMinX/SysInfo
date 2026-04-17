@@ -2,24 +2,27 @@
 #include "logger/logger.h"
 
 #include <QApplication>
+#include <QDir>
 #include <QFile>
 #include <QLocale>
+#include <QLockFile>
+#include <QStandardPaths>
 #include <QTranslator>
-#include <QSystemSemaphore>
-#include <QSharedMemory>
 
-bool isAlreadyRunning()
+namespace {
+
+QLockFile& singleInstanceLock()
 {
-    const QString sharedKey = "SysInfoMutex";
-    // A semaphore is needed to avoid race conditions when multiple processes start simultaneously
-    QSystemSemaphore semaphore(sharedKey + "_sem", 1);
-    semaphore.acquire();
+    static QLockFile lock(
+        QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
+            .absoluteFilePath("SysInfo.lock"));
+    lock.setStaleLockTime(0);
+    return lock;
+}
 
-    static QSharedMemory sharedMemory(sharedKey);
-    const bool alreadyRunning = !sharedMemory.create(1);
-    semaphore.release();
-
-    return alreadyRunning;
+bool acquireSingleInstance()
+{
+    return singleInstanceLock().tryLock(100);
 }
 
 void loadTranslator(QApplication &a, QTranslator &translator)
@@ -44,6 +47,7 @@ void loadTranslator(QApplication &a, QTranslator &translator)
     }
 }
 
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -53,7 +57,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    if (isAlreadyRunning()) {
+    if (!acquireSingleInstance()) {
         return 0;
     }
 
