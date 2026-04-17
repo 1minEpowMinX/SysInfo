@@ -60,7 +60,10 @@ void App::startApp()
                 25000
                 );
 
-            connect(trayIcon, &QSystemTrayIcon::messageClicked, this, &App::showTrayGuide);
+            if (!trayGuideConn) {
+                trayGuideConn = connect(trayIcon, &QSystemTrayIcon::messageClicked,
+                                        this, &App::showTrayGuide);
+            }
         }
     #endif
     });
@@ -129,6 +132,7 @@ void App::createContextMenu() {
 
 void App::showTrayGuide() {
     auto* guide = new TrayGuide();
+    guide->setAttribute(Qt::WA_DeleteOnClose);
     guide->show();
 }
 
