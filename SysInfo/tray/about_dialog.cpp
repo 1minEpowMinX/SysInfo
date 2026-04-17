@@ -1,4 +1,5 @@
 #include "about_dialog.h"
+#include "../logger/logger.h"
 #include "../utils/utils.h"
 
 #include <QDialog>
@@ -17,6 +18,12 @@ AboutDialog::AboutDialog(QWidget *parent)
     resize(650, 650);
 
     QPixmap bg(":/resources/icons/sysinfo_background.png");
+
+    if (bg.isNull()) {
+        Logger::log(Logger::EventId::UiResourceMissing,
+                    "AboutDialog: background image not loaded.");
+    }
+
     backgroundLabel->setPixmap(bg);
     backgroundLabel->setScaledContents(true);
     backgroundLabel->setGeometry(this->rect());

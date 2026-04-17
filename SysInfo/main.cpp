@@ -1,4 +1,5 @@
 #include "app/app.h"
+#include "logger/logger.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -31,16 +32,31 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    bool uiLanguageLoaded = false;
+    const QString baseName;
+
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
     for (const QString &locale : uiLanguages) {
         const QString baseName = "sysinfo_" + QLocale(locale).name();
         if (translator.load(":resources/i18n/" + baseName)) {
             a.installTranslator(&translator);
+            uiLanguageLoaded = true;
             break;
         }
     }
+
+    if (!uiLanguageLoaded) {
+        Logger::log(Logger::EventId::TSLoadFailed,
+                    QString("Failed to translation. Tried: %1. Use default language.")
+                        .arg(baseName));
+
+    }
+
     App::instance().startApp();
+
+    Logger::log(Logger::EventId::AppStart, QString("SysInfo started. Version=%1")
+                                               .arg(PROJECT_VERSION));
 
     return a.exec();
 }

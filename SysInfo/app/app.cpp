@@ -1,5 +1,6 @@
 #include "app.h"
 #include "../integration_server/integration_server.h"
+#include "../logger/logger.h"
 #include "../settings/settings_manager.h"
 #include "../tray/about_dialog.h"
 #include "../tray/tray_guide.h"
@@ -71,14 +72,19 @@ void App::startApp()
 
     integrationServer = new IntegrationServer(this);
     if (!integrationServer->start()) {
-        QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("Failed to start the local server. "
-                                                                         "Integration with Jira SM is unavailable."));
+        QMessageBox::critical(nullptr, QObject::tr("Error"),
+                              QObject::tr("Failed to start the local server. "
+                              "Integration with Jira SM is unavailable."));
+        Logger::log(Logger::EventId::ServerStartError, "Failed to start the local server. "
+                    "Integration with Jira SM is unavailable.");
     }
 }
 
 void App::systemTraySupportCheck() {
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("The system tray is unavailable."));
+        Logger::log(Logger::EventId::TrayUnavailable,
+                    "The system tray is unavailable. The application will be terminated.");
         qApp->quit();
     }
 }
@@ -105,6 +111,11 @@ void App::createTrayIcon(const QString &iconPath) {
 void App::loadTrayApp() {
     App::createTrayIcon(":/resources/icons/sysinfo_icon.png");
     trayIcon->setToolTip(cachedInfo);
+
+    if (trayIcon->icon().isNull()) {
+        Logger::log(Logger::EventId::TrayIconMissing,
+                    "Tray icon failed to load from resources.");
+    }
     App::startTrayUpdateTimer();
 }
 
@@ -128,7 +139,11 @@ void App::showTrayGuide() {
 
 void App::copyToClipboard() {
     QClipboard *clipBoard = QApplication::clipboard();
-    if (!clipBoard) return;
+    if (!clipBoard) {
+        Logger::log(Logger::EventId::ClipboardUnavailable,
+                    "Clipboard is unavailable.");
+        return;
+    }
     clipBoard->setText(cachedInfo);
 
     trayIcon->showMessage(QObject::tr("System information"),
@@ -150,5 +165,6 @@ void App::quitApp() {
     auto reply = QMessageBox::question(nullptr, QObject::tr("Exit"), text,
                                        QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes)
+        Logger::log(Logger::EventId::AppExit, "Application terminated by user.");
         qApp->quit();
 }
