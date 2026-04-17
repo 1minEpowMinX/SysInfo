@@ -60,6 +60,7 @@ target_link_libraries(SysInfo PRIVATE
 # Modern Qt 6 translations
 qt_add_translations(SysInfo
     TS_FILES ${TS_FILES}
+    RESOURCE_PREFIX "/i18n"
 )
 
 if(ANDROID)
