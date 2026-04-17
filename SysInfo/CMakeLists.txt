@@ -99,9 +99,6 @@ if(APPLE)
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         MACOSX_BUNDLE_ICON_FILE "sysinfo_icon.icns"
     )
-    target_link_libraries(SysInfo PRIVATE
-        "-framework UserNotifications"
-    )
 endif()
 
 if(UNIX AND NOT APPLE)
