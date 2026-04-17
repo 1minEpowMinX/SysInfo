@@ -143,7 +143,10 @@ void App::copyToClipboard() {
                     "Clipboard is unavailable.");
         return;
     }
+
+    cachedInfo = Utils::toText(Utils::collectSystemInfo());
     clipBoard->setText(cachedInfo);
+    trayIcon->setToolTip(cachedInfo);
 
     trayIcon->showMessage(QObject::tr("System information"),
                           QObject::tr("Information copied to the clipboard."),
