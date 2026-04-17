@@ -138,3 +138,17 @@ install(SCRIPT ${deploy_script})
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SysInfo)
 endif()
+
+include(CTest)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+
+    # Run the test suite as part of the default build.
+    add_custom_target(run_tests ALL
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        DEPENDS tst_utils tst_integration_server
+        COMMENT "Running tests"
+        USES_TERMINAL
+    )
+endif()
