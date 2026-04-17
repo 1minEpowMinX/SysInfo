@@ -1,15 +1,13 @@
 #include "settings_manager.h"
 #include "../logger/logger.h"
 
-#include <QObject>
-
 SettingsManager& SettingsManager::instance() {
     static SettingsManager inst;
     return inst;
 }
 
-SettingsManager::SettingsManager(QObject *parent)
-    : QObject{parent}, m_settings("Pivdenny", "SysInfo")
+SettingsManager::SettingsManager()
+    : m_settings("Pivdenny", "SysInfo")
 {}
 
 bool SettingsManager::showWelcome() const {

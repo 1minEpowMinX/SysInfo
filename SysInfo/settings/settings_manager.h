@@ -1,10 +1,9 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 
-#include <QObject>
 #include <QSettings>
 
-class SettingsManager : public QObject
+class SettingsManager
 {
 public:
     static SettingsManager& instance();
@@ -15,9 +14,12 @@ public:
     void setShowTrayGuide(bool value);
 
 private:
-    explicit SettingsManager(QObject *parent = nullptr);
-    QSettings m_settings;
+    SettingsManager();
 
+    SettingsManager(const SettingsManager&) = delete;
+    SettingsManager& operator=(const SettingsManager&) = delete;
+
+    QSettings m_settings;
 };
 
 #endif // SETTINGSMANAGER_H
