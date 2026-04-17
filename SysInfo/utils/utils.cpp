@@ -33,29 +33,72 @@ QString getUsername() {
 #endif
 }
 
+namespace {
+
+bool looksLikeVirtualBridge(const QString &nameLower) {
+    static const char *const kBridgeKeywords[] = {
+        "docker", "vethernet", "vmware", "vmnet",
+        "virtualbox", "vboxnet", "hyper-v", "bluetooth"
+    };
+    for (const char *kw : kBridgeKeywords) {
+        if (nameLower.contains(QLatin1String(kw)))
+            return true;
+    }
+    return false;
+}
+
+bool looksLikeVpn(const QNetworkInterface &iface) {
+    if (iface.type() == QNetworkInterface::Virtual)
+        return true;
+
+    const QString nameLower = iface.humanReadableName().toLower();
+    static const char *const kVpnKeywords[] = {
+        "vpn", "wireguard", "tailscale", "openvpn",
+        "anyconnect", "cisco", "zerotier", "tun", "tap"
+    };
+    for (const char *kw : kVpnKeywords) {
+        if (nameLower.contains(QLatin1String(kw)))
+            return true;
+    }
+    return false;
+}
+
+} // namespace
+
 QString getActiveIPAddress() {
     QString vpnIp, lanIp;
 
     const auto &interfaces = QNetworkInterface::allInterfaces();
     for (const QNetworkInterface &iface : interfaces) {
-        // Skip the interface if its unavailable or loopback
-        if (!iface.flags().testFlag(QNetworkInterface::IsUp) ||
-            (iface.flags().testFlag(QNetworkInterface::IsLoopBack)))
+        const auto flags = iface.flags();
+        // Skip interfaces that are down, loopback or not running
+        if (!flags.testFlag(QNetworkInterface::IsUp) ||
+            !flags.testFlag(QNetworkInterface::IsRunning) ||
+            flags.testFlag(QNetworkInterface::IsLoopBack))
             continue;
+
+        const QString nameLower = iface.humanReadableName().toLower();
+        if (looksLikeVirtualBridge(nameLower))
+            continue;
+
+        const bool isVpn = looksLikeVpn(iface);
 
         const auto &entries = iface.addressEntries();
         for (const QNetworkAddressEntry &entry : entries) {
-            QString ip = entry.ip().toString();
-            if (ip.contains(":")) continue; // Skip IPv6
+            const QString ip = entry.ip().toString();
+            if (ip.contains(QLatin1Char(':'))) continue; // Skip IPv6
 
-            if (iface.humanReadableName().contains("VPN", Qt::CaseInsensitive))
-                vpnIp = ip;
-            else if (lanIp.isEmpty())
+            if (isVpn) {
+                if (vpnIp.isEmpty()) vpnIp = ip;
+            } else if (lanIp.isEmpty()) {
                 lanIp = ip;
+            }
         }
     }
 
-    return !vpnIp.isEmpty() ? vpnIp : (!lanIp.isEmpty() ? lanIp : QObject::tr("Нет IP"));
+    if (!vpnIp.isEmpty()) return vpnIp;
+    if (!lanIp.isEmpty()) return lanIp;
+    return QObject::tr("No IP");
 }
 
 QString getLastBootTime() {
