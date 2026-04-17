@@ -164,7 +164,8 @@ void App::quitApp() {
 
     auto reply = QMessageBox::question(nullptr, QObject::tr("Exit"), text,
                                        QMessageBox::Yes | QMessageBox::No);
-    if (reply == QMessageBox::Yes)
+    if (reply == QMessageBox::Yes) {
         Logger::log(Logger::EventId::AppExit, "Application terminated by user.");
         qApp->quit();
+    }
 }
