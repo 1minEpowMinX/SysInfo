@@ -124,7 +124,7 @@ install(TARGETS SysInfo
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Qt deploy script for Win/macOS/Linux
+# Qt deploy script for Win/macOS/Linux (used by `cmake --install`)
 qt_generate_deploy_app_script(
     TARGET SysInfo
     OUTPUT_SCRIPT deploy_script
@@ -132,6 +132,38 @@ qt_generate_deploy_app_script(
 )
 
 install(SCRIPT ${deploy_script})
+
+# Copy Qt runtime next to the executable in the build tree so the built binary
+# is directly runnable without install.
+if(WIN32)
+    add_custom_command(TARGET SysInfo POST_BUILD
+        COMMAND Qt6::windeployqt
+            --no-translations
+            --no-compiler-runtime
+            --no-system-d3d-compiler
+            --no-opengl-sw
+            "$<TARGET_FILE:SysInfo>"
+        COMMENT "Deploying Qt runtime into build tree (windeployqt)"
+        VERBATIM
+    )
+elseif(APPLE)
+    add_custom_command(TARGET SysInfo POST_BUILD
+        COMMAND Qt6::macdeployqt
+            "$<TARGET_BUNDLE_DIR:SysInfo>"
+        COMMENT "Deploying Qt runtime into build tree (macdeployqt)"
+        VERBATIM
+    )
+endif()
+
+add_custom_command(TARGET SysInfo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/../docs/LICENSE.txt"
+        "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
+        "${CMAKE_SOURCE_DIR}/../docs/README.txt"
+        "$<TARGET_FILE_DIR:SysInfo>"
+    COMMENT "Copying LICENSE.txt, LGPL-3.0.txt and README.txt to build root"
+    VERBATIM
+)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SysInfo)
