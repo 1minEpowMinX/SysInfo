@@ -25,17 +25,15 @@ bool isAlreadyRunning()
 void loadTranslator(QApplication &a, QTranslator &translator)
 {
     const QStringList uiLanguages = QLocale::system().uiLanguages();
-    QString triedLocale;
 
     for (const QString &locale : uiLanguages) {
         const QString baseName = "sysinfo_" + QLocale(locale).name();
-        const QString path = ":resources/i18n/" + baseName + ".qm";
+        const QString path = ":/i18n/" + baseName + ".qm";
 
         if (!QFile::exists(path)) {
             continue;
         }
 
-        triedLocale = baseName;
         if (translator.load(path)) {
             a.installTranslator(&translator);
             return;
