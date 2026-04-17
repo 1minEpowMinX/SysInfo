@@ -42,17 +42,17 @@ AboutDialog::AboutDialog(QWidget *parent)
                             "• Displays device information (device name, user, IP address, uptime).<br>"
                             "• Runs in the background via the system tray.<br>"
                             "• Right-click on the icon to open the action menu.<br>"
-                            "• The ”Copy to clipboard“ option copies the current information.<p>"
-                            "<b>If the icon is not visible in the tray, drag it to the notification area.<b>"
+                            "• The ”Copy to clipboard“ option copies the current information.<br><br>"
+                            "<b>If the icon is not visible in the tray, drag it to the notification area.</b></p>"
                             "<hr>"
                             "<p><b>Version:</b> %1 (build %2)</p>"
-                            "<p><b>Developer:</b> Kirill Bitskyi </p>"
+                            "<p><b>Developer:</b> Kyrylo Bitskyi </p>"
                             "<p><b>Company:</b> Pivdenny </p>"
                             "<p><b>Source code:</b> <a href='https://github.com/1minEpowMinX/SysInfo'>GitHub</a></p>"
                             "<p><b>Core:</b> Qt %3, C++17</p>"
                             "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>LGPL v3.0</a></p>"
                             "<hr>"
-                            "<p><small>© 2025 Kirill Bitskyi for Pivdenny. All rights reserved.</small></p>"
+                            "<p><small>© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.</small></p>"
                             ).arg(PROJECT_VERSION, BUILD_DATETIME, QT_VERSION_STR);
 
     QString detailsLabel = getSystemDetails();
