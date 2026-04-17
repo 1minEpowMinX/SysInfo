@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.30)
 project(SysInfo VERSION 2.1.0 LANGUAGES CXX)
 
 add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
-string(TIMESTAMP BUILD_DATETIME "%Y%m%d" UTC)
-add_compile_definitions(BUILD_DATETIME="${BUILD_DATETIME}")
+string(TIMESTAMP BUILD_DATE "%Y%m%d" UTC)
+add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)

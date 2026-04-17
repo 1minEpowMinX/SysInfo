@@ -53,7 +53,7 @@ AboutDialog::AboutDialog(QWidget *parent)
                             "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>LGPL v3.0</a></p>"
                             "<hr>"
                             "<p><small>© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.</small></p>"
-                            ).arg(PROJECT_VERSION, BUILD_DATETIME, QT_VERSION_STR);
+                            ).arg(PROJECT_VERSION, BUILD_DATE, QT_VERSION_STR);
 
     QString detailsLabel = getSystemDetails();
 
