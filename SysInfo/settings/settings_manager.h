@@ -6,7 +6,12 @@
 class SettingsManager
 {
 public:
-    static SettingsManager& instance();
+    SettingsManager();
+
+    SettingsManager(const SettingsManager&) = delete;
+    SettingsManager& operator=(const SettingsManager&) = delete;
+    SettingsManager(SettingsManager&&) = delete;
+    SettingsManager& operator=(SettingsManager&&) = delete;
 
     bool showWelcome() const;
     void setShowWelcome(bool value);
@@ -14,11 +19,6 @@ public:
     void setShowTrayGuide(bool value);
 
 private:
-    SettingsManager();
-
-    SettingsManager(const SettingsManager&) = delete;
-    SettingsManager& operator=(const SettingsManager&) = delete;
-
     QSettings m_settings;
 };
 

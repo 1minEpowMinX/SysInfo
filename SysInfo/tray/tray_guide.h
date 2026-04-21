@@ -6,15 +6,18 @@
 #include <QLabel>
 #include <QPushButton>
 
+class SettingsManager;
+
 class TrayGuide : public QDialog {
     Q_OBJECT
 public:
-    explicit TrayGuide(QWidget* parent = nullptr);
+    explicit TrayGuide(SettingsManager& settings, QWidget* parent = nullptr);
 
 private slots:
     void onCloseClicked();
 
 private:
+    SettingsManager& m_settings;
     QLabel* m_gifLabel;
     QLabel* m_textLabel;
     QCheckBox* m_dontShowAgain;

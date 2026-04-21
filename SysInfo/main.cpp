@@ -1,5 +1,6 @@
 #include "app/app.h"
 #include "logger/logger.h"
+#include "settings/settings_manager.h"
 
 #include <QApplication>
 #include <QDir>
@@ -9,65 +10,72 @@
 #include <QStandardPaths>
 #include <QTranslator>
 
-namespace {
-
-QLockFile& singleInstanceLock()
+namespace
 {
-    static QLockFile lock(
-        QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
-            .absoluteFilePath("SysInfo.lock"));
-    lock.setStaleLockTime(0);
-    return lock;
-}
 
-bool acquireSingleInstance()
-{
-    return singleInstanceLock().tryLock(100);
-}
+	QLockFile &singleInstanceLock()
+	{
+		static QLockFile lock(
+			QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
+				.absoluteFilePath("SysInfo.lock"));
+		lock.setStaleLockTime(0);
+		return lock;
+	}
 
-void loadTranslator(QApplication &a, QTranslator &translator)
-{
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
+	bool acquireSingleInstance()
+	{
+		return singleInstanceLock().tryLock(100);
+	}
 
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "sysinfo_" + QLocale(locale).name();
-        const QString path = ":/i18n/" + baseName + ".qm";
+	void loadTranslator(QApplication &a, QTranslator &translator)
+	{
+		const QStringList uiLanguages = QLocale::system().uiLanguages();
 
-        if (!QFile::exists(path)) {
-            continue;
-        }
+		for (const QString &locale : uiLanguages)
+		{
+			const QString baseName = "sysinfo_" + QLocale(locale).name();
+			const QString path = ":/i18n/" + baseName + ".qm";
 
-        if (translator.load(path)) {
-            a.installTranslator(&translator);
-            return;
-        }
+			if (!QFile::exists(path))
+			{
+				continue;
+			}
 
-        Logger::log(Logger::EventId::TSLoadFailed,
-                    QString("Translation file exists but failed to load: %1").arg(path));
-    }
-}
+			if (translator.load(path))
+			{
+				a.installTranslator(&translator);
+				return;
+			}
+
+			Logger::log(Logger::EventId::TSLoadFailed,
+						QString("Translation file exists but failed to load: %1").arg(path));
+		}
+	}
 
 } // namespace
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationName("Pivdenny");
-    QCoreApplication::setApplicationName("SysInfo");
-    QCoreApplication::setApplicationVersion(PROJECT_VERSION);
+	QCoreApplication::setOrganizationName("Pivdenny");
+	QCoreApplication::setApplicationName("SysInfo");
+	QCoreApplication::setApplicationVersion(PROJECT_VERSION);
 
-    QApplication a(argc, argv);
+	QApplication a(argc, argv);
 
-    if (!acquireSingleInstance()) {
-        return 0;
-    }
+	if (!acquireSingleInstance())
+	{
+		return 0;
+	}
 
-    QTranslator translator;
-    loadTranslator(a, translator);
+	QTranslator translator;
+	loadTranslator(a, translator);
 
-    App app;
-    app.startApp();
-    Logger::log(Logger::EventId::AppStart,
-                QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
+	SettingsManager settings;
+	App app(settings);
+	app.startApp();
 
-    return a.exec();
+	Logger::log(Logger::EventId::AppStart,
+				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
+
+	return a.exec();
 }

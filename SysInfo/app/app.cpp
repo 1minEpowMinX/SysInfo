@@ -16,6 +16,7 @@
 
 App::App(QObject *parent)
     : QObject(parent)
+    , m_settings(settings)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }

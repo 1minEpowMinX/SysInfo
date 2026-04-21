@@ -1,11 +1,6 @@
 #include "settings_manager.h"
 #include "../logger/logger.h"
 
-SettingsManager& SettingsManager::instance() {
-    static SettingsManager inst;
-    return inst;
-}
-
 SettingsManager::SettingsManager()
     : m_settings("Pivdenny", "SysInfo")
 {}

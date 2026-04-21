@@ -6,8 +6,9 @@
 #include <QObject>
 #include <QVBoxLayout>
 
-TrayGuide::TrayGuide(QWidget* parent)
+TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
     : QDialog(parent)
+    , m_settings(settings)
 {
     setWindowTitle(QObject::tr("How to pin an icon to the tray"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
@@ -51,7 +52,7 @@ TrayGuide::TrayGuide(QWidget* parent)
 void TrayGuide::onCloseClicked()
 {
     if (m_dontShowAgain->isChecked())
-        SettingsManager::instance().setShowTrayGuide(false);
+        m_settings.setShowTrayGuide(false);
 
     close();
 }
