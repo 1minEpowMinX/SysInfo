@@ -72,7 +72,10 @@ int main(int argc, char *argv[])
 
 	SettingsManager settings;
 	App app(settings);
-	app.startApp();
+	if (!app.start())
+	{
+		return 1;
+	}
 
 	Logger::log(Logger::EventId::AppStart,
 				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));

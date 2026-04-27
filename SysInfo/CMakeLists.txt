@@ -30,8 +30,12 @@ set(PROJECT_SOURCES
     main.cpp
     app/app.cpp
     app/app.h
+    app/welcome_notifier.cpp
+    app/welcome_notifier.h
     utils/utils.cpp
     utils/utils.h
+    tray/tray_controller.cpp
+    tray/tray_controller.h
     tray/tray_guide.cpp
     tray/tray_guide.h
     tray/about_dialog.cpp
