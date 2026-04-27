@@ -1,5 +1,5 @@
 #include "tray_controller.h"
-#include "../logger/logger.h"
+#include "../core/logging/logger.h"
 
 #include <QAction>
 #include <QIcon>

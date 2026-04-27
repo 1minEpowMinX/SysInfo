@@ -28,24 +28,29 @@ set(TS_FILES
 
 set(PROJECT_SOURCES
     main.cpp
+
     app/app.cpp
     app/app.h
     app/welcome_notifier.cpp
     app/welcome_notifier.h
-    utils/utils.cpp
-    utils/utils.h
-    tray/tray_controller.cpp
-    tray/tray_controller.h
-    tray/tray_guide.cpp
-    tray/tray_guide.h
-    tray/about_dialog.cpp
-    tray/about_dialog.h
-    settings/settings_manager.cpp
-    settings/settings_manager.h
-    integration_server/integration_server.cpp
-    integration_server/integration_server.h
-    logger/logger.cpp
-    logger/logger.h
+
+    core/sysinfo/system_info.cpp
+    core/sysinfo/system_info.h
+    core/settings/settings_manager.cpp
+    core/settings/settings_manager.h
+    core/logging/logger.cpp
+    core/logging/logger.h
+
+    services/integration_server.cpp
+    services/integration_server.h
+
+    ui/tray_controller.cpp
+    ui/tray_controller.h
+    ui/tray_guide.cpp
+    ui/tray_guide.h
+    ui/about_dialog.cpp
+    ui/about_dialog.h
+
     resources.qrc
 )
 
@@ -181,7 +186,7 @@ if(BUILD_TESTING)
     add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS tst_utils tst_integration_server
+        DEPENDS tst_system_info tst_integration_server
         COMMENT "Running tests"
         USES_TERMINAL
     )

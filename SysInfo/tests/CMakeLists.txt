@@ -14,25 +14,25 @@ function(sysinfo_register_test name)
     endif()
 endfunction()
 
-qt_add_executable(tst_utils
-    tst_utils.cpp
-    ../utils/utils.cpp
-    ../utils/utils.h
+qt_add_executable(tst_system_info
+    tst_system_info.cpp
+    ../core/sysinfo/system_info.cpp
+    ../core/sysinfo/system_info.h
 )
-set_target_properties(tst_utils PROPERTIES WIN32_EXECUTABLE OFF)
-target_link_libraries(tst_utils PRIVATE
+set_target_properties(tst_system_info PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_system_info PRIVATE
     Qt6::Core
     Qt6::Network
     Qt6::Test
 )
-sysinfo_register_test(tst_utils)
+sysinfo_register_test(tst_system_info)
 
 qt_add_executable(tst_integration_server
     tst_integration_server.cpp
-    ../integration_server/integration_server.cpp
-    ../integration_server/integration_server.h
-    ../utils/utils.cpp
-    ../utils/utils.h
+    ../services/integration_server.cpp
+    ../services/integration_server.h
+    ../core/sysinfo/system_info.cpp
+    ../core/sysinfo/system_info.h
 )
 set_target_properties(tst_integration_server PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_integration_server PRIVATE

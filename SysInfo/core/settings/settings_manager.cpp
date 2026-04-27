@@ -1,5 +1,5 @@
 #include "settings_manager.h"
-#include "../logger/logger.h"
+#include "../logging/logger.h"
 
 SettingsManager::SettingsManager()
     : m_settings("Pivdenny", "SysInfo")

@@ -1,4 +1,4 @@
-#include "../utils/utils.h"
+#include "../core/sysinfo/system_info.h"
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -111,4 +111,4 @@ void TestUtils::getLastBootTime_matchesExpectedShape()
 }
 
 QTEST_GUILESS_MAIN(TestUtils)
-#include "tst_utils.moc"
+#include "tst_system_info.moc"

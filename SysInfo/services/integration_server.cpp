@@ -1,5 +1,5 @@
 #include "integration_server.h"
-#include "../utils/utils.h"
+#include "../core/sysinfo/system_info.h"
 
 #include <QHostAddress>
 #include <QHttpServerRequest>

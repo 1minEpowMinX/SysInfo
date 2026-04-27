@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "system_info.h"
 
 #include <QDateTime>
 #include <QHostInfo>

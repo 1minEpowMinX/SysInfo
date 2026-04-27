@@ -1,6 +1,6 @@
 #include "about_dialog.h"
-#include "../logger/logger.h"
-#include "../utils/utils.h"
+#include "../core/logging/logger.h"
+#include "../core/sysinfo/system_info.h"
 
 #include <QDialog>
 #include <QLabel>

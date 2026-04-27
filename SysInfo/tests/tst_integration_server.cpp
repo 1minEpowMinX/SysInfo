@@ -1,4 +1,4 @@
-#include "../integration_server/integration_server.h"
+#include "../services/integration_server.h"
 
 #include <QByteArray>
 #include <QEventLoop>

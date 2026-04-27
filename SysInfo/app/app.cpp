@@ -1,13 +1,13 @@
 #include "app.h"
 
 #include "welcome_notifier.h"
-#include "../integration_server/integration_server.h"
-#include "../logger/logger.h"
-#include "../settings/settings_manager.h"
-#include "../tray/about_dialog.h"
-#include "../tray/tray_controller.h"
-#include "../tray/tray_guide.h"
-#include "../utils/utils.h"
+#include "../core/logging/logger.h"
+#include "../core/settings/settings_manager.h"
+#include "../core/sysinfo/system_info.h"
+#include "../services/integration_server.h"
+#include "../ui/about_dialog.h"
+#include "../ui/tray_controller.h"
+#include "../ui/tray_guide.h"
 
 #include <QApplication>
 #include <QClipboard>

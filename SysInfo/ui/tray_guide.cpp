@@ -1,6 +1,6 @@
 #include "tray_guide.h"
-#include "../logger/logger.h"
-#include "../settings/settings_manager.h"
+#include "../core/logging/logger.h"
+#include "../core/settings/settings_manager.h"
 
 #include <QMovie>
 #include <QObject>
