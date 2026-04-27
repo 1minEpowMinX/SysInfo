@@ -14,48 +14,26 @@ function(sysinfo_register_test name)
     endif()
 endfunction()
 
-qt_add_executable(tst_system_info
-    tst_system_info.cpp
-    ../core/sysinfo/system_info.cpp
-    ../core/sysinfo/system_info.h
-)
+qt_add_executable(tst_system_info tst_system_info.cpp)
 set_target_properties(tst_system_info PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_system_info PRIVATE
-    Qt6::Core
-    Qt6::Network
+    sysinfo_core
     Qt6::Test
 )
 sysinfo_register_test(tst_system_info)
 
-qt_add_executable(tst_system_info_presenter
-    tst_system_info_presenter.cpp
-    ../core/sysinfo/system_info.cpp
-    ../core/sysinfo/system_info.h
-    ../core/sysinfo/system_info_presenter.cpp
-    ../core/sysinfo/system_info_presenter.h
-)
+qt_add_executable(tst_system_info_presenter tst_system_info_presenter.cpp)
 set_target_properties(tst_system_info_presenter PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_system_info_presenter PRIVATE
-    Qt6::Core
-    Qt6::Network
+    sysinfo_core
     Qt6::Test
 )
 sysinfo_register_test(tst_system_info_presenter)
 
-qt_add_executable(tst_integration_server
-    tst_integration_server.cpp
-    ../services/integration_server.cpp
-    ../services/integration_server.h
-    ../core/sysinfo/system_info.cpp
-    ../core/sysinfo/system_info.h
-    ../core/sysinfo/system_info_presenter.cpp
-    ../core/sysinfo/system_info_presenter.h
-)
+qt_add_executable(tst_integration_server tst_integration_server.cpp)
 set_target_properties(tst_integration_server PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_integration_server PRIVATE
-    Qt6::Core
-    Qt6::Network
-    Qt6::HttpServer
+    sysinfo_core
     Qt6::Test
 )
 sysinfo_register_test(tst_integration_server)

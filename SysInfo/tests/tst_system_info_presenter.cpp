@@ -1,5 +1,5 @@
-#include "../core/sysinfo/system_info.h"
-#include "../core/sysinfo/system_info_presenter.h"
+#include "core/sysinfo/system_info.h"
+#include "core/sysinfo/system_info_presenter.h"
 
 #include <QJsonObject>
 #include <QTest>

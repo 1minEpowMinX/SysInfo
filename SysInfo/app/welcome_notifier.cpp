@@ -1,7 +1,7 @@
 #include "welcome_notifier.h"
 
-#include "../core/settings/settings_manager.h"
-#include "../ui/tray_controller.h"
+#include "core/settings/settings_manager.h"
+#include "ui/tray_controller.h"
 
 #include <QTimer>
 

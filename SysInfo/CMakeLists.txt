@@ -26,14 +26,10 @@ set(TS_FILES
     resources/i18n/sysinfo_uk_UA.ts
 )
 
-set(PROJECT_SOURCES
-    main.cpp
-
-    app/app.cpp
-    app/app.h
-    app/welcome_notifier.cpp
-    app/welcome_notifier.h
-
+# --- Core library: pure logic + non-UI services, reusable from exe and tests.
+# Lives as a STATIC library so test binaries can link it directly instead
+# of recompiling the same .cpp files into every test executable.
+qt_add_library(sysinfo_core STATIC
     core/sysinfo/system_info.cpp
     core/sysinfo/system_info.h
     core/sysinfo/system_info_presenter.cpp
@@ -45,6 +41,30 @@ set(PROJECT_SOURCES
 
     services/integration_server.cpp
     services/integration_server.h
+)
+
+# PUBLIC: headers of sysinfo_core expose Qt types — consumers must see them.
+target_link_libraries(sysinfo_core PUBLIC
+    Qt6::Core
+    Qt6::Network
+    Qt6::HttpServer
+)
+
+# PUBLIC include directory lets every consumer write
+#   #include "core/sysinfo/system_info.h"
+# without the "../" relative-path dance.
+target_include_directories(sysinfo_core PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+# --- SysInfo executable: composition + UI on top of sysinfo_core.
+set(PROJECT_SOURCES
+    main.cpp
+
+    app/app.cpp
+    app/app.h
+    app/welcome_notifier.cpp
+    app/welcome_notifier.h
 
     ui/tray_controller.cpp
     ui/tray_controller.h
@@ -62,10 +82,8 @@ qt_add_executable(SysInfo
 )
 
 target_link_libraries(SysInfo PRIVATE
-    Qt6::Core
+    sysinfo_core
     Qt6::Widgets
-    Qt6::Network
-    Qt6::HttpServer
 )
 
 # Modern Qt 6 translations
