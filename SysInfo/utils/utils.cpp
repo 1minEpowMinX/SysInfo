@@ -168,4 +168,5 @@ QString toText(const SystemInfo &s)
     return QObject::tr("Device name: %1\nUser: %2\nIP address: %3\nUptime: %4")
         .arg(s.hostname, s.username, s.ip, s.uptime);
 }
+
 }
