@@ -4,6 +4,7 @@
 #include "../core/logging/logger.h"
 #include "../core/settings/settings_manager.h"
 #include "../core/sysinfo/system_info.h"
+#include "../core/sysinfo/system_info_presenter.h"
 #include "../services/integration_server.h"
 #include "../ui/about_dialog.h"
 #include "../ui/tray_controller.h"
@@ -37,7 +38,7 @@ bool App::start()
         return false;
     }
 
-    m_cachedInfo = Utils::toText(Utils::collectSystemInfo());
+    m_cachedInfo = Utils::Presenter::toText(Utils::collectSystemInfo());
 
     m_tray = new TrayController(this);
     m_tray->init(kTrayIconPath);
@@ -72,7 +73,7 @@ void App::startTrayUpdateTimer()
 {
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        const QString fresh = Utils::toText(Utils::collectSystemInfo());
+        const QString fresh = Utils::Presenter::toText(Utils::collectSystemInfo());
         if (fresh != m_cachedInfo) {
             m_cachedInfo = fresh;
             m_tray->setTooltip(m_cachedInfo);
@@ -90,7 +91,7 @@ void App::onCopyRequested()
         return;
     }
 
-    m_cachedInfo = Utils::toText(Utils::collectSystemInfo());
+    m_cachedInfo = Utils::Presenter::toText(Utils::collectSystemInfo());
     clipboard->setText(m_cachedInfo);
     m_tray->setTooltip(m_cachedInfo);
 

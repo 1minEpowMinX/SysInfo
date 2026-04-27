@@ -1,5 +1,6 @@
 #include "integration_server.h"
 #include "../core/sysinfo/system_info.h"
+#include "../core/sysinfo/system_info_presenter.h"
 
 #include <QHostAddress>
 #include <QHttpServerRequest>
@@ -15,7 +16,7 @@ IntegrationServer::IntegrationServer(QObject *parent)
                      [](const QHttpServerRequest &req) {
 
         // Include labels for translation
-        const QJsonObject info = Utils::toJson(Utils::collectSystemInfo(), true);
+        const QJsonObject info = Utils::Presenter::toJsonWithLabels(Utils::collectSystemInfo());
         QHttpServerResponse response("application/json; charset=utf-8",
                                      QJsonDocument(info).toJson());
         applyCors(response);

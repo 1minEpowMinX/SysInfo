@@ -36,6 +36,8 @@ set(PROJECT_SOURCES
 
     core/sysinfo/system_info.cpp
     core/sysinfo/system_info.h
+    core/sysinfo/system_info_presenter.cpp
+    core/sysinfo/system_info_presenter.h
     core/settings/settings_manager.cpp
     core/settings/settings_manager.h
     core/logging/logger.cpp
@@ -186,7 +188,7 @@ if(BUILD_TESTING)
     add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS tst_system_info tst_integration_server
+        DEPENDS tst_system_info tst_system_info_presenter tst_integration_server
         COMMENT "Running tests"
         USES_TERMINAL
     )
