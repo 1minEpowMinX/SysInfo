@@ -186,7 +186,7 @@ endif()
 
 add_custom_command(TARGET SysInfo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/../docs/LICENSE.txt"
+        "${CMAKE_SOURCE_DIR}/../docs/GPL-3.0.txt"
         "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
         "${CMAKE_SOURCE_DIR}/../docs/README.txt"
         "$<TARGET_FILE_DIR:SysInfo>"
