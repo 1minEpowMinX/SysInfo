@@ -16,130 +16,149 @@
 #include <mach/mach_host.h>
 #endif
 
-namespace sysinfo {
+namespace sysinfo
+{
 
-QString hostname() {
-    return QHostInfo::localHostName();
-}
+	QString hostname()
+	{
+		return QHostInfo::localHostName();
+	}
 
-QString username() {
+	QString username()
+	{
 #ifdef Q_OS_WIN
-    return qEnvironmentVariable("USERNAME");
+		return qEnvironmentVariable("USERNAME");
 #else
-    return qEnvironmentVariable("USER");
+		return qEnvironmentVariable("USER");
 #endif
-}
+	}
 
-namespace {
+	namespace
+	{
 
-bool looksLikeVirtualBridge(const QString &nameLower) {
-    static const char *const kBridgeKeywords[] = {
-        "docker", "vethernet", "vmware", "vmnet",
-        "virtualbox", "vboxnet", "hyper-v", "bluetooth"
-    };
-    for (const char *kw : kBridgeKeywords) {
-        if (nameLower.contains(QLatin1String(kw)))
-            return true;
-    }
-    return false;
-}
+		bool looksLikeVirtualBridge(const QString &nameLower)
+		{
+			static const char *const kBridgeKeywords[] = {
+				"docker", "vethernet", "vmware", "vmnet",
+				"virtualbox", "vboxnet", "hyper-v", "bluetooth"};
+			for (const char *kw : kBridgeKeywords)
+			{
+				if (nameLower.contains(QLatin1String(kw)))
+					return true;
+			}
+			return false;
+		}
 
-bool looksLikeVpn(const QNetworkInterface &iface) {
-    if (iface.type() == QNetworkInterface::Virtual)
-        return true;
+		bool looksLikeVpn(const QNetworkInterface &iface)
+		{
+			if (iface.type() == QNetworkInterface::Virtual)
+				return true;
 
-    const QString nameLower = iface.humanReadableName().toLower();
-    static const char *const kVpnKeywords[] = {
-        "vpn", "wireguard", "tailscale", "openvpn",
-        "anyconnect", "cisco", "zerotier", "tun", "tap"
-    };
-    for (const char *kw : kVpnKeywords) {
-        if (nameLower.contains(QLatin1String(kw)))
-            return true;
-    }
-    return false;
-}
+			const QString nameLower = iface.humanReadableName().toLower();
+			static const char *const kVpnKeywords[] = {
+				"vpn", "wireguard", "tailscale", "openvpn",
+				"anyconnect", "cisco", "zerotier", "tun", "tap"};
+			for (const char *kw : kVpnKeywords)
+			{
+				if (nameLower.contains(QLatin1String(kw)))
+					return true;
+			}
+			return false;
+		}
 
-} // namespace
+	} // namespace
 
-QString activeIpAddress() {
-    QString vpnIp, lanIp;
+	QString activeIpAddress()
+	{
+		QString vpnIp, lanIp;
 
-    const auto &interfaces = QNetworkInterface::allInterfaces();
-    for (const QNetworkInterface &iface : interfaces) {
-        const auto flags = iface.flags();
-        // Skip interfaces that are down, loopback or not running
-        if (!flags.testFlag(QNetworkInterface::IsUp) ||
-            !flags.testFlag(QNetworkInterface::IsRunning) ||
-            flags.testFlag(QNetworkInterface::IsLoopBack))
-            continue;
+		const auto &interfaces = QNetworkInterface::allInterfaces();
+		for (const QNetworkInterface &iface : interfaces)
+		{
+			const auto flags = iface.flags();
+			// Skip interfaces that are down, loopback or not running
+			if (!flags.testFlag(QNetworkInterface::IsUp) ||
+				!flags.testFlag(QNetworkInterface::IsRunning) ||
+				flags.testFlag(QNetworkInterface::IsLoopBack))
+				continue;
 
-        const QString nameLower = iface.humanReadableName().toLower();
-        if (looksLikeVirtualBridge(nameLower))
-            continue;
+			const QString nameLower = iface.humanReadableName().toLower();
+			if (looksLikeVirtualBridge(nameLower))
+				continue;
 
-        const bool isVpn = looksLikeVpn(iface);
+			const bool isVpn = looksLikeVpn(iface);
 
-        const auto &entries = iface.addressEntries();
-        for (const QNetworkAddressEntry &entry : entries) {
-            const QString ip = entry.ip().toString();
-            if (ip.contains(QLatin1Char(':'))) continue; // Skip IPv6
+			const auto &entries = iface.addressEntries();
+			for (const QNetworkAddressEntry &entry : entries)
+			{
+				const QString ip = entry.ip().toString();
+				if (ip.contains(QLatin1Char(':')))
+					continue; // Skip IPv6
 
-            if (isVpn) {
-                if (vpnIp.isEmpty()) vpnIp = ip;
-            } else if (lanIp.isEmpty()) {
-                lanIp = ip;
-            }
-        }
-    }
+				if (isVpn)
+				{
+					if (vpnIp.isEmpty())
+						vpnIp = ip;
+				}
+				else if (lanIp.isEmpty())
+				{
+					lanIp = ip;
+				}
+			}
+		}
 
-    if (!vpnIp.isEmpty()) return vpnIp;
-    if (!lanIp.isEmpty()) return lanIp;
-    return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
-}
+		if (!vpnIp.isEmpty())
+			return vpnIp;
+		if (!lanIp.isEmpty())
+			return lanIp;
+		return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
+	}
 
-QString lastBootTime() {
-    // Returns the boot time formatted as "dd.MM.yyyy HH:mm" on supported
-    // platforms, or an empty QString when the syscall fails or the platform
-    // is not supported. The presenter is responsible for substituting a
-    // localised fallback string ("Unavailable") on empty.
+	QString lastBootTime()
+	{
+		// Returns the boot time formatted as "dd.MM.yyyy HH:mm" on supported
+		// platforms, or an empty QString when the syscall fails or the platform
+		// is not supported. The presenter is responsible for substituting a
+		// localised fallback string ("Unavailable") on empty.
 #ifdef Q_OS_WIN
-    ULONGLONG uptimeMs = GetTickCount64();
-    QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
-    return bootTime.toString("dd.MM.yyyy HH:mm");
+		ULONGLONG uptimeMs = GetTickCount64();
+		QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
+		return bootTime.toString("dd.MM.yyyy HH:mm");
 
 #elif defined(Q_OS_LINUX)
-    struct sysinfo s_info;
-    if (::sysinfo(&s_info) == 0) {
-        QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
-        return bootTime.toString("dd.MM.yyyy HH:mm");
-    }
-    return {};
+		struct sysinfo s_info;
+		if (::sysinfo(&s_info) == 0) // Linux sys/sysinfo.h disambiguation
+		{
+			QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
+			return bootTime.toString("dd.MM.yyyy HH:mm");
+		}
+		return {};
 
 #elif defined(Q_OS_MAC)
-    // macOS does not have sysinfo, so we use sysctl
-    struct timeval boottime;
-    size_t len = sizeof(boottime); // Buffer size
-    int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-    if (sysctl(mib, 2, &boottime, &len, nullptr, 0) == 0) {
-        QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
-        return bootTime.toString("dd.MM.yyyy HH:mm");
-    }
-    return {};
+		// macOS does not have sysinfo, so we use sysctl
+		struct timeval boottime;
+		size_t len = sizeof(boottime); // Buffer size
+		int mib[2] = {CTL_KERN, KERN_BOOTTIME};
+		if (sysctl(mib, 2, &boottime, &len, nullptr, 0) == 0)
+		{
+			QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
+			return bootTime.toString("dd.MM.yyyy HH:mm");
+		}
+		return {};
 
 #else
-    return {};
+		return {};
 #endif
-}
+	}
 
-Info collect()
-{
-    Info s;
-    s.hostname = sysinfo::hostname();
-    s.username = sysinfo::username();
-    s.ip       = sysinfo::activeIpAddress();
-    s.uptime   = sysinfo::lastBootTime();
-    return s;
-}
+	Info collect()
+	{
+		Info s;
+		s.hostname = sysinfo::hostname();
+		s.username = sysinfo::username();
+		s.ip = sysinfo::activeIpAddress();
+		s.uptime = sysinfo::lastBootTime();
+		return s;
+	}
 
 } // namespace sysinfo
