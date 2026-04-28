@@ -8,15 +8,15 @@ class TestSystemInfo : public QObject
     Q_OBJECT
 
 private slots:
-    void collectSystemInfo_basicSanity();
-    void getActiveIPAddress_returnsIpOrFallback();
-    void getHostname_isNotEmpty();
-    void getLastBootTime_matchesExpectedShape();
+    void collect_basicSanity();
+    void activeIpAddress_returnsIpOrEmpty();
+    void hostname_isNotEmpty();
+    void lastBootTime_matchesExpectedShape();
 };
 
-void TestSystemInfo::collectSystemInfo_basicSanity()
+void TestSystemInfo::collect_basicSanity()
 {
-    const Utils::SystemInfo s = Utils::collectSystemInfo();
+    const sysinfo::Info s = sysinfo::collect();
 
     // Hostname must always be available even on a minimal CI runner.
     QVERIFY(!s.hostname.isEmpty());
@@ -25,9 +25,9 @@ void TestSystemInfo::collectSystemInfo_basicSanity()
     // and must NOT leak into the data layer.
 }
 
-void TestSystemInfo::getActiveIPAddress_returnsIpOrFallback()
+void TestSystemInfo::activeIpAddress_returnsIpOrEmpty()
 {
-    const QString ip = Utils::getActiveIPAddress();
+    const QString ip = sysinfo::activeIpAddress();
 
     // Either it's a dotted-quad IPv4, or empty ("no IP found").
     // The model never returns a localised placeholder.
@@ -38,18 +38,18 @@ void TestSystemInfo::getActiveIPAddress_returnsIpOrFallback()
              qPrintable("unexpected IP value: " + ip));
 }
 
-void TestSystemInfo::getHostname_isNotEmpty()
+void TestSystemInfo::hostname_isNotEmpty()
 {
-    QVERIFY(!Utils::getHostname().isEmpty());
+    QVERIFY(!sysinfo::hostname().isEmpty());
 }
 
-void TestSystemInfo::getLastBootTime_matchesExpectedShape()
+void TestSystemInfo::lastBootTime_matchesExpectedShape()
 {
-    const QString boot = Utils::getLastBootTime();
+    const QString boot = sysinfo::lastBootTime();
 
     // Either the supported-platform format "dd.MM.yyyy HH:mm" or empty.
-    // The model never returns a localised "Unavailable"/"Not supported"
-    // string — that's the presenter's job.
+    // The model never returns a localised "Unavailable" string — that's
+    // the presenter's job.
     const QRegularExpression fmt(
         QStringLiteral("^\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}$"));
     const bool looksLikeDate = fmt.match(boot).hasMatch();

@@ -38,7 +38,7 @@ bool App::start()
         return false;
     }
 
-    m_cachedInfo = Utils::Presenter::toText(Utils::collectSystemInfo());
+    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
 
     m_tray = new TrayController(this);
     m_tray->init(kTrayIconPath);
@@ -73,7 +73,7 @@ void App::startTrayUpdateTimer()
 {
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        const QString fresh = Utils::Presenter::toText(Utils::collectSystemInfo());
+        const QString fresh = sysinfo::presenter::toText(sysinfo::collect());
         if (fresh != m_cachedInfo) {
             m_cachedInfo = fresh;
             m_tray->setTooltip(m_cachedInfo);
@@ -91,7 +91,7 @@ void App::onCopyRequested()
         return;
     }
 
-    m_cachedInfo = Utils::Presenter::toText(Utils::collectSystemInfo());
+    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
     clipboard->setText(m_cachedInfo);
     m_tray->setTooltip(m_cachedInfo);
 

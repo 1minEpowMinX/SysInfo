@@ -16,13 +16,13 @@
 #include <mach/mach_host.h>
 #endif
 
-namespace Utils {
+namespace sysinfo {
 
-QString getHostname() {
+QString hostname() {
     return QHostInfo::localHostName();
 }
 
-QString getUsername() {
+QString username() {
 #ifdef Q_OS_WIN
     return qEnvironmentVariable("USERNAME");
 #else
@@ -62,7 +62,7 @@ bool looksLikeVpn(const QNetworkInterface &iface) {
 
 } // namespace
 
-QString getActiveIPAddress() {
+QString activeIpAddress() {
     QString vpnIp, lanIp;
 
     const auto &interfaces = QNetworkInterface::allInterfaces();
@@ -98,11 +98,11 @@ QString getActiveIPAddress() {
     return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
 }
 
-QString getLastBootTime() {
+QString lastBootTime() {
     // Returns the boot time formatted as "dd.MM.yyyy HH:mm" on supported
     // platforms, or an empty QString when the syscall fails or the platform
     // is not supported. The presenter is responsible for substituting a
-    // localised fallback string ("Unavailable" / "Not supported") on empty.
+    // localised fallback string ("Unavailable") on empty.
 #ifdef Q_OS_WIN
     ULONGLONG uptimeMs = GetTickCount64();
     QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
@@ -110,7 +110,7 @@ QString getLastBootTime() {
 
 #elif defined(Q_OS_LINUX)
     struct sysinfo s_info;
-    if (sysinfo(&s_info) == 0) {
+    if (::sysinfo(&s_info) == 0) {
         QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
         return bootTime.toString("dd.MM.yyyy HH:mm");
     }
@@ -132,14 +132,14 @@ QString getLastBootTime() {
 #endif
 }
 
-SystemInfo collectSystemInfo()
+Info collect()
 {
-    SystemInfo s;
-    s.hostname = Utils::getHostname();
-    s.username = Utils::getUsername();
-    s.ip       = Utils::getActiveIPAddress();
-    s.uptime   = Utils::getLastBootTime();
+    Info s;
+    s.hostname = sysinfo::hostname();
+    s.username = sysinfo::username();
+    s.ip       = sysinfo::activeIpAddress();
+    s.uptime   = sysinfo::lastBootTime();
     return s;
 }
 
-} // namespace Utils
+} // namespace sysinfo

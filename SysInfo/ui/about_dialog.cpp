@@ -78,8 +78,8 @@ void AboutDialog::resizeEvent(QResizeEvent *event)
 QString AboutDialog::getSystemDetails() const
 {
     QString osName = QSysInfo::prettyProductName();
-    QString host = Utils::getHostname();
-    QString user = Utils::getUsername();
+    QString host = sysinfo::hostname();
+    QString user = sysinfo::username();
 
     QString settingsPath;
     QSettings settings("Pivdenny", "SysInfo");

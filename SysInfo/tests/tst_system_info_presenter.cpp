@@ -19,9 +19,9 @@ private slots:
 };
 
 namespace {
-Utils::SystemInfo sample()
+sysinfo::Info sample()
 {
-    Utils::SystemInfo s;
+    sysinfo::Info s;
     s.hostname = "host-a";
     s.username = "user-b";
     s.ip       = "10.11.12.13";
@@ -32,8 +32,8 @@ Utils::SystemInfo sample()
 
 void TestSystemInfoPresenter::toText_formatsAllFields()
 {
-    const Utils::SystemInfo s = sample();
-    const QString text = Utils::Presenter::toText(s);
+    const sysinfo::Info s = sample();
+    const QString text = sysinfo::presenter::toText(s);
 
     QVERIFY(text.contains(s.hostname));
     QVERIFY(text.contains(s.username));
@@ -43,8 +43,8 @@ void TestSystemInfoPresenter::toText_formatsAllFields()
 
 void TestSystemInfoPresenter::toJson_hasExpectedKeys_andNoLabels()
 {
-    const Utils::SystemInfo s = sample();
-    const QJsonObject obj = Utils::Presenter::toJson(s);
+    const sysinfo::Info s = sample();
+    const QJsonObject obj = sysinfo::presenter::toJson(s);
 
     QCOMPARE(obj.value("hostname").toString(), s.hostname);
     QCOMPARE(obj.value("username").toString(), s.username);
@@ -55,8 +55,8 @@ void TestSystemInfoPresenter::toJson_hasExpectedKeys_andNoLabels()
 
 void TestSystemInfoPresenter::toJsonWithLabels_includesAllLabels()
 {
-    Utils::SystemInfo s;
-    const QJsonObject obj = Utils::Presenter::toJsonWithLabels(s);
+    sysinfo::Info s;
+    const QJsonObject obj = sysinfo::presenter::toJsonWithLabels(s);
 
     QVERIFY(obj.contains("labels"));
     const QJsonObject labels = obj.value("labels").toObject();
@@ -69,9 +69,9 @@ void TestSystemInfoPresenter::toJsonWithLabels_includesAllLabels()
 
 void TestSystemInfoPresenter::toJsonWithLabels_containsSameDataAsToJson()
 {
-    const Utils::SystemInfo s = sample();
-    const QJsonObject plain   = Utils::Presenter::toJson(s);
-    const QJsonObject labeled = Utils::Presenter::toJsonWithLabels(s);
+    const sysinfo::Info s = sample();
+    const QJsonObject plain   = sysinfo::presenter::toJson(s);
+    const QJsonObject labeled = sysinfo::presenter::toJsonWithLabels(s);
 
     // Adding labels must not alter the data fields.
     for (const QString &key : {"hostname", "username", "ip", "uptime"}) {
@@ -81,10 +81,10 @@ void TestSystemInfoPresenter::toJsonWithLabels_containsSameDataAsToJson()
 
 void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyIp()
 {
-    Utils::SystemInfo s = sample();
+    sysinfo::Info s = sample();
     s.ip.clear();
 
-    const QJsonObject obj = Utils::Presenter::toJson(s);
+    const QJsonObject obj = sysinfo::presenter::toJson(s);
     const QString rendered = obj.value("ip").toString();
 
     // Presenter must fill in *something* — the model handed it an empty
@@ -97,10 +97,10 @@ void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyIp()
 
 void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyUptime()
 {
-    Utils::SystemInfo s = sample();
+    sysinfo::Info s = sample();
     s.uptime.clear();
 
-    const QJsonObject obj = Utils::Presenter::toJson(s);
+    const QJsonObject obj = sysinfo::presenter::toJson(s);
     const QString rendered = obj.value("uptime").toString();
 
     QVERIFY2(!rendered.isEmpty(), "empty uptime should be replaced with a fallback");
@@ -108,11 +108,11 @@ void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyUptime()
 
 void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
 {
-    Utils::SystemInfo s = sample();
+    sysinfo::Info s = sample();
     s.ip.clear();
     s.uptime.clear();
 
-    const QString text = Utils::Presenter::toText(s);
+    const QString text = sysinfo::presenter::toText(s);
 
     // The plain-text rendering must not contain the sequence "IP address: \n"
     // (= empty value followed by a newline) or "Uptime: " at end of string.

@@ -7,27 +7,27 @@
 #include <QString>
 
 /**
- * @brief Presentation helpers for Utils::SystemInfo.
+ * @brief Presentation helpers for sysinfo::Info.
  *
  * Lives in a sub-namespace to keep i18n (QObject::tr) out of the data layer:
- * Utils itself only collects raw values, while Utils::Presenter renders them
- * for human or API consumption. Thanks to this split, tests of the data
- * layer (tst_system_info) can verify field shapes without spinning up a
- * QTranslator.
+ * sysinfo itself only collects raw values, while sysinfo::presenter renders
+ * them for human or API consumption. Thanks to this split, tests of the
+ * data layer (tst_system_info) can verify field shapes without spinning up
+ * a QTranslator.
  */
-namespace Utils::Presenter {
+namespace sysinfo::presenter {
 
 /// Localised plain-text rendering, used for tray tooltip and clipboard.
-QString toText(const SystemInfo &s);
+QString toText(const Info &s);
 
 /// Stable JSON shape — keys match the public /systeminfo API contract.
-QJsonObject toJson(const SystemInfo &s);
+QJsonObject toJson(const Info &s);
 
 /// JSON with a parallel "labels" object containing localised field names,
 /// served to the browser extension so it can render its UI without
 /// hard-coding translations.
-QJsonObject toJsonWithLabels(const SystemInfo &s);
+QJsonObject toJsonWithLabels(const Info &s);
 
-} // namespace Utils::Presenter
+} // namespace sysinfo::presenter
 
 #endif // SYSTEM_INFO_PRESENTER_H

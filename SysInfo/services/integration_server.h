@@ -13,7 +13,7 @@
  * integration is reachable only from this machine. Two GET routes:
  *
  *   - /status     : plain "OK", used by the extension as a health probe.
- *   - /systeminfo : JSON document produced by Utils::Presenter, including
+ *   - /systeminfo : JSON document produced by sysinfo::presenter, including
  *                   localised field labels for the extension UI.
  *
  * CORS headers are wide open (`*`) because the perimeter is closed: the

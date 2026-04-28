@@ -16,7 +16,7 @@ IntegrationServer::IntegrationServer(QObject *parent)
                      [](const QHttpServerRequest &req) {
 
         // Include labels for translation
-        const QJsonObject info = Utils::Presenter::toJsonWithLabels(Utils::collectSystemInfo());
+        const QJsonObject info = sysinfo::presenter::toJsonWithLabels(sysinfo::collect());
         QHttpServerResponse response("application/json; charset=utf-8",
                                      QJsonDocument(info).toJson());
         applyCors(response);

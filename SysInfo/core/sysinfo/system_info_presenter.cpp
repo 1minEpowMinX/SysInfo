@@ -2,7 +2,7 @@
 
 #include <QObject>
 
-namespace Utils::Presenter {
+namespace sysinfo::presenter {
 
 namespace {
 
@@ -18,12 +18,12 @@ QString withFallback(const QString &raw, const QString &fallback)
     return raw.isEmpty() ? fallback : raw;
 }
 
-QString ipOrFallback(const SystemInfo &s)     { return withFallback(s.ip,     QObject::tr("No IP")); }
-QString uptimeOrFallback(const SystemInfo &s) { return withFallback(s.uptime, QObject::tr("Unavailable")); }
+QString ipOrFallback(const Info &s)     { return withFallback(s.ip,     QObject::tr("No IP")); }
+QString uptimeOrFallback(const Info &s) { return withFallback(s.uptime, QObject::tr("Unavailable")); }
 
 } // namespace
 
-QString toText(const SystemInfo &s)
+QString toText(const Info &s)
 {
     return QObject::tr("Device name: %1\nUser: %2\nIP address: %3\nUptime: %4")
         .arg(s.hostname,
@@ -32,7 +32,7 @@ QString toText(const SystemInfo &s)
              uptimeOrFallback(s));
 }
 
-QJsonObject toJson(const SystemInfo &s)
+QJsonObject toJson(const Info &s)
 {
     QJsonObject obj;
     obj["hostname"] = s.hostname;
@@ -42,7 +42,7 @@ QJsonObject toJson(const SystemInfo &s)
     return obj;
 }
 
-QJsonObject toJsonWithLabels(const SystemInfo &s)
+QJsonObject toJsonWithLabels(const Info &s)
 {
     QJsonObject obj = toJson(s);
 
@@ -56,4 +56,4 @@ QJsonObject toJsonWithLabels(const SystemInfo &s)
     return obj;
 }
 
-} // namespace Utils::Presenter
+} // namespace sysinfo::presenter
