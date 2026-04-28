@@ -21,17 +21,21 @@ namespace Utils {
  * contract of the /systeminfo HTTP endpoint, so do not rename without
  * also updating the API consumers (browser extension).
  */
+/**
+ * Empty fields signal "no value" rather than carrying a localised
+ * placeholder — formatting is the presenter's job, not the model's.
+ */
 struct SystemInfo {
-    QString hostname;   ///< Network host name as reported by the OS.
-    QString username;   ///< Login name of the current desktop session.
-    QString ip;         ///< Best-guess active IPv4 address (see getActiveIPAddress).
-    QString uptime;     ///< Last boot time formatted as "dd.MM.yyyy HH:mm".
+    QString hostname;   ///< Network host name; empty if unobtainable.
+    QString username;   ///< Login name; empty if neither USERNAME nor USER is set.
+    QString ip;         ///< Best-guess active IPv4 address; empty if none found.
+    QString uptime;     ///< "dd.MM.yyyy HH:mm"; empty if unsupported or syscall failed.
 };
 
-/// @return The OS-reported host name (QHostInfo::localHostName).
+/// @return The OS-reported host name (QHostInfo::localHostName), or empty.
 QString getHostname();
 
-/// @return The login name from the USERNAME (Windows) or USER (Unix) env var.
+/// @return Login name from USERNAME (Windows) or USER (Unix); empty if unset.
 QString getUsername();
 
 /**
@@ -42,18 +46,20 @@ QString getUsername();
  * Tailscale, OpenVPN…) over a plain LAN address — this is what the support
  * team actually wants to see on a developer's machine.
  *
- * @return The IPv4 string, or the localised "No IP" fallback if nothing matches.
+ * @return The IPv4 string, or empty QString if nothing usable was found.
+ *         The presenter substitutes a localised fallback ("No IP") on empty.
  */
 QString getActiveIPAddress();
 
 /**
- * @brief Last boot time as a localised display string.
+ * @brief Last boot time as a display string.
  *
  * Implementation differs per OS (GetTickCount64 on Windows, sysinfo() on
- * Linux, sysctl(KERN_BOOTTIME) on macOS). On unsupported platforms or when
- * the syscall fails, returns a localised fallback.
+ * Linux, sysctl(KERN_BOOTTIME) on macOS).
  *
- * @return "dd.MM.yyyy HH:mm", or one of "Unavailable" / "Not supported".
+ * @return "dd.MM.yyyy HH:mm" on success, or an empty QString when the
+ *         syscall fails or the platform is unsupported. The presenter
+ *         substitutes a localised fallback ("Unavailable") on empty.
  */
 QString getLastBootTime();
 

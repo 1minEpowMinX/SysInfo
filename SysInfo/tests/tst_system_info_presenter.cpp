@@ -13,6 +13,9 @@ private slots:
     void toJson_hasExpectedKeys_andNoLabels();
     void toJsonWithLabels_includesAllLabels();
     void toJsonWithLabels_containsSameDataAsToJson();
+    void toJson_substitutesFallbackForEmptyIp();
+    void toJson_substitutesFallbackForEmptyUptime();
+    void toText_substitutesFallbacksForEmptyFields();
 };
 
 namespace {
@@ -74,6 +77,49 @@ void TestSystemInfoPresenter::toJsonWithLabels_containsSameDataAsToJson()
     for (const QString &key : {"hostname", "username", "ip", "uptime"}) {
         QCOMPARE(labeled.value(key).toString(), plain.value(key).toString());
     }
+}
+
+void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyIp()
+{
+    Utils::SystemInfo s = sample();
+    s.ip.clear();
+
+    const QJsonObject obj = Utils::Presenter::toJson(s);
+    const QString rendered = obj.value("ip").toString();
+
+    // Presenter must fill in *something* — the model handed it an empty
+    // string and the consumer (browser extension, clipboard) should not
+    // see a blank field.
+    QVERIFY2(!rendered.isEmpty(), "empty ip should be replaced with a fallback");
+    QVERIFY2(rendered != s.hostname && rendered != s.username,
+             "fallback must not be a different field");
+}
+
+void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyUptime()
+{
+    Utils::SystemInfo s = sample();
+    s.uptime.clear();
+
+    const QJsonObject obj = Utils::Presenter::toJson(s);
+    const QString rendered = obj.value("uptime").toString();
+
+    QVERIFY2(!rendered.isEmpty(), "empty uptime should be replaced with a fallback");
+}
+
+void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
+{
+    Utils::SystemInfo s = sample();
+    s.ip.clear();
+    s.uptime.clear();
+
+    const QString text = Utils::Presenter::toText(s);
+
+    // The plain-text rendering must not contain the sequence "IP address: \n"
+    // (= empty value followed by a newline) or "Uptime: " at end of string.
+    QVERIFY2(!text.contains("IP address: \n"),
+             qPrintable("empty ip leaked into text: " + text));
+    QVERIFY2(!text.endsWith("Uptime: "),
+             qPrintable("empty uptime leaked into text: " + text));
 }
 
 QTEST_GUILESS_MAIN(TestSystemInfoPresenter)

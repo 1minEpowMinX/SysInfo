@@ -3,10 +3,7 @@
 #include <QDateTime>
 #include <QHostInfo>
 #include <QNetworkInterface>
-#include <QObject>
-#include <QProcess>
 #include <QString>
-#include <QTextStream>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -98,10 +95,14 @@ QString getActiveIPAddress() {
 
     if (!vpnIp.isEmpty()) return vpnIp;
     if (!lanIp.isEmpty()) return lanIp;
-    return QObject::tr("No IP");
+    return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
 }
 
 QString getLastBootTime() {
+    // Returns the boot time formatted as "dd.MM.yyyy HH:mm" on supported
+    // platforms, or an empty QString when the syscall fails or the platform
+    // is not supported. The presenter is responsible for substituting a
+    // localised fallback string ("Unavailable" / "Not supported") on empty.
 #ifdef Q_OS_WIN
     ULONGLONG uptimeMs = GetTickCount64();
     QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
@@ -113,7 +114,7 @@ QString getLastBootTime() {
         QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
         return bootTime.toString("dd.MM.yyyy HH:mm");
     }
-    return QObject::tr("Unavailable");
+    return {};
 
 #elif defined(Q_OS_MAC)
     // macOS does not have sysinfo, so we use sysctl
@@ -124,10 +125,10 @@ QString getLastBootTime() {
         QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
         return bootTime.toString("dd.MM.yyyy HH:mm");
     }
-    return QObject::tr("Unavailable");
+    return {};
 
 #else
-    return QObject::tr("Not supported");
+    return {};
 #endif
 }
 

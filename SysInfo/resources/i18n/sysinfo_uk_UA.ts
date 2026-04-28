@@ -78,46 +78,37 @@
         <translation>Закрити</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info.cpp" line="101"/>
-        <location filename="../../tests/tst_system_info.cpp" line="36"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="21"/>
         <source>No IP</source>
         <translation>Немає IP</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info.cpp" line="116"/>
-        <location filename="../../core/sysinfo/system_info.cpp" line="127"/>
-        <location filename="../../tests/tst_system_info.cpp" line="55"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="22"/>
         <source>Unavailable</source>
         <translation>Недоступно</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info.cpp" line="130"/>
-        <location filename="../../tests/tst_system_info.cpp" line="56"/>
-        <source>Not supported</source>
-        <translation>Не підтримується</translation>
-    </message>
-    <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="28"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="50"/>
         <source>Device name</source>
         <translation>Ім’я пристрою</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="29"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="51"/>
         <source>User</source>
         <translation>Користувач</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="30"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="52"/>
         <source>IP address</source>
         <translation>IP‑адреса</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="31"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="53"/>
         <source>Uptime</source>
         <translation>Час вмикання</translation>
     </message>
     <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="9"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="28"/>
         <source>Device name: %1
 User: %2
 IP address: %3
