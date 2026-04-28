@@ -32,3 +32,7 @@ void SettingsManager::setShowTrayGuide(bool value) {
                     "SettingsManager: failed to write General/ShowTrayGuide settings.");
     }
 }
+
+QString SettingsManager::filePath() const {
+    return m_settings.fileName();
+}

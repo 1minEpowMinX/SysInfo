@@ -5,13 +5,18 @@
 #include <QLabel>
 #include <QString>
 
+class SettingsManager;
+
 /**
  * @brief Modal "About SysInfo" window.
  *
  * Shows the program version, build date, project author, support contact
  * and a snapshot of system details (host, user, OS, Qt, settings path).
- * The system-details block is built once in getSystemDetails() during
- * construction — values are not refreshed while the dialog is open.
+ * The system-details block is built once during construction — values
+ * are not refreshed while the dialog is open.
+ *
+ * SettingsManager is injected by reference so the dialog does not have
+ * to duplicate the org/app strings to look up the settings file path.
  *
  * Lifetime: created on the stack by App::onAboutRequested() and shown
  * via QDialog::exec(); destroyed when exec() returns.
@@ -21,19 +26,34 @@ class AboutDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AboutDialog(QWidget *parent = nullptr);
+    /**
+     * @param settings App-wide settings store; only the settings file path
+     *                 is read for display. Must outlive this dialog.
+     * @param parent   Standard Qt parent.
+     */
+    explicit AboutDialog(SettingsManager& settings, QWidget* parent = nullptr);
 
 protected:
     /// Repaint the background label scaled to the new dialog size.
     void resizeEvent(QResizeEvent *event) override;
 
-    /// Build the localised, multi-line "system details" block displayed
-    /// in the dialog body. Pulls fresh values from Utils + QSysInfo.
-    QString getSystemDetails() const;
-
 private:
-    QLabel *backgroundLabel;   ///< Scaled background image (sysinfo_background.png).
-    QLabel *aboutLabel;        ///< Foreground text label with version + system details.
+    /// Configure the full-window scaled background image.
+    void setupBackground();
+
+    /// Configure the foreground RichText label (style, flags, alignment).
+    void setupAboutLabel();
+
+    /// Compose the static "About" body with version / author / license info.
+    QString buildAboutHtml() const;
+
+    /// Compose the localised "system details" block (OS, host, user,
+    /// settings file path) appended to the About body.
+    QString buildSystemDetailsHtml() const;
+
+    SettingsManager& m_settings;     ///< Injected, not owned.
+    QLabel* backgroundLabel;          ///< Scaled background image (sysinfo_background.png).
+    QLabel* aboutLabel;               ///< Foreground text label with version + system details.
 };
 
 #endif // ABOUTDIALOG_H

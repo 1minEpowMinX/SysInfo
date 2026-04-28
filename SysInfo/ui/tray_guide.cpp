@@ -1,4 +1,5 @@
 #include "tray_guide.h"
+
 #include "core/logging/logger.h"
 #include "core/settings/settings_manager.h"
 
@@ -10,14 +11,28 @@ TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
     : QDialog(parent)
     , m_settings(settings)
 {
+    setupWindow();
+    setupAnimation();
+    setupTexts();
+    setupControls();
+    buildLayout();
+
+    adjustSize();
+}
+
+void TrayGuide::setupWindow()
+{
     setWindowTitle(QObject::tr("How to pin an icon to the tray"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
     setModal(true);
+}
 
+void TrayGuide::setupAnimation()
+{
     m_gifLabel = new QLabel(this);
     m_gifLabel->setAlignment(Qt::AlignCenter);
-    QMovie* movie = new QMovie(":/resources/animations/tray_guide.gif", QByteArray(), this);
 
+    QMovie* movie = new QMovie(":/resources/animations/tray_guide.gif", QByteArray(), this);
     if (!movie->isValid()) {
         Logger::log(Logger::EventId::UiResourceMissing,
                     "TrayGuide: tray_guide.gif not loaded");
@@ -25,7 +40,10 @@ TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
 
     m_gifLabel->setMovie(movie);
     movie->start();
+}
 
+void TrayGuide::setupTexts()
+{
     m_textLabel = new QLabel(QObject::tr(
         "<p><b>To keep the app visible in the notification area:</b><br>"
         "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
@@ -33,20 +51,24 @@ TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
         ), this);
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
+}
 
+void TrayGuide::setupControls()
+{
     m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"), this);
-    m_closeButton = new QPushButton(QObject::tr("Close"), this);
+    m_closeButton   = new QPushButton(QObject::tr("Close"), this);
 
     connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
+}
 
+void TrayGuide::buildLayout()
+{
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->addWidget(m_gifLabel);
     layout->addWidget(m_textLabel);
     layout->addWidget(m_dontShowAgain, 0, Qt::AlignCenter);
-    layout->addWidget(m_closeButton, 0, Qt::AlignCenter);
+    layout->addWidget(m_closeButton,   0, Qt::AlignCenter);
     setLayout(layout);
-
-    this->adjustSize();
 }
 
 void TrayGuide::onCloseClicked()

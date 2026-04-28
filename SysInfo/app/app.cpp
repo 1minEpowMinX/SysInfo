@@ -103,7 +103,7 @@ void App::onCopyRequested()
 
 void App::onAboutRequested()
 {
-    AboutDialog dlg;
+    AboutDialog dlg(m_settings);
     dlg.exec();
 }
 

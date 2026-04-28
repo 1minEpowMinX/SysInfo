@@ -35,6 +35,12 @@ public:
     /// Persist the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
     void setShowTrayGuide(bool value);
 
+    /// @return Absolute path of the on-disk settings file. Useful for the
+    ///         About dialog, support tickets and manual cleanup. Provides
+    ///         a single point of access — callers must NOT instantiate
+    ///         their own QSettings("Pivdenny", "SysInfo") to read this.
+    QString filePath() const;
+
 private:
     QSettings m_settings;
 };

@@ -35,6 +35,23 @@ private slots:
     void onCloseClicked();
 
 private:
+    /// Configure window-level flags (title, modality, stays-on-top).
+    void setupWindow();
+
+    /// Build the looping screenshot animation; logs UiResourceMissing if the
+    /// .gif resource is unavailable but does not abort construction.
+    void setupAnimation();
+
+    /// Build the explanatory text label.
+    void setupTexts();
+
+    /// Build the "Don't show again" checkbox and the Close button, plus the
+    /// signal/slot connection that makes the button work.
+    void setupControls();
+
+    /// Lay out all four widgets vertically in this dialog.
+    void buildLayout();
+
     SettingsManager& m_settings;     ///< Injected settings store (not owned).
 
     QLabel*      m_gifLabel;         ///< Holds the animated screenshot.
