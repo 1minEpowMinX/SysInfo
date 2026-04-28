@@ -116,10 +116,6 @@ namespace sysinfo
 
 	QString lastBootTime()
 	{
-		// Returns the boot time formatted as "dd.MM.yyyy HH:mm" on supported
-		// platforms, or an empty QString when the syscall fails or the platform
-		// is not supported. The presenter is responsible for substituting a
-		// localised fallback string ("Unavailable") on empty.
 #ifdef Q_OS_WIN
 		ULONGLONG uptimeMs = GetTickCount64();
 		QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
