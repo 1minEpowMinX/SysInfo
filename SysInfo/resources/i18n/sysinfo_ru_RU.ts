@@ -43,37 +43,37 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../ui/about_dialog.cpp" line="17"/>
+        <location filename="../../ui/about_dialog.cpp" line="18"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../../ui/about_dialog.cpp" line="39"/>
+        <location filename="../../ui/about_dialog.cpp" line="54"/>
         <source>&lt;h2&gt;&lt;b&gt;SysInfo&lt;/b&gt;&lt;/h2&gt;&lt;p&gt;&lt;b&gt;The application collects system information and assists in diagnostics:&lt;/b&gt;&lt;br&gt;• Displays device information (device name, user, IP address, uptime).&lt;br&gt;• Runs in the background via the system tray.&lt;br&gt;• Right-click on the icon to open the action menu.&lt;br&gt;• The ”Copy to clipboard“ option copies the current information.&lt;br&gt;&lt;br&gt;&lt;b&gt;If the icon is not visible in the tray, drag it to the notification area.&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;&lt;b&gt;Version:&lt;/b&gt; %1 (build %2)&lt;/p&gt;&lt;p&gt;&lt;b&gt;Developer:&lt;/b&gt; Kyrylo Bitskyi &lt;/p&gt;&lt;p&gt;&lt;b&gt;Company:&lt;/b&gt; Pivdenny &lt;/p&gt;&lt;p&gt;&lt;b&gt;Source code:&lt;/b&gt; &lt;a href=&apos;https://github.com/1minEpowMinX/SysInfo&apos;&gt;GitHub&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;Core:&lt;/b&gt; Qt %3, C++17&lt;/p&gt;&lt;p&gt;&lt;b&gt;License:&lt;/b&gt; &lt;a href=&apos;https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE&apos;&gt;LGPL v3.0&lt;/a&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;&lt;small&gt;© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.&lt;/small&gt;&lt;/p&gt;</source>
         <translation>&lt;h2&gt;&lt;b&gt;SysInfo&lt;/b&gt;&lt;/h2&gt;&lt;p&gt;&lt;b&gt;Приложение собирает информацию о системе и помогает в диагностике:&lt;/b&gt;&lt;br&gt;• Отображает сведения об устройстве (имя устройства, пользователь, IP-адрес, время включения).&lt;br&gt;• Работает в фоновом режиме через системный трей.&lt;br&gt;• Щёлкните правой кнопкой мыши по значку, чтобы открыть меню действий.&lt;br&gt;• Пункт «Копировать в буфер обмена» копирует текущую информацию.&lt;br&gt;&lt;br&gt;&lt;b&gt;Если значок не виден в трее, перетащите его в область уведомлений.&lt;/b&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;&lt;b&gt;Версия:&lt;/b&gt; %1 (build %2)&lt;/p&gt;&lt;p&gt;&lt;b&gt;Разработчик:&lt;/b&gt; Kyrylo Bitskyi &lt;/p&gt;&lt;p&gt;&lt;b&gt;Компания:&lt;/b&gt; Pivdenny &lt;/p&gt;&lt;p&gt;&lt;b&gt;Исходный код:&lt;/b&gt; &lt;a href=&apos;https://github.com/1minEpowMinX/SysInfo&apos;&gt;GitHub&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;Ядро:&lt;/b&gt; Qt %3, C++17&lt;/p&gt;&lt;p&gt;&lt;b&gt;Лицензия:&lt;/b&gt; &lt;a href=&apos;https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE&apos;&gt;LGPL v3.0&lt;/a&gt;&lt;/p&gt;&lt;hr&gt;&lt;p&gt;&lt;small&gt;© 2026 Kyrylo Bitskyi для Pivdenny. Все права защищены.&lt;/small&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../ui/about_dialog.cpp" line="88"/>
+        <location filename="../../ui/about_dialog.cpp" line="76"/>
         <source>&lt;p span style=&apos;color: gray;&apos;&gt;&lt;b&gt;OS:&lt;/b&gt; %1&lt;br&gt;&lt;b&gt;User:&lt;/b&gt; %2&lt;br&gt;&lt;b&gt;Device:&lt;/b&gt; %3&lt;br&gt;&lt;b&gt;Settings file:&lt;/b&gt; %4&lt;/p&gt;</source>
         <translation>&lt;p span style=&apos;color: gray;&apos;&gt;&lt;b&gt;ОС:&lt;/b&gt; %1&lt;br&gt;&lt;b&gt;Пользователь:&lt;/b&gt; %2&lt;br&gt;&lt;b&gt;Устройство:&lt;/b&gt; %3&lt;br&gt;&lt;b&gt;Файл настроек:&lt;/b&gt; %4&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../ui/tray_guide.cpp" line="13"/>
+        <location filename="../../ui/tray_guide.cpp" line="25"/>
         <source>How to pin an icon to the tray</source>
         <translation>Как закрепить значок в трее</translation>
     </message>
     <message>
-        <location filename="../../ui/tray_guide.cpp" line="29"/>
+        <location filename="../../ui/tray_guide.cpp" line="47"/>
         <source>&lt;p&gt;&lt;b&gt;To keep the app visible in the notification area:&lt;/b&gt;&lt;br&gt;1. Open hidden icons by clicking the up arrow next to the system tray.&lt;br&gt;2️. Find the SysInfo icon and drag it to the visible area of the panel.&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;b&gt;Чтобы приложение оставалось видимым в области уведомлений:&lt;/b&gt;&lt;br&gt;1. Откройте скрытые значки, нажав стрелку вверх рядом с системным треем.&lt;br&gt;2. Найдите значок SysInfo и перетащите его в видимую часть панели.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../ui/tray_guide.cpp" line="37"/>
+        <location filename="../../ui/tray_guide.cpp" line="58"/>
         <source>Don&apos;t show again</source>
         <translation>Больше не показывать</translation>
     </message>
     <message>
-        <location filename="../../ui/tray_guide.cpp" line="38"/>
+        <location filename="../../ui/tray_guide.cpp" line="59"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
