@@ -4,7 +4,10 @@
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include <QObject>
+#include <QStringList>
 #include <QTcpServer>
+
+class SettingsManager;
 
 /**
  * @brief Local HTTP endpoint exposing system info to the browser extension.
@@ -16,9 +19,22 @@
  *   - /systeminfo : JSON document produced by sysinfo::presenter, including
  *                   localised field labels for the extension UI.
  *
- * CORS headers are wide open (`*`) because the perimeter is closed: the
- * server only accepts loopback connections, and the extension's origin
- * varies per browser. See applyCors().
+ * Security model
+ * --------------
+ * The server protects against:
+ *   - cross-site JS attacks (rejected via Sec-Fetch-Site filter),
+ *   - direct navigation in the address bar (rejected via Sec-Fetch-Mode),
+ *   - browser callers that are not on the X-Sysinfo-Client whitelist
+ *     (no CORS headers ⇒ JS cannot read the response).
+ *
+ * The server does NOT protect against:
+ *   - local non-browser clients (curl, scripts, malware) — they bypass
+ *     CORS entirely. Mitigated by binding to loopback and by the data
+ *     being low-sensitivity in our threat model;
+ *   - sibling extensions installed in the same browser — extension IDs
+ *     are public, X-Sysinfo-Client is a claim and not a proof. Hardening
+ *     to "proof" requires native messaging with a shared secret, which
+ *     is out of scope for the current version.
  *
  * Lifecycle is explicit: construct → start(port) → stop() / destructor.
  * start() returns false if the port is busy or binding fails — the App
@@ -28,7 +44,14 @@ class IntegrationServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit IntegrationServer(QObject *parent = nullptr);
+    /**
+     * @param settings  Application settings store; consulted on every
+     *                  request for the AllowedExtensionIds whitelist.
+     *                  Must outlive this server.
+     * @param parent    Standard Qt parent.
+     */
+    explicit IntegrationServer(SettingsManager& settings,
+                               QObject *parent = nullptr);
     ~IntegrationServer() override;
 
     /**
@@ -49,9 +72,20 @@ public:
     bool isListening() const;
 
 private:
-    /// Attach the same permissive CORS headers to every outgoing response.
-    static void applyCors(QHttpServerResponse &response);
+    /// @return The active whitelist: SettingsManager override if non-empty,
+    ///         otherwise the compiled-in default list of officially
+    ///         published SysInfo extension IDs.
+    QStringList allowedExtensionIds() const;
 
+    /// Run the layered Sec-Fetch-* and X-Sysinfo-Client checks.
+    /// @return true if the request should be served, false if rejected.
+    bool isRequestAllowed(const QHttpServerRequest& req) const;
+
+    /// Attach permissive CORS headers required by the extension service worker.
+    /// Called only after isRequestAllowed() has approved the request.
+    static void applyCors(QHttpServerResponse& response);
+
+    SettingsManager& m_settings;     ///< Injected, not owned.
     QHttpServer httpServer;
     QTcpServer  tcpServer;
 };

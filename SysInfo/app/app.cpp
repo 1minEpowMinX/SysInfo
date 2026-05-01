@@ -56,7 +56,7 @@ bool App::start()
             this, &App::onTrayGuideRequested);
     m_notifier->scheduleShow(kWelcomeDelayMs);
 
-    m_server = new IntegrationServer(this);
+    m_server = new IntegrationServer(m_settings, this);
     if (!m_server->start()) {
         QMessageBox::critical(nullptr, tr("Error"),
                               tr("Failed to start the local server. "

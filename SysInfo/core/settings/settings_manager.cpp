@@ -36,3 +36,7 @@ void SettingsManager::setShowTrayGuide(bool value) {
 QString SettingsManager::filePath() const {
     return m_settings.fileName();
 }
+
+QStringList SettingsManager::allowedExtensionIds() const {
+    return m_settings.value("Integration/AllowedExtensionIds").toStringList();
+}

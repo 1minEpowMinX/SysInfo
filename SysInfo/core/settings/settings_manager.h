@@ -41,6 +41,17 @@ public:
     ///         their own QSettings("Pivdenny", "SysInfo") to read this.
     QString filePath() const;
 
+    /**
+     * @return Browser-extension IDs administrators have whitelisted for
+     *         the IntegrationServer (key Integration/AllowedExtensionIds).
+     *         May be empty — IntegrationServer falls back to its compiled-in
+     *         defaults in that case.
+     *
+     * Read fresh on each call so an admin can edit the registry/ini file
+     * without restarting SysInfo.
+     */
+    QStringList allowedExtensionIds() const;
+
 private:
     QSettings m_settings;
 };

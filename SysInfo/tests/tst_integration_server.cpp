@@ -1,4 +1,5 @@
 #include "services/integration_server.h"
+#include "core/settings/settings_manager.h"
 
 #include <QByteArray>
 #include <QEventLoop>
@@ -77,7 +78,8 @@ private slots:
 
 void TestIntegrationServer::startStop_togglesListening()
 {
-    IntegrationServer server;
+    SettingsManager settings;
+    IntegrationServer server(settings);
     QVERIFY(!server.isListening());
 
     QVERIFY(server.start(0));
@@ -90,8 +92,9 @@ void TestIntegrationServer::startStop_togglesListening()
 
 void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 {
-    IntegrationServer a;
-    IntegrationServer b;
+    SettingsManager settings;
+    IntegrationServer a(settings);
+    IntegrationServer b(settings);
     QVERIFY(a.start(0));
     QVERIFY(b.start(0));
     QVERIFY(a.boundPort() != b.boundPort());
@@ -99,7 +102,8 @@ void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 
 void TestIntegrationServer::statusEndpoint_returnsOk()
 {
-    IntegrationServer server;
+    SettingsManager settings;
+    IntegrationServer server(settings);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -113,7 +117,8 @@ void TestIntegrationServer::statusEndpoint_returnsOk()
 
 void TestIntegrationServer::systemInfoEndpoint_returnsJsonWithLabels()
 {
-    IntegrationServer server;
+    SettingsManager settings;
+    IntegrationServer server(settings);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -144,7 +149,8 @@ void TestIntegrationServer::systemInfoEndpoint_returnsJsonWithLabels()
 
 void TestIntegrationServer::corsHeaders_arePresent()
 {
-    IntegrationServer server;
+    SettingsManager settings;
+    IntegrationServer server(settings);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
