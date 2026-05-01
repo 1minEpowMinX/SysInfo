@@ -71,6 +71,34 @@ $shortcutObj.WorkingDirectory = Split-Path $source
 $shortcutObj.Save()
 ```
 
+### 4. Разрешить кастомное расширение браузера *(опционально)*
+
+SysInfo принимает запросы **только** от **включенных в белый список** идентификаторов расширений браузера. Официальные идентификаторы Chrome/Edge и Firefox уже включены, поэтому это необходимо только для пользовательских или корпоративных сборок с другими идентификаторами.
+
+Белый список хранится под ключом `Integration/AllowedExtensionIds`. Если этот ключ присутствует и не пуст, он **заменяет** встроенные значения по умолчанию.
+
+```sh
+# Linux: ~/.config/Pivdenny/SysInfo.conf
+mkdir -p ~/.config/Pivdenny
+cat >> ~/.config/Pivdenny/SysInfo.conf <<'EOF'
+
+[Integration]
+AllowedExtensionIds=your-custom-id1, your-custom-id2
+EOF
+
+# macOS: ~/Library/Preferences/com.pivdenny.SysInfo.plist
+defaults write com.pivdenny.SysInfo Integration.AllowedExtensionIds -array \
+    your-custom-id1 \
+    your-custom-id2
+
+# Windows: HKCU\Software\Pivdenny\SysInfo\Integration
+reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
+    /v AllowedExtensionIds /t REG_MULTI_SZ ^
+    /d "your-custom-id1\0your-custom-id2" /f
+```
+
+> ℹ️ Чтобы узнать ID собственного расширения, откройте `chrome://extensions` (или `about:addons` в Firefox) с включённым режимом разработчика.
+
 ## 🚀 Использование
 
 После установки SysInfo работает в фоновом режиме через системный трей.
