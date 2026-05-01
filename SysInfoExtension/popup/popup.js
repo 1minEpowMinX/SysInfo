@@ -3,11 +3,9 @@ if (typeof browser === "undefined") {
 	globalThis.browser = chrome;
 }
 
-
 /**
  * Applies translations to the page based on the user's
  * preferred language and the extension's localized messages.
- * @return {undefined}
  */
 function applyI18n() {
 	document.querySelectorAll('[i18n-content]').forEach(el => {
@@ -24,7 +22,6 @@ function applyI18n() {
  * color scheme and translations, checking the status of the
  * local agent, and displaying a message to the user
  * indicating whether or not the agent is active.
- * @return {Promise<void>}
  */
 async function loadInfo() {
 	const container = document.getElementById("info");

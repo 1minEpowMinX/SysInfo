@@ -6,7 +6,7 @@ if (typeof browser === "undefined") {
 /**
  * Translate a string using chrome.i18n
  * @param {string} key - The key of the string to translate
- * @returns {string} - The translated string, or the original key if no translation is found
+ * @returns {string} The translated string, or the original key if no translation is found
  */
 function t(key) {
 	return chrome.i18n.getMessage(key) || key;
@@ -15,7 +15,7 @@ function t(key) {
 /**
  * Verify that this is the IT Services ticket creation page
  * @param {string} pathname - The current URL path
- * @returns {boolean} - True if the page is allowed, false otherwise
+ * @returns {boolean} True if the page is allowed, false otherwise
  */
 function isTicketAllowed(pathname) {
 	// Universal regex for extracting portalId and ticketId
@@ -52,7 +52,7 @@ function isTicketAllowed(pathname) {
  *   - {string} username - The label for the username
  *   - {string} ip - The label for the IP address
  *   - {string} uptime - The label for the uptime
- * @returns {Array<string>} - An array of strings representing system information data in pairs
+ * @returns {Array<string>} An array of strings representing system information data in pairs
  */
 function buildSysInfoLines(data, labelsSafe) {
 	const raw = [
@@ -79,7 +79,7 @@ function buildSysInfoLines(data, labelsSafe) {
  * @param {Array<string>} lines - The array of lines to get the longest length from
  * @param {string} [char="─"] - The character to use for the divider string
  * @param {number} [dividerPercent=0.45] - The percentage of the longest line length to repeat the divider string to
- * @returns {string} - The generated divider string
+ * @returns {string} The generated divider string
  */
 function makeDivider(lines, char = "─", dividerPercent = 0.45) {
 	// Each divider symbol has its own visual width. It is necessary to adjust it in percentage proportions
@@ -155,7 +155,6 @@ function watchElement(selector, onFound, intervalMs = 2000) {
  * Ensures that a toast container exists in the DOM. If the container does not exist, it is created.
  * The container is a div element with the id 'toast-container' and is appended to the documentElement.
  * This function is used by showToast to ensure that the toast container exists before attempting to show a toast.
- * @returns {undefined}
  */
 function ensureToastContainer() {
 	if (document.getElementById('toast-container')) return;
