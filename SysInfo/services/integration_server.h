@@ -24,8 +24,12 @@ class SettingsManager;
  * The server protects against:
  *   - cross-site JS attacks (rejected via Sec-Fetch-Site filter),
  *   - direct navigation in the address bar (rejected via Sec-Fetch-Mode),
- *   - browser callers that are not on the X-Sysinfo-Client whitelist
- *     (no CORS headers ⇒ JS cannot read the response).
+ *   - browser callers without a valid X-Sysinfo-Client header (rejected
+ *     with 403). This catches stale SysInfo extension builds that have
+ *     not yet been updated to send the header, and any sibling browser
+ *     extension that does not know to mimic it.
+ *   - browser callers that send X-Sysinfo-Client but the value is not
+ *     in the SettingsManager whitelist (rejected with 403).
  *
  * The server does NOT protect against:
  *   - local non-browser clients (curl, scripts, malware) — they bypass

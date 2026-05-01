@@ -51,6 +51,21 @@ bool isContextAllowed(const QHttpServerRequest& req)
 }
 
 /**
+ * @brief Detect whether a request originates from a browser at all.
+ *
+ * Every modern browser stamps Sec-Fetch-Site on every outbound request
+ * (Chrome 76+, Firefox 90+, all Chromium-based Edge). curl, Postman,
+ * Qt tests and the like never send Sec-Fetch-* — that's the discriminator.
+ *
+ * Forbidden header name: page JS cannot fake the absence of this header
+ * once the browser has decided to send the request.
+ */
+bool isFromBrowser(const QHttpServerRequest& req)
+{
+    return !req.headers().value("Sec-Fetch-Site").toByteArray().isEmpty();
+}
+
+/**
  * @brief Whitelist check on the X-Sysinfo-Client claim.
  *
  * The header is a CLAIM, not a PROOF — see IntegrationServer's class
@@ -59,17 +74,33 @@ bool isContextAllowed(const QHttpServerRequest& req)
  * Origin / Sec-Fetch-Site, and (b) we already reject dangerous contexts
  * in isContextAllowed().
  *
- * Empty header  ⇒ allowed (non-browser client: curl, tests, dev tools).
- * Non-empty     ⇒ must match the whitelist exactly.
+ * Policy:
+ *   - Browser request (Sec-Fetch-* present):
+ *       header missing       ⇒ rejected (old SysInfo extension version,
+ *                              foreign extension, or stripped fetch),
+ *       header in whitelist  ⇒ allowed,
+ *       header but not match ⇒ rejected.
+ *   - Non-browser request (no Sec-Fetch-*):
+ *       header missing       ⇒ allowed (curl, tests, dev tooling),
+ *       header in whitelist  ⇒ allowed,
+ *       header but not match ⇒ rejected.
+ *
+ * The browser-vs-non-browser branch is what stops a sibling browser
+ * extension that simply forgot (or refused) to set X-Sysinfo-Client
+ * from sneaking in via the curl-friendly fallback.
  */
 bool isClientAllowed(const QHttpServerRequest& req,
                      const QStringList& allowedIds)
 {
-    const QByteArray header = req.headers().value("X-Sysinfo-Client").toByteArray();
-    if (header.isEmpty())
-        return true;
+    const QByteArray clientId =
+        req.headers().value("X-Sysinfo-Client").toByteArray();
 
-    return allowedIds.contains(QString::fromUtf8(header));
+    if (clientId.isEmpty()) {
+        // Allow only non-browser clients to omit the identifier.
+        return !isFromBrowser(req);
+    }
+
+    return allowedIds.contains(QString::fromUtf8(clientId));
 }
 
 QHttpServerResponse forbidden()
