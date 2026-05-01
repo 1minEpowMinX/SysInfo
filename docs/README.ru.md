@@ -133,5 +133,5 @@ reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
 
 ## 📝 Лицензия
 
-Авторские права © 2025 [1minEpowMinX](https://github.com/1minEpowMinX).  
+Авторские права © 2026 [1minEpowMinX](https://github.com/1minEpowMinX).  
 Этот проект лицензирован по лицензии [LGPL V3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE).
