@@ -40,12 +40,14 @@ const QStringList kDefaultAllowedExtensionIds = {
 bool isContextAllowed(const QHttpServerRequest& req)
 {
     const QByteArray site = req.headers().value("Sec-Fetch-Site").toByteArray();
-    if (site == "cross-site" || site == "same-site")
+    if (site == "cross-site" || site == "same-site") {
         return false;
+    }
 
     const QByteArray mode = req.headers().value("Sec-Fetch-Mode").toByteArray();
-    if (mode == "navigate")
+    if (mode == "navigate") {
         return false;
+    }
 
     return true;
 }
@@ -118,8 +120,9 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
 {
     httpServer.route("/systeminfo", Method::Get,
                      [this](const QHttpServerRequest &req) -> QHttpServerResponse {
-        if (!isRequestAllowed(req))
+        if (!isRequestAllowed(req)) {
             return forbidden();
+        }
 
         const QJsonObject info =
             sysinfo::presenter::toJsonWithLabels(sysinfo::collect());
@@ -131,8 +134,9 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
 
     httpServer.route("/status", Method::Get,
                      [this](const QHttpServerRequest &req) -> QHttpServerResponse {
-        if (!isRequestAllowed(req))
+        if (!isRequestAllowed(req)) {
             return forbidden();
+        }
 
         QHttpServerResponse response("OK");
         applyCors(response);
@@ -141,8 +145,9 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
 
     // Preflight (OPTIONS) for both routes — same gate as GET, no body.
     auto preflight = [this](const QHttpServerRequest &req) -> QHttpServerResponse {
-        if (!isRequestAllowed(req))
+        if (!isRequestAllowed(req)) {
             return forbidden();
+        }
 
         QHttpServerResponse response(QHttpServerResponse::StatusCode::NoContent);
         applyCors(response);

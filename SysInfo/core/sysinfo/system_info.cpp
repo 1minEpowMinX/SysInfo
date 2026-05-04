@@ -43,16 +43,18 @@ namespace sysinfo
 				"virtualbox", "vboxnet", "hyper-v", "bluetooth"};
 			for (const char *kw : kBridgeKeywords)
 			{
-				if (nameLower.contains(QLatin1String(kw)))
+                if (nameLower.contains(QLatin1String(kw))) {
 					return true;
+                }
 			}
 			return false;
 		}
 
 		bool looksLikeVpn(const QNetworkInterface &iface)
 		{
-			if (iface.type() == QNetworkInterface::Virtual)
+            if (iface.type() == QNetworkInterface::Virtual) {
 				return true;
+            }
 
 			const QString nameLower = iface.humanReadableName().toLower();
 			static const char *const kVpnKeywords[] = {
@@ -60,8 +62,9 @@ namespace sysinfo
 				"anyconnect", "cisco", "zerotier", "tun", "tap"};
 			for (const char *kw : kVpnKeywords)
 			{
-				if (nameLower.contains(QLatin1String(kw)))
+                if (nameLower.contains(QLatin1String(kw))) {
 					return true;
+                }
 			}
 			return false;
 		}
@@ -79,12 +82,14 @@ namespace sysinfo
 			// Skip interfaces that are down, loopback or not running
 			if (!flags.testFlag(QNetworkInterface::IsUp) ||
 				!flags.testFlag(QNetworkInterface::IsRunning) ||
-				flags.testFlag(QNetworkInterface::IsLoopBack))
+                flags.testFlag(QNetworkInterface::IsLoopBack)) {
 				continue;
+            }
 
 			const QString nameLower = iface.humanReadableName().toLower();
-			if (looksLikeVirtualBridge(nameLower))
+            if (looksLikeVirtualBridge(nameLower)) {
 				continue;
+            }
 
 			const bool isVpn = looksLikeVpn(iface);
 
@@ -92,8 +97,9 @@ namespace sysinfo
 			for (const QNetworkAddressEntry &entry : entries)
 			{
 				const QString ip = entry.ip().toString();
-				if (ip.contains(QLatin1Char(':')))
+                if (ip.contains(QLatin1Char(':'))) {
 					continue; // Skip IPv6
+                }
 
 				if (isVpn)
 				{
@@ -107,10 +113,12 @@ namespace sysinfo
 			}
 		}
 
-		if (!vpnIp.isEmpty())
+        if (!vpnIp.isEmpty()) {
 			return vpnIp;
-		if (!lanIp.isEmpty())
+        }
+        if (!lanIp.isEmpty()) {
 			return lanIp;
+        }
 		return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
 	}
 

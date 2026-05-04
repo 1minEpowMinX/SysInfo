@@ -73,8 +73,9 @@ void TrayGuide::buildLayout()
 
 void TrayGuide::onCloseClicked()
 {
-    if (m_dontShowAgain->isChecked())
+    if (m_dontShowAgain->isChecked()) {
         m_settings.setShowTrayGuide(false);
+    }
 
     close();
 }

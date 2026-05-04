@@ -61,8 +61,9 @@ void TrayController::show()
 
 void TrayController::setTooltip(const QString& text)
 {
-    if (m_icon)
+    if (m_icon) {
         m_icon->setToolTip(text);
+    }
 }
 
 void TrayController::showNotification(const QString& title,
@@ -70,6 +71,7 @@ void TrayController::showNotification(const QString& title,
                                       QSystemTrayIcon::MessageIcon icon,
                                       int msecs)
 {
-    if (m_icon)
+    if (m_icon) {
         m_icon->showMessage(title, body, icon, msecs);
+    }
 }
