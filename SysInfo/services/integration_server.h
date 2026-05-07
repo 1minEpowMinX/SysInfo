@@ -85,9 +85,11 @@ private:
     /// @return true if the request should be served, false if rejected.
     bool isRequestAllowed(const QHttpServerRequest& req) const;
 
-    /// Attach permissive CORS headers required by the extension service worker.
-    /// Called only after isRequestAllowed() has approved the request.
-    static void applyCors(QHttpServerResponse& response);
+    /// Attach CORS headers tailored to this request's Origin.
+    /// Called only after isRequestAllowed() has approved the request
+    /// (or, for OPTIONS preflight, after isContextAllowed()).
+    static void applyCors(const QHttpServerRequest& req,
+                          QHttpServerResponse& response);
 
     SettingsManager& m_settings;     ///< Injected, not owned.
     QHttpServer httpServer;
