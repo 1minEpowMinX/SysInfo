@@ -21,24 +21,64 @@ class SettingsManager;
  *
  * Security model
  * --------------
- * The server protects against:
- *   - cross-site JS attacks (rejected via Sec-Fetch-Site filter),
- *   - direct navigation in the address bar (rejected via Sec-Fetch-Mode),
- *   - browser callers without a valid X-Sysinfo-Client header (rejected
- *     with 403). This catches stale SysInfo extension builds that have
- *     not yet been updated to send the header, and any sibling browser
- *     extension that does not know to mimic it.
- *   - browser callers that send X-Sysinfo-Client but the value is not
- *     in the SettingsManager whitelist (rejected with 403).
+ * Two independent layers gate every request, applied in order:
+ *
+ *   1. Context filter (isContextAllowed)
+ *      Origin-based, complemented by Sec-Fetch-Mode. Both headers are
+ *      forbidden header names — page JS cannot fake or strip them.
+ *
+ *      Rejected:
+ *        - Origin from a regular web page (https://evil.com, etc.) —
+ *          the Origin prefix is not chrome-extension://, moz-extension://
+ *          or edge-extension://.
+ *        - Sec-Fetch-Mode == "navigate" — direct navigation in the
+ *          address bar / bookmark / link click. Hides the JSON from
+ *          browser history.
+ *
+ *      Accepted:
+ *        - Origin starts with one of the three browser-extension URL
+ *          schemes — works the same in Chrome, Firefox and Edge despite
+ *          their differing Sec-Fetch-Site values for extension SW
+ *          (Firefox sends "cross-site", Chromium sends "none"; we no
+ *          longer rely on that field for the context decision).
+ *        - No Origin and no Sec-Fetch-* — non-browser client (curl,
+ *          tests, dev tooling).
+ *
+ *   2. Client whitelist (isClientAllowed)
+ *      Checks the X-Sysinfo-Client header against the configured list
+ *      of officially published SysInfo extension IDs (default + any
+ *      Integration/AllowedExtensionIds override from SettingsManager).
+ *
+ *      Rejected:
+ *        - Browser request without X-Sysinfo-Client — catches stale
+ *          SysInfo extension builds that have not yet been updated to
+ *          send the header, and sibling extensions that do not mimic it.
+ *        - X-Sysinfo-Client present but not on the whitelist.
+ *
+ *      Accepted:
+ *        - Non-browser request without X-Sysinfo-Client (curl, tests).
+ *        - Any request with a whitelisted X-Sysinfo-Client value.
+ *
+ * CORS preflight (OPTIONS) gates on layer 1 only — the X-Sysinfo-Client
+ * header is by spec carried only on the actual GET, never on the
+ * preflight handshake. The follow-up GET still passes through both
+ * layers, so this is not a bypass.
+ *
+ * applyCors() reflects the request Origin into Access-Control-Allow-
+ * Origin (with Vary: Origin) for browser-extension callers, and falls
+ * back to "*" for non-browser callers that have no Origin to reflect.
  *
  * The server does NOT protect against:
  *   - local non-browser clients (curl, scripts, malware) — they bypass
  *     CORS entirely. Mitigated by binding to loopback and by the data
  *     being low-sensitivity in our threat model;
- *   - sibling extensions installed in the same browser — extension IDs
- *     are public, X-Sysinfo-Client is a claim and not a proof. Hardening
+ *   - sibling extensions installed in the same browser that know our
+ *     public extension IDs and decide to mimic the X-Sysinfo-Client
+ *     header. Extension IDs are public (visible in the Web Store /
+ *     AMO listing), so the header is a claim, not a proof. Hardening
  *     to "proof" requires native messaging with a shared secret, which
- *     is out of scope for the current version.
+ *     is out of scope for the current version's portable distribution
+ *     model.
  *
  * Lifecycle is explicit: construct → start(port) → stop() / destructor.
  * start() returns false if the port is busy or binding fails — the App
@@ -81,7 +121,8 @@ private:
     ///         published SysInfo extension IDs.
     QStringList allowedExtensionIds() const;
 
-    /// Run the layered Sec-Fetch-* and X-Sysinfo-Client checks.
+    /// Run both gates: Origin/Sec-Fetch-Mode context filter, then
+    /// X-Sysinfo-Client whitelist. See class docstring for the policy.
     /// @return true if the request should be served, false if rejected.
     bool isRequestAllowed(const QHttpServerRequest& req) const;
 
