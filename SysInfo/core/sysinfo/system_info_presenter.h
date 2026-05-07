@@ -21,11 +21,14 @@ namespace sysinfo::presenter {
 QString toText(const Info &s);
 
 /// Stable JSON shape — keys match the public /systeminfo API contract.
+/// Used for the browser extension: it receives raw data and localises
+/// field labels itself through browser.i18n / chrome.i18n.
 QJsonObject toJson(const Info &s);
 
-/// JSON with a parallel "labels" object containing localised field names,
-/// served to the browser extension so it can render its UI without
-/// hard-coding translations.
+/// JSON with a parallel "labels" object containing localised field
+/// names. Used for non-browser callers (curl, support tooling, manual
+/// inspection) where there is no client-side i18n stack and the labels
+/// are useful for human reading.
 QJsonObject toJsonWithLabels(const Info &s);
 
 } // namespace sysinfo::presenter

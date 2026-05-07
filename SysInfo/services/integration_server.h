@@ -16,8 +16,16 @@ class SettingsManager;
  * integration is reachable only from this machine. Two GET routes:
  *
  *   - /status     : plain "OK", used by the extension as a health probe.
- *   - /systeminfo : JSON document produced by sysinfo::presenter, including
- *                   localised field labels for the extension UI.
+ *   - /systeminfo : JSON document produced by sysinfo::presenter. The
+ *                   payload shape varies by caller:
+ *                     - browser caller (extension SW)      : bare data
+ *                       (hostname / username / ip / uptime). The
+ *                       extension localises field names client-side
+ *                       through browser.i18n / chrome.i18n.
+ *                     - non-browser caller (curl, support) : same data
+ *                       PLUS a "labels" object with localised field
+ *                       names. Convenient for human inspection in
+ *                       support tickets and dev tooling.
  *
  * Security model
  * --------------

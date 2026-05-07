@@ -156,8 +156,16 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
             return forbidden();
         }
 
-        const QJsonObject info =
-            sysinfo::presenter::toJsonWithLabels(sysinfo::collect());
+        // Labels are emitted only for non-browser callers (curl, support
+        // tooling, manual inspection). The browser extension localises
+        // field names client-side via browser.i18n / chrome.i18n APIs,
+        // so it receives the bare data payload — smaller wire format,
+        // less duplicated translation logic.
+        const sysinfo::Info data = sysinfo::collect();
+        const QJsonObject info = isFromBrowser(req)
+                ? sysinfo::presenter::toJson(data)
+                : sysinfo::presenter::toJsonWithLabels(data);
+
         QHttpServerResponse response("application/json; charset=utf-8",
                                      QJsonDocument(info).toJson());
         applyCors(req, response);

@@ -117,7 +117,8 @@ private slots:
 
     // Happy paths via plain GET (non-browser context — no Origin)
     void statusEndpoint_returnsOk();
-    void systemInfoEndpoint_returnsJsonWithLabels();
+    void systemInfoForNonBrowser_returnsJsonWithLabels();
+    void systemInfoForExtension_returnsJsonWithoutLabels();
     void corsHeaders_arePresentForNonBrowser();
 
     // Context filter (Origin + Sec-Fetch-Mode)
@@ -199,12 +200,14 @@ void TestIntegrationServer::statusEndpoint_returnsOk()
     QCOMPARE(r.body.trimmed(), QByteArray("OK"));
 }
 
-void TestIntegrationServer::systemInfoEndpoint_returnsJsonWithLabels()
+void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()
 {
     SettingsManager settings;
     IntegrationServer server(settings);
     QVERIFY(server.start(0));
 
+    // No Origin / Sec-Fetch-* — non-browser caller (curl, support).
+    // Should receive labels for human-readable inspection.
     QNetworkAccessManager nam;
     const HttpResult r = httpGet(nam, systeminfoUrl(server));
 
@@ -228,6 +231,41 @@ void TestIntegrationServer::systemInfoEndpoint_returnsJsonWithLabels()
     QVERIFY(obj.contains("labels"));
     const QJsonObject labels = obj.value("labels").toObject();
     QVERIFY(!labels.isEmpty());
+    for (const QString &key : {"hostname", "username", "ip", "uptime"}) {
+        QVERIFY2(labels.contains(key),
+                 qPrintable("missing label: " + key));
+    }
+}
+
+void TestIntegrationServer::systemInfoForExtension_returnsJsonWithoutLabels()
+{
+    SettingsManager settings;
+    IntegrationServer server(settings);
+    QVERIFY(server.start(0));
+
+    // Browser caller (extension SW). The extension localises labels
+    // client-side via browser.i18n, so the server omits the "labels"
+    // object — smaller wire payload, less duplicated translation logic.
+    QNetworkAccessManager nam;
+    const HttpResult r = httpRequest(nam, systeminfoUrl(server), "GET", {
+        {"Origin",            QByteArray("chrome-extension://") + kChromeProdId},
+        {"X-Sysinfo-Client",  kChromeProdId},
+    });
+
+    QCOMPARE(r.error, QNetworkReply::NoError);
+    QCOMPARE(r.statusCode, 200);
+
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(r.body, &parseError);
+    QCOMPARE(parseError.error, QJsonParseError::NoError);
+    QVERIFY(doc.isObject());
+
+    const QJsonObject obj = doc.object();
+    for (const QString &key : {"hostname", "username", "ip", "uptime"}) {
+        QVERIFY2(obj.contains(key), qPrintable("missing field: " + key));
+    }
+    QVERIFY2(!obj.contains("labels"),
+             "browser caller should NOT receive labels — extension i18n owns them");
 }
 
 void TestIntegrationServer::corsHeaders_arePresentForNonBrowser()
