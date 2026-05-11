@@ -168,7 +168,6 @@ if(WIN32)
     add_custom_command(TARGET SysInfo POST_BUILD
         COMMAND Qt6::windeployqt
             --no-translations
-            --no-compiler-runtime
             --no-system-d3d-compiler
             --no-opengl-sw
             "$<TARGET_FILE:SysInfo>"
