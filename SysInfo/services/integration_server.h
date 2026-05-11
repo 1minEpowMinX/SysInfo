@@ -13,9 +13,13 @@ class SettingsManager;
  * @brief Local HTTP endpoint exposing system info to the browser extension.
  *
  * Binds to 127.0.0.1 only — never to a public interface — so the
- * integration is reachable only from this machine. Two GET routes:
+ * integration is reachable only from this machine. Three GET routes:
  *
  *   - /status     : plain "OK", used by the extension as a health probe.
+ *   - /version    : JSON {"version": "X.Y.Z", "build": "YYYYMMDD"}.
+ *                   The extension uses this to detect API-contract
+ *                   compatibility and to warn the user if SysInfo is
+ *                   too old or too new for the installed extension.
  *   - /systeminfo : JSON document produced by sysinfo::presenter. The
  *                   payload shape varies by caller:
  *                     - browser caller (extension SW)      : bare data

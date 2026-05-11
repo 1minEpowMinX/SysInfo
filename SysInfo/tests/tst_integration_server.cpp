@@ -96,6 +96,11 @@ QUrl statusUrl(const IntegrationServer &server)
     return QUrl(QString("http://127.0.0.1:%1/status").arg(server.boundPort()));
 }
 
+QUrl versionUrl(const IntegrationServer &server)
+{
+    return QUrl(QString("http://127.0.0.1:%1/version").arg(server.boundPort()));
+}
+
 QUrl systeminfoUrl(const IntegrationServer &server)
 {
     return QUrl(QString("http://127.0.0.1:%1/systeminfo").arg(server.boundPort()));
@@ -117,6 +122,8 @@ private slots:
 
     // Happy paths via plain GET (non-browser context — no Origin)
     void statusEndpoint_returnsOk();
+    void versionEndpoint_returnsJsonWithVersionAndBuild();
+    void versionEndpoint_isRejectedFromBrowserWithoutClientId();
     void systemInfoForNonBrowser_returnsJsonWithLabels();
     void systemInfoForExtension_returnsJsonWithoutLabels();
     void corsHeaders_arePresentForNonBrowser();
@@ -198,6 +205,53 @@ void TestIntegrationServer::statusEndpoint_returnsOk()
     QCOMPARE(r.error, QNetworkReply::NoError);
     QCOMPARE(r.statusCode, 200);
     QCOMPARE(r.body.trimmed(), QByteArray("OK"));
+}
+
+void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
+{
+    SettingsManager settings;
+    IntegrationServer server(settings);
+    QVERIFY(server.start(0));
+
+    QNetworkAccessManager nam;
+    const HttpResult r = httpGet(nam, versionUrl(server));
+
+    QCOMPARE(r.error, QNetworkReply::NoError);
+    QCOMPARE(r.statusCode, 200);
+
+    const QByteArray contentType = header(r, "Content-Type");
+    QVERIFY2(contentType.contains("application/json"),
+             qPrintable("unexpected Content-Type: " + contentType));
+
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(r.body, &parseError);
+    QCOMPARE(parseError.error, QJsonParseError::NoError);
+    QVERIFY(doc.isObject());
+
+    const QJsonObject obj = doc.object();
+    // Both fields must be present and non-empty. We compare exactly with
+    // the same PROJECT_VERSION / BUILD_DATE the server is built against,
+    // so a CMake project(VERSION) bump that wasn't propagated would fail
+    // this test loudly.
+    QCOMPARE(obj.value("version").toString(),
+             QString::fromUtf8(PROJECT_VERSION));
+    QCOMPARE(obj.value("build").toString(),
+             QString::fromUtf8(BUILD_DATE));
+}
+
+void TestIntegrationServer::versionEndpoint_isRejectedFromBrowserWithoutClientId()
+{
+    SettingsManager settings;
+    IntegrationServer server(settings);
+    QVERIFY(server.start(0));
+
+    QNetworkAccessManager nam;
+    // Same gate as the other endpoints — a browser caller without a
+    // valid X-Sysinfo-Client must NOT learn the server version.
+    const HttpResult r = httpRequest(nam, versionUrl(server), "GET",
+        {{"Origin", QByteArray("chrome-extension://") + kChromeProdId}});
+
+    QCOMPARE(r.statusCode, 403);
 }
 
 void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()

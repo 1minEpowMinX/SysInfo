@@ -183,6 +183,22 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
         return response;
     });
 
+    httpServer.route("/version", Method::Get,
+                     [this](const QHttpServerRequest &req) -> QHttpServerResponse {
+        if (!isRequestAllowed(req)) {
+            return forbidden();
+        }
+
+        QJsonObject body;
+        body["version"] = QString::fromUtf8(PROJECT_VERSION);
+        body["build"]   = QString::fromUtf8(BUILD_DATE);
+
+        QHttpServerResponse response("application/json; charset=utf-8",
+                                     QJsonDocument(body).toJson());
+        applyCors(req, response);
+        return response;
+    });
+
     // CORS preflight (OPTIONS). Preflight is a handshake — it carries no
     // X-Sysinfo-Client (that header is only on the actual GET) and no body.
     // We gate on context only: if Origin is hostile or it's a navigate
@@ -199,6 +215,7 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
     };
     httpServer.route("/systeminfo", Method::Options, preflight);
     httpServer.route("/status",     Method::Options, preflight);
+    httpServer.route("/version",    Method::Options, preflight);
 }
 
 IntegrationServer::~IntegrationServer()
