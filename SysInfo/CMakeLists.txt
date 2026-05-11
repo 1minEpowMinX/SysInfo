@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 
-project(SysInfo VERSION 2.1.0 LANGUAGES CXX)
+project(SysInfo VERSION 3.0.0 LANGUAGES CXX)
 
 add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
 string(TIMESTAMP BUILD_DATE "%Y%m%d" UTC)
