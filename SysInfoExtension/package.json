@@ -1,0 +1,10 @@
+{
+  "name": "sysinfo-extension",
+  "private": true,
+  "scripts": {
+    "build": "esbuild content/content_script.js --bundle --outfile=content/content_script.bundle.js --format=iife --platform=browser"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

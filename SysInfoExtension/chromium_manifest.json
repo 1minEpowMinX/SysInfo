@@ -45,9 +45,8 @@
 				"https://jira-t.company.local/*",
 				"https://jira-t2.company.local/*"
 			],
-			"type": "module",
 			"js": [
-				"content/content_script.js"
+				"content/content_script.bundle.js"
 			],
 			"css": [
 				"content/toast.css"
