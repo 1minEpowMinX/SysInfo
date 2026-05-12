@@ -2,6 +2,11 @@
 // Entries are written by the content script in lib/history.js after a
 // successful insertion + redirect to the created ticket page.
 
+import { state } from "./state.js";
+import { t } from "./compat.js";
+import { el, formatWhen } from "./dom.js";
+import { I } from "./icons.js";
+
 /**
  * The function `renderHistoryTab` builds the History tab body, which shows the most recent
  * tickets (up to 10) where sysinfo was inserted. Each entry is a link that opens the ticket in a
@@ -9,7 +14,7 @@
  * @returns A `div.pad-tight` element containing the section heading and the history list or
  * empty-state message.
  */
-function renderHistoryTab() {
+export function renderHistoryTab() {
 	const items = state.history || [];
 	const head = el("div", { style: { paddingBottom: "8px" } }, [
 		el("div", { class: "h", style: { fontSize: "12px", fontWeight: "600" } }, t("sectionHistory")),

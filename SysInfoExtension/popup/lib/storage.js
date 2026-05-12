@@ -1,11 +1,14 @@
 // Persistence layer — settings and history live in browser.storage.local
 // under the same keys the content script uses (see content/lib/constants.js).
 
+import { STORAGE_KEY, HISTORY_KEY, DEFAULT_SETTINGS } from "./constants.js";
+import { state } from "./state.js";
+
 /**
  * The function `saveSettings` persists the current `state.settings` object to
  * `browser.storage.local` under `STORAGE_KEY`.
  */
-function saveSettings() {
+export function saveSettings() {
 	browser.storage.local.set({ [STORAGE_KEY]: state.settings });
 }
 
@@ -28,7 +31,7 @@ function asStringList(value) {
  * them with defaults, and writes the result into `state.settings` and `state.history`. On any
  * storage error the state is left untouched so the popup renders with built-in defaults.
  */
-async function loadSettings() {
+export async function loadSettings() {
 	try {
 		const r = await browser.storage.local.get([STORAGE_KEY, HISTORY_KEY]);
 		const stored = r[STORAGE_KEY] || {};

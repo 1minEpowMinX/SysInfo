@@ -1,5 +1,9 @@
 // SPA navigation watcher.
 
+import { slog } from "./compat.js";
+import { URL_TICK_MS } from "./constants.js";
+import { finalizeHistoryIfCreated } from "./history.js";
+
 let lastPathname = location.pathname;
 
 /**
@@ -21,7 +25,7 @@ function checkUrlChange() {
  * polling interval for frameworks that mutate `history` without firing `popstate`, and a
  * `popstate` listener for browser back/forward actions. Both routes feed into `checkUrlChange`.
  */
-function setupUrlWatcher() {
+export function setupUrlWatcher() {
 	setInterval(checkUrlChange, URL_TICK_MS);
 	window.addEventListener("popstate", checkUrlChange);
 }

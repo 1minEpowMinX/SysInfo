@@ -1,5 +1,8 @@
 // Deferred ticket history.
 
+import { slog } from "./compat.js";
+import { PENDING_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
+
 let pendingInsertion = null;
 
 /**
@@ -11,7 +14,7 @@ let pendingInsertion = null;
  * inserted into the system. It helps differentiate between different types of data or objects within
  * the system.
  */
-function markPendingInsertion(portalId, typeId) {
+export function markPendingInsertion(portalId, typeId) {
 	pendingInsertion = { portalId, typeId, at: Date.now() };
 }
 
@@ -69,7 +72,7 @@ function waitForHeading() {
  * then `null` will be returned. If the `created` ticket is not detected or if the `portalId` of the
  * created ticket does not match the `portalId` of the
  */
-function finalizeHistoryIfCreated() {
+export function finalizeHistoryIfCreated() {
 	if (!pendingInsertion) return;
 
 	if (Date.now() - pendingInsertion.at > PENDING_TTL_MS) {

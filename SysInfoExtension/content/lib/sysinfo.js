@@ -1,5 +1,8 @@
 // System information block: text formatting + agent fetch.
 
+import { t, slog, swarn } from "./compat.js";
+import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.js";
+
 /**
  * The function `buildSysInfoLines` takes system information data and formats it into pairs of lines
  * for display.
@@ -8,7 +11,7 @@
  * @returns The function `buildSysInfoLines(data)` returns an array of strings where each element
  * contains two lines of system information data joined by a comma and a space.
  */
-function buildSysInfoLines(data) {
+export function buildSysInfoLines(data) {
 	const raw = [
 		`${t("sysinfoHostname")}: ${data.hostname}`,
 		`${t("sysinfoUsername")}: ${data.username}`,
@@ -37,7 +40,7 @@ function buildSysInfoLines(data) {
  * @returns The `makeDivider` function returns a string consisting of the character specified repeated
  * a number of times based on the maximum length of the lines provided and the percentage specified.
  */
-function makeDivider(lines, char = "─", percent = 0.45) {
+export function makeDivider(lines, char = "─", percent = 0.45) {
 	const maxLen = Math.max(...lines.map(l => l.length));
 	return char.repeat(Math.floor(maxLen * percent));
 }
@@ -53,7 +56,7 @@ function makeDivider(lines, char = "─", percent = 0.45) {
  * @returns The function `alreadyInserted` returns a boolean value indicating whether the `divider` is
  * present in the `target` element's value or inner text.
  */
-function alreadyInserted(target, divider) {
+export function alreadyInserted(target, divider) {
 	const haystack = ("value" in target ? target.value : target.innerText) || "";
 	return haystack.includes(divider);
 }
@@ -68,7 +71,7 @@ function alreadyInserted(target, divider) {
  * times the function can attempt to retrieve the system information in case of failures. The default
  * value for `retriesLeft`
  */
-function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
+export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
 	const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;
 	const tStart = Date.now();
 

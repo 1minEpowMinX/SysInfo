@@ -1,6 +1,9 @@
 // Background-script communication + small side-effects shared across tabs.
 // Each public function ends with a render() so the UI reflects new state.
 
+import { state } from "./state.js";
+import { render } from "./render.js";
+
 /**
  * The function `sendBg` sends a message to the background service worker and returns a Promise
  * that resolves with the response once the background script replies.
@@ -20,7 +23,7 @@ function sendBg(action) {
  * to populate the remaining state. A `render()` is called both at the start and at the end so
  * the popup reflects the in-flight and settled states.
  */
-async function checkStatus() {
+export async function checkStatus() {
 	state.status = "loading";
 	render();
 	try {
@@ -59,7 +62,7 @@ async function fetchVersion() {
  * stores the result in `state.sysinfo`, then re-renders. On failure the previous sysinfo value
  * is retained silently.
  */
-async function fetchSysinfo() {
+export async function fetchSysinfo() {
 	try {
 		const res = await sendBg("getSystemInfo");
 		if (res && res.success && res.data) {
@@ -77,7 +80,7 @@ async function fetchSysinfo() {
  * state.
  * @param value - The string value that will be written to the clipboard.
  */
-function copyValue(key, value) {
+export function copyValue(key, value) {
 	navigator.clipboard.writeText(value).then(() => {
 		state.copied = key;
 		render();

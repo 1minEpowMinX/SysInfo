@@ -1,6 +1,15 @@
 // Top-level render orchestration + shared chrome (theme, header, tabs,
 // status info).
 
+import { state, root } from "./state.js";
+import { t } from "./compat.js";
+import { el } from "./dom.js";
+import { I } from "./icons.js";
+import { renderStatusTab } from "./tab_status.js";
+import { renderInfoTab } from "./tab_info.js";
+import { renderHistoryTab } from "./tab_history.js";
+import { renderSettingsTab } from "./tab_settings.js";
+
 /**
  * The function `applyTheme` reads `state.settings.theme` and sets `root.className` to either
  * `"theme-dark"` or `"theme-light"`. When the theme is `"auto"` the OS preference is used via
@@ -18,7 +27,7 @@ function applyTheme() {
  * @returns An object with `kind`, `label`, `sub`, `pulse`, and `dot` properties describing how
  * the current status should be rendered.
  */
-function statusInfo() {
+export function statusInfo() {
 	switch (state.status) {
 		case "active": return { kind: "ok", label: t("statusActive"), sub: t("statusActiveSub"), pulse: true, dot: "var(--ok-dot)" };
 		case "loading": return { kind: "warn", label: t("statusLoading"), sub: t("statusLoadingSub"), pulse: true, dot: "var(--warn-dot)" };
@@ -33,7 +42,7 @@ function statusInfo() {
  * current theme, clears `#root`, and rebuilds the full DOM tree — header, tab bar, and the
  * active tab body — from the current `state` in a single synchronous pass.
  */
-function render() {
+export function render() {
 	applyTheme();
 	root.innerHTML = "";
 	root.appendChild(renderHeader());

@@ -1,6 +1,12 @@
 // Data tab — current sysinfo values from the agent + per-row copy buttons.
 // Rows are filtered by state.settings.fields so the user can hide fields.
 
+import { state } from "./state.js";
+import { t } from "./compat.js";
+import { el } from "./dom.js";
+import { I } from "./icons.js";
+import { fetchSysinfo, copyValue } from "./agent.js";
+
 /**
  * The function `renderInfoTab` builds the Data tab body, which lists the current sysinfo fields
  * filtered by `state.settings.fields`. Each row shows an icon, label, value, and a copy button
@@ -9,7 +15,7 @@
  * @returns A `div.pad-tight` element containing the section heading, field rows, and refresh
  * action.
  */
-function renderInfoTab() {
+export function renderInfoTab() {
 	const sysinfo = state.sysinfo;
 	const isError = state.status === "error" || !sysinfo;
 	const fields = state.settings.fields;

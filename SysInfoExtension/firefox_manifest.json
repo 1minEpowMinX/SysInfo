@@ -43,15 +43,8 @@
 				"https://jira.company.local/*",
 				"https://jira-t.company.local/*"
 			],
+			"type": "module",
 			"js": [
-				"content/lib/compat.js",
-				"content/lib/constants.js",
-				"content/lib/portals.js",
-				"content/lib/sysinfo.js",
-				"content/lib/toast.js",
-				"content/lib/history.js",
-				"content/lib/insertion.js",
-				"content/lib/url_watcher.js",
 				"content/content_script.js"
 			],
 			"css": [

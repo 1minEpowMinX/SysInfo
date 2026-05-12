@@ -1,6 +1,12 @@
 // Settings tab — theme, sysinfo fields, and the two whitelist lists
 // (portal IDs + ticket type IDs).
 
+import { state } from "./state.js";
+import { t } from "./compat.js";
+import { el, segmented, toggleRow } from "./dom.js";
+import { saveSettings } from "./storage.js";
+import { render } from "./render.js";
+
 /**
  * The function `renderSettingsTab` builds the Settings tab body, which contains a theme
  * segmented control, a group of field visibility toggles, and two editable chip lists for
@@ -8,7 +14,7 @@
  * `saveSettings` and the popup is re-rendered.
  * @returns A `div.pad-tight.scroll` element containing all settings sections.
  */
-function renderSettingsTab() {
+export function renderSettingsTab() {
 	const s = state.settings;
 
 	const themeRow = el("div", { class: "set-row" }, [

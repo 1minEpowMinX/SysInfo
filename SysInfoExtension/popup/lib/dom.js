@@ -12,7 +12,7 @@
  * @param children - Array of child nodes, strings, or numbers to append to the element.
  * @returns The newly created and populated `HTMLElement`.
  */
-function el(tag, attrs = {}, children = []) {
+export function el(tag, attrs = {}, children = []) {
 	const e = document.createElement(tag);
 	for (const k in attrs) {
 		if (k === "class") e.className = attrs[k];
@@ -40,7 +40,7 @@ function el(tag, attrs = {}, children = []) {
  * display label.
  * @returns A `div.seg` element containing one button per option.
  */
-function segmented(value, onChange, options) {
+export function segmented(value, onChange, options) {
 	return el("div", { class: "seg" }, options.map(o =>
 		el("button", {
 			class: o.v === value ? "active" : "",
@@ -57,7 +57,7 @@ function segmented(value, onChange, options) {
  * @param onChange - Callback invoked with the new boolean value when the user clicks.
  * @returns A `label.toggle-row` element containing the label span and the toggle indicator.
  */
-function toggleRow(label, value, onChange) {
+export function toggleRow(label, value, onChange) {
 	const tog = el("div", { class: "toggle" + (value ? " on" : "") });
 	return el("label", {
 		class: "toggle-row",
@@ -71,7 +71,7 @@ function toggleRow(label, value, onChange) {
  * @param ts - Unix timestamp in milliseconds, or a falsy value if no timestamp is available.
  * @returns A relative time string, or an empty string when `ts` is falsy.
  */
-function formatWhen(ts) {
+export function formatWhen(ts) {
 	if (!ts) return "";
 	const diff = (Date.now() - ts) / 1000;
 	if (diff < 60) return "just now";

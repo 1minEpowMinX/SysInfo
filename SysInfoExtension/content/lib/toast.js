@@ -1,6 +1,8 @@
 // Toast notification UI — fixed-position, programmatic DOM only.
 // Avoids innerHTML.
 
+import { t } from "./compat.js";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
@@ -76,7 +78,7 @@ function ensureToastContainer() {
  * duration is provided, the toast will be displayed for 3000 milliseconds (3 seconds). You can
  * customize this duration by passing a different
  */
-function showToast(message, duration = 3000) {
+export function showToast(message, duration = 3000) {
 	const container = ensureToastContainer();
 
 	const toast = document.createElement("div");

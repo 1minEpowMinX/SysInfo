@@ -8,12 +8,12 @@ if (typeof browser === "undefined") {
 // i18n helper. `substitutions` is an array passed straight to
 // chrome.i18n.getMessage — combine with $PLACEHOLDER$ tokens in the
 // _locales/*.json messages and a matching `placeholders` object there.
-const t = (key, substitutions) => chrome.i18n.getMessage(key, substitutions) || key;
+export const t = (key, substitutions) => chrome.i18n.getMessage(key, substitutions) || key;
 
 // Diagnostic logger.
 const SYSINFO_LOG_TAG = "[SysInfo]";
-const slog = (...args) => console.log(SYSINFO_LOG_TAG, ...args);
-const swarn = (...args) => console.warn(SYSINFO_LOG_TAG, ...args);
+export const slog = (...args) => console.log(SYSINFO_LOG_TAG, ...args);
+export const swarn = (...args) => console.warn(SYSINFO_LOG_TAG, ...args);
 
 // Visible-in-Inspector sentinel — confirms the script ran even with
 // console filters: document.documentElement.dataset.sysinfoLoaded

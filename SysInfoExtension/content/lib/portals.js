@@ -1,5 +1,8 @@
 // Whitelist: two independent flat lists of IDs.
 
+import { slog, swarn } from "./compat.js";
+import { STORAGE_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS, FORM_PATH_RE } from "./constants.js";
+
 let userPortals = null;
 let userTypes = null;
 
@@ -7,7 +10,7 @@ let userTypes = null;
  * The function `loadPortals` retrieves user-configured portal and type IDs from local storage in
  * JavaScript.
  */
-function loadPortals() {
+export function loadPortals() {
 	try {
 		browser.storage.local.get([STORAGE_KEY], (r) => {
 			const stored = r && r[STORAGE_KEY];
@@ -63,7 +66,7 @@ function getAllowedTypes() { return userTypes || DEFAULT_TYPE_IDS; }
  * `getAllowedPortals()` function, and the `ticketId` extracted from the `pathname` is included in the
  * list of allowed ticket types returned by `getAllowedTypes()` function. Otherwise,
  */
-function isTicketAllowed(pathname) {
+export function isTicketAllowed(pathname) {
 	const match = pathname.match(FORM_PATH_RE);
 	if (!match) return false;
 	const [, portalId, ticketId] = match;

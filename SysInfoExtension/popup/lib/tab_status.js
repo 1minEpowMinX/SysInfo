@@ -1,12 +1,19 @@
 // Status tab — agent connection state, version chips, manual retry.
 
+import { state } from "./state.js";
+import { t } from "./compat.js";
+import { el } from "./dom.js";
+import { I } from "./icons.js";
+import { statusInfo } from "./render.js";
+import { checkStatus } from "./agent.js";
+
 /**
  * The function `renderStatusTab` builds the Status tab body, which displays the agent
  * connection state as an animated card, a pair of version chips for the agent and the extension,
  * and a manual retry button that re-triggers `checkStatus`.
  * @returns A `div.pad` element containing the status card, version row, and action row.
  */
-function renderStatusTab() {
+export function renderStatusTab() {
 	const sc = statusInfo();
 
 	const dot = el("div", { class: "status-dot-wrap", style: { color: sc.dot } }, [

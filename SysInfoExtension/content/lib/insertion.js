@@ -1,5 +1,12 @@
 // Editor watcher + insertion of the sysinfo block.
 
+import { t, slog, swarn } from "./compat.js";
+import { FORM_PATH_RE, INSERTION_TICK_MS, EDITOR_SELECTOR } from "./constants.js";
+import { buildSysInfoLines, makeDivider, alreadyInserted, requestSysInfo } from "./sysinfo.js";
+import { isTicketAllowed } from "./portals.js";
+import { showToast } from "./toast.js";
+import { markPendingInsertion } from "./history.js";
+
 /**
  * The function `insertSysInfoInto` inserts system information into a target element based on certain
  * conditions.
@@ -69,7 +76,7 @@ function watchEditor(data) {
  * The function `startInsertion` requests system information and then watches the editor based on the
  * received data.
  */
-function startInsertion() {
+export function startInsertion() {
 	requestSysInfo((data) => {
 		if (!data) {
 			swarn("insertion: no data — watcher not started");

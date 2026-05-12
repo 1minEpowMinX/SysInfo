@@ -7,28 +7,6 @@
 </head>
 <body>
 	<div id="root" class="theme-light"></div>
-
-	<!-- Foundations: cross-browser shim, constants, state, icons -->
-	<script src="lib/compat.js"></script>
-	<script src="lib/constants.js"></script>
-	<script src="lib/state.js"></script>
-	<script src="lib/icons.js"></script>
-
-	<!-- DOM helpers + render orchestration -->
-	<script src="lib/dom.js"></script>
-	<script src="lib/render.js"></script>
-
-	<!-- Tab views (loaded after render so render() can reference them) -->
-	<script src="lib/tab_status.js"></script>
-	<script src="lib/tab_info.js"></script>
-	<script src="lib/tab_history.js"></script>
-	<script src="lib/tab_settings.js"></script>
-
-	<!-- Side-effect modules (storage, background fetch) -->
-	<script src="lib/storage.js"></script>
-	<script src="lib/agent.js"></script>
-
-	<!-- Bootstrap entry point — must be last so all deps are defined -->
-	<script src="popup.js"></script>
+	<script type="module" src="popup.js"></script>
 </body>
 </html>
