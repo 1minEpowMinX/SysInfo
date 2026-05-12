@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "__MSG_extName__",
-	"version": "1.0.3",
+	"version": "2.0.0",
 	"description": "__MSG_extDesc__",
 	"default_locale": "en",
 	"permissions": [
@@ -44,10 +44,18 @@
 				"https://jira-t.company.local/*"
 			],
 			"js": [
+				"content/lib/compat.js",
+				"content/lib/constants.js",
+				"content/lib/portals.js",
+				"content/lib/sysinfo.js",
+				"content/lib/toast.js",
+				"content/lib/history.js",
+				"content/lib/insertion.js",
+				"content/lib/url_watcher.js",
 				"content/content_script.js"
 			],
 			"css": [
-				"content/content_script.css"
+				"content/toast.css"
 			]
 		}
 	],
