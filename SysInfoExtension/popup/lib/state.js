@@ -1,0 +1,17 @@
+// Mutable popup state + the root DOM node we render into.
+// All render functions read from `state`; mutations go through helpers in
+// agent.js / storage.js / dom event handlers and end with a `render()` call.
+
+let state = {
+	tab: "status",
+	settings: { ...DEFAULT_SETTINGS },
+	status: "loading", // loading | active | error | version-mismatch
+	agentVersion: null,
+	agentBuild: null,
+	extVersion: chrome.runtime.getManifest().version,
+	sysinfo: null,
+	copied: null,
+	history: []
+};
+
+const root = document.getElementById("root");
