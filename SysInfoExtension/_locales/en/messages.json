@@ -8,17 +8,68 @@
 	"extTitle": {
 		"message": "SysInfo"
 	},
-	"agentActive": {
-		"message": "🟢 Agent is active"
+	"extSubtitle": {
+		"message": "for Jira Service Management"
 	},
-	"agentInactive": {
-		"message": "🔴 Could not connect to local agent."
+	"tabStatus": {
+		"message": "Status"
 	},
-	"agentHint": {
-		"message": "Make sure the SysInfo application is running."
+	"tabInfo": {
+		"message": "Data"
 	},
-	"loading": {
-		"message": "Loading..."
+	"tabHistory": {
+		"message": "History"
+	},
+	"tabSettings": {
+		"message": "Settings"
+	},
+	"statusActive": {
+		"message": "Agent is active"
+	},
+	"statusActiveSub": {
+		"message": "Connected to localhost:8734"
+	},
+	"statusLoading": {
+		"message": "Checking connection…"
+	},
+	"statusLoadingSub": {
+		"message": "Polling the local agent"
+	},
+	"statusError": {
+		"message": "Agent unreachable"
+	},
+	"statusErrorSub": {
+		"message": "Start the SysInfo app and click Retry."
+	},
+	"statusVersionMismatch": {
+		"message": "Incompatible agent version"
+	},
+	"statusVersionMismatchSub": {
+		"message": "A newer version is required. Please update SysInfo."
+	},
+	"statusDropped": {
+		"message": "Connection to agent lost"
+	},
+	"statusDroppedSub": {
+		"message": "The agent was active but stopped responding. Check if SysInfo is still running."
+	},
+	"retry": {
+		"message": "Retry"
+	},
+	"update": {
+		"message": "Update agent"
+	},
+	"agentVersion": {
+		"message": "Agent version"
+	},
+	"extVersion": {
+		"message": "Extension version"
+	},
+	"sectionSysinfo": {
+		"message": "Device data"
+	},
+	"sectionSysinfoSub": {
+		"message": "What will be added to a new ticket"
 	},
 	"sysinfoHostname": {
 		"message": "Device name"
@@ -32,10 +83,88 @@
 	"sysinfoUptime": {
 		"message": "Uptime"
 	},
-	"toastReceived": {
-		"message": "Received data from SysInfo. Please do not remove it."
+	"copy": {
+		"message": "Copy"
 	},
-	"agentError": {
-		"message": "Error while receiving SysInfo data. Please check if the SysInfo application is running."
+	"copied": {
+		"message": "Copied"
+	},
+	"refresh": {
+		"message": "Refresh"
+	},
+	"sectionHistory": {
+		"message": "Insertion history"
+	},
+	"sectionHistorySub": {
+		"message": "Recent tickets where data was attached"
+	},
+	"historyEmpty": {
+		"message": "Nothing here yet — create a Jira SM ticket and your insertions will appear here."
+	},
+	"sectionSettings": {
+		"message": "Settings"
+	},
+	"settingTheme": {
+		"message": "Theme"
+	},
+	"themeAuto": {
+		"message": "System"
+	},
+	"themeLight": {
+		"message": "Light"
+	},
+	"themeDark": {
+		"message": "Dark"
+	},
+	"settingLang": {
+		"message": "Language"
+	},
+	"langAuto": {
+		"message": "Auto"
+	},
+	"settingFields": {
+		"message": "Sysinfo fields"
+	},
+	"settingFieldsSub": {
+		"message": "Which fields to include in the block"
+	},
+	"settingPortals": {
+		"message": "Allowed portals"
+	},
+	"settingPortalsSub": {
+		"message": "Portal IDs"
+	},
+	"settingTypes": {
+		"message": "Allowed ticket types"
+	},
+	"settingTypesSub": {
+		"message": "Ticket type IDs"
+	},
+	"addPortal": {
+		"message": "Add portal ID"
+	},
+	"addType": {
+		"message": "Add type ID"
+	},
+	"promptPortalId": {
+		"message": "Portal ID (the number in /portal/<id>/...)"
+	},
+	"promptTypeId": {
+		"message": "Ticket type ID (the number in /create/<id>)"
+	},
+	"portalExists": {
+		"message": "This portal ID is already in the list."
+	},
+	"typeExists": {
+		"message": "This ticket type is already in the list."
+	},
+	"bannerTitle": {
+		"message": "System info attached"
+	},
+	"loading": {
+		"message": "Loading..."
+	},
+	"toastReceived": {
+		"message": "Received data from SysInfo for the support team. Please do not remove it."
 	}
 }

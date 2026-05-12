@@ -8,17 +8,68 @@
 	"extTitle": {
 		"message": "SysInfo"
 	},
-	"agentActive": {
-		"message": "🟢 Агент активний"
+	"extSubtitle": {
+		"message": "для Jira Service Management"
 	},
-	"agentInactive": {
-		"message": "🔴 Не вдалося підключитися до локального агента."
+	"tabStatus": {
+		"message": "Статус"
 	},
-	"agentHint": {
-		"message": "Переконайтеся, що програма SysInfo працює."
+	"tabInfo": {
+		"message": "Дані"
 	},
-	"loading": {
-		"message": "Завантаження..."
+	"tabHistory": {
+		"message": "Історія"
+	},
+	"tabSettings": {
+		"message": "Налаштування"
+	},
+	"statusActive": {
+		"message": "Агент активний"
+	},
+	"statusActiveSub": {
+		"message": "Підключення до localhost:8734"
+	},
+	"statusLoading": {
+		"message": "Перевірка з’єднання…"
+	},
+	"statusLoadingSub": {
+		"message": "Опитуємо локальний агент"
+	},
+	"statusError": {
+		"message": "Агент недоступний"
+	},
+	"statusErrorSub": {
+		"message": "Запустіть програму SysInfo і натисніть «Перевірити»."
+	},
+	"statusVersionMismatch": {
+		"message": "Несумісна версія агента"
+	},
+	"statusVersionMismatchSub": {
+		"message": "Потрібна новіша версія. Оновіть програму SysInfo."
+	},
+	"statusDropped": {
+		"message": "Зв’язок з агентом втрачено"
+	},
+	"statusDroppedSub": {
+		"message": "Агент був активний, але перестав відповідати. Перевірте, чи запущена програма SysInfo."
+	},
+	"retry": {
+		"message": "Перевірити"
+	},
+	"update": {
+		"message": "Оновити агент"
+	},
+	"agentVersion": {
+		"message": "Версія агента"
+	},
+	"extVersion": {
+		"message": "Версія розширення"
+	},
+	"sectionSysinfo": {
+		"message": "Дані з пристрою"
+	},
+	"sectionSysinfoSub": {
+		"message": "Що буде додано в новий тікет"
 	},
 	"sysinfoHostname": {
 		"message": "Ім'я пристрою"
@@ -30,12 +81,90 @@
 		"message": "IP-адреса"
 	},
 	"sysinfoUptime": {
-		"message": "Час роботи"
+		"message": "Час вмикання"
+	},
+	"copy": {
+		"message": "Копіювати"
+	},
+	"copied": {
+		"message": "Скопійовано"
+	},
+	"refresh": {
+		"message": "Оновити"
+	},
+	"sectionHistory": {
+		"message": "Історія вставок"
+	},
+	"sectionHistorySub": {
+		"message": "Останні тікети, у які додано дані"
+	},
+	"historyEmpty": {
+		"message": "Поки що нічого — створіть тікет у Jira SM, і вставка з’явиться тут."
+	},
+	"sectionSettings": {
+		"message": "Налаштування"
+	},
+	"settingTheme": {
+		"message": "Тема"
+	},
+	"themeAuto": {
+		"message": "Системна"
+	},
+	"themeLight": {
+		"message": "Світла"
+	},
+	"themeDark": {
+		"message": "Темна"
+	},
+	"settingLang": {
+		"message": "Мова"
+	},
+	"langAuto": {
+		"message": "Авто"
+	},
+	"settingFields": {
+		"message": "Поля sysinfo"
+	},
+	"settingFieldsSub": {
+		"message": "Які дані включати в блок"
+	},
+	"settingPortals": {
+		"message": "Дозволені портали"
+	},
+	"settingPortalsSub": {
+		"message": "ID порталів"
+	},
+	"settingTypes": {
+		"message": "Дозволені типи тікетів"
+	},
+	"settingTypesSub": {
+		"message": "ID типів тікетів"
+	},
+	"addPortal": {
+		"message": "Додати ID порталу"
+	},
+	"addType": {
+		"message": "Додати ID типу"
+	},
+	"promptPortalId": {
+		"message": "ID порталу (число з /portal/<id>/…)"
+	},
+	"promptTypeId": {
+		"message": "ID типу тікета (число з /create/<id>)"
+	},
+	"portalExists": {
+		"message": "Цей ID порталу вже у списку."
+	},
+	"typeExists": {
+		"message": "Цей тип тікета вже у списку."
+	},
+	"bannerTitle": {
+		"message": "Системну інформацію додано"
+	},
+	"loading": {
+		"message": "Завантаження..."
 	},
 	"toastReceived": {
-		"message": "Отримано дані з SysInfo. Будь ласка, не видаляйте їх."
-	},
-	"agentError": {
-		"message": "Помилка під час отримання даних SysInfo. Будь ласка, перевірте, чи працює програма SysInfo."
+		"message": "Отримано дані з SysInfo для служби підтримки. Будь ласка, не видаляйте їх."
 	}
 }

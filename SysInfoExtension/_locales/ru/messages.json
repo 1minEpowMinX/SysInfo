@@ -8,17 +8,68 @@
 	"extTitle": {
 		"message": "SysInfo"
 	},
-	"agentActive": {
-		"message": "🟢 Агент активен"
+	"extSubtitle": {
+		"message": "для Jira Service Management"
 	},
-	"agentInactive": {
-		"message": "🔴 Не удалось подключиться к локальному агенту."
+	"tabStatus": {
+		"message": "Статус"
 	},
-	"agentHint": {
-		"message": "Убедитесь, что приложение SysInfo запущено."
+	"tabInfo": {
+		"message": "Данные"
 	},
-	"loading": {
-		"message": "Загрузка..."
+	"tabHistory": {
+		"message": "История"
+	},
+	"tabSettings": {
+		"message": "Настройки"
+	},
+	"statusActive": {
+		"message": "Агент активен"
+	},
+	"statusActiveSub": {
+		"message": "Подключение к localhost:8734"
+	},
+	"statusLoading": {
+		"message": "Проверка соединения…"
+	},
+	"statusLoadingSub": {
+		"message": "Опрашиваем локальный агент"
+	},
+	"statusError": {
+		"message": "Агент недоступен"
+	},
+	"statusErrorSub": {
+		"message": "Запустите приложение SysInfo и нажмите «Проверить»."
+	},
+	"statusVersionMismatch": {
+		"message": "Несовместимая версия агента"
+	},
+	"statusVersionMismatchSub": {
+		"message": "Требуется более новая версия. Обновите приложение SysInfo."
+	},
+	"statusDropped": {
+		"message": "Соединение с агентом потеряно"
+	},
+	"statusDroppedSub": {
+		"message": "Связь была активна, но прервалась. Проверьте, не закрыто ли приложение SysInfo."
+	},
+	"retry": {
+		"message": "Проверить"
+	},
+	"update": {
+		"message": "Обновить агент"
+	},
+	"agentVersion": {
+		"message": "Версия агента"
+	},
+	"extVersion": {
+		"message": "Версия расширения"
+	},
+	"sectionSysinfo": {
+		"message": "Данные с устройства"
+	},
+	"sectionSysinfoSub": {
+		"message": "Что будет добавлено в новый тикет"
 	},
 	"sysinfoHostname": {
 		"message": "Имя устройства"
@@ -30,12 +81,90 @@
 		"message": "IP-адрес"
 	},
 	"sysinfoUptime": {
-		"message": "Время работы"
+		"message": "Время включения"
+	},
+	"copy": {
+		"message": "Копировать"
+	},
+	"copied": {
+		"message": "Скопировано"
+	},
+	"refresh": {
+		"message": "Обновить"
+	},
+	"sectionHistory": {
+		"message": "История вставок"
+	},
+	"sectionHistorySub": {
+		"message": "Последние тикеты, в которые добавлены данные"
+	},
+	"historyEmpty": {
+		"message": "Пока ничего нет — создайте тикет в Jira SM, и вставка появится здесь."
+	},
+	"sectionSettings": {
+		"message": "Настройки"
+	},
+	"settingTheme": {
+		"message": "Тема"
+	},
+	"themeAuto": {
+		"message": "Системная"
+	},
+	"themeLight": {
+		"message": "Светлая"
+	},
+	"themeDark": {
+		"message": "Тёмная"
+	},
+	"settingLang": {
+		"message": "Язык"
+	},
+	"langAuto": {
+		"message": "Авто"
+	},
+	"settingFields": {
+		"message": "Поля sysinfo"
+	},
+	"settingFieldsSub": {
+		"message": "Какие данные включать в блок"
+	},
+	"settingPortals": {
+		"message": "Разрешённые порталы"
+	},
+	"settingPortalsSub": {
+		"message": "ID порталов"
+	},
+	"settingTypes": {
+		"message": "Разрешённые типы тикетов"
+	},
+	"settingTypesSub": {
+		"message": "ID типов тикетов"
+	},
+	"addPortal": {
+		"message": "Добавить ID портала"
+	},
+	"addType": {
+		"message": "Добавить ID типа"
+	},
+	"promptPortalId": {
+		"message": "ID портала (число из /portal/<id>/…)"
+	},
+	"promptTypeId": {
+		"message": "ID типа тикета (число из /create/<id>)"
+	},
+	"portalExists": {
+		"message": "Этот ID портала уже в списке."
+	},
+	"typeExists": {
+		"message": "Этот тип тикета уже в списке."
+	},
+	"bannerTitle": {
+		"message": "Системная информация добавлена"
+	},
+	"loading": {
+		"message": "Загрузка..."
 	},
 	"toastReceived": {
-		"message": "Получены данные из SysInfo. Пожалуйста, не удаляйте их."
-	},
-	"agentError": {
-		"message": "Ошибка при получении данных SysInfo. Пожалуйста, проверьте, запущено ли приложение SysInfo."
+		"message": "Получены данные из SysInfo для службы поддержки. Пожалуйста, не удаляйте их."
 	}
 }
