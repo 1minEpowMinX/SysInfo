@@ -40,14 +40,15 @@
 ```sh
 # Linux
 sudo apt install p7zip-full
-sudo 7z x SysInfo-2.0.0-linux-x64.7z -o/usr/bin/
+sudo 7z x SysInfo-3.0.0-linux-x64.7z -o/usr/bin/
 
 # MacOS:
 brew install p7zip
-sudo 7z x SysInfo-2.0.0-macos-x64.7z -o/usr/local/bin/
+sudo 7z x SysInfo-3.0.0-macos-x64.7z -o/usr/local/bin/
 
 # Windows:
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-2.0.0-windows-x64.7z -o"C:\Program Files\"
+New-EventLog -LogName "SysInfo" -Source "SysInfo" -MaximumSize 5MB
+"C:\Program Files\7-Zip\7z.exe" x SysInfo-3.0.0-windows-x64.7z -o"C:\Program Files\"
 ```
 
 ### 3. Add to startup
