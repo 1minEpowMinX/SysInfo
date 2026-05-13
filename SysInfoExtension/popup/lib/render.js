@@ -3,7 +3,7 @@
 
 import { state, root } from "./state.js";
 import { t } from "./compat.js";
-import { el } from "./dom.js";
+import { el, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 import { renderStatusTab } from "./tab_status.js";
 import { renderInfoTab } from "./tab_info.js";
@@ -101,7 +101,7 @@ function renderTabs() {
 			class: "tab" + (state.tab === tb.id ? " active" : ""),
 			onclick: () => { state.tab = tb.id; render(); }
 		}, [
-			el("span", { html: tb.icon, style: { display: "inline-flex" } }),
+			el("span", { style: { display: "inline-flex" } }, svgIcon(tb.icon)),
 			el("span", {}, tb.label)
 		])
 	));

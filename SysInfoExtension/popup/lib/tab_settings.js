@@ -101,8 +101,8 @@ function renderIdList(items, { addLabel, promptKey, dupKey }) {
 			onclick: () => {
 				const v = prompt(t(promptKey));
 				if (!v) return;
-				const trimmed = v.trim();
-				if (!trimmed) return;
+				const trimmed = v.trim().slice(0, 20);
+				if (!trimmed || !/^\d+$/.test(trimmed)) return;
 				if (items.includes(trimmed)) {
 					alert(t(dupKey));
 					return;

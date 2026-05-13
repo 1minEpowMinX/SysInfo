@@ -90,8 +90,8 @@ export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) 
 
 	try {
 		browser.runtime.sendMessage({ action: "getSystemInfo" }, (res) => {
-			if (chrome.runtime.lastError) {
-				retry(chrome.runtime.lastError.message);
+			if (browser.runtime.lastError) {
+				retry(browser.runtime.lastError.message);
 				return;
 			}
 			if (!res || !res.success) {

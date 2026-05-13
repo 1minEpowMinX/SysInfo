@@ -3,23 +3,23 @@
   if (typeof browser === "undefined") {
     globalThis.browser = chrome;
   }
-  var t = (key, substitutions) => chrome.i18n.getMessage(key, substitutions) || key;
+  var t = (key, substitutions) => browser.i18n.getMessage(key, substitutions) || key;
   var SYSINFO_LOG_TAG = "[SysInfo]";
   var slog = (...args) => console.log(SYSINFO_LOG_TAG, ...args);
   var swarn = (...args) => console.warn(SYSINFO_LOG_TAG, ...args);
   var _sysinfoRoot = document.documentElement;
   _sysinfoRoot.dataset.sysinfoLoaded = String(Date.now());
-  _sysinfoRoot.dataset.sysinfoVersion = chrome.runtime && chrome.runtime.getManifest && chrome.runtime.getManifest().version || "?";
+  _sysinfoRoot.dataset.sysinfoVersion = browser.runtime && browser.runtime.getManifest && browser.runtime.getManifest().version || "?";
   try {
     browser.runtime.sendMessage(
       {
         action: "diagPing",
         source: "content-script-load",
-        href: location.href,
+        path: location.pathname,
         time: Date.now()
       },
       () => {
-        if (chrome.runtime.lastError) {
+        if (browser.runtime.lastError) {
         }
       }
     );
@@ -220,8 +220,8 @@
     };
     try {
       browser.runtime.sendMessage({ action: "getSystemInfo" }, (res) => {
-        if (chrome.runtime.lastError) {
-          retry(chrome.runtime.lastError.message);
+        if (browser.runtime.lastError) {
+          retry(browser.runtime.lastError.message);
           return;
         }
         if (!res || !res.success) {

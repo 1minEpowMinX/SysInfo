@@ -8,7 +8,7 @@ if (typeof browser === "undefined") {
 // i18n helper. `substitutions` is an array passed straight to
 // chrome.i18n.getMessage — combine with $PLACEHOLDER$ tokens in the
 // _locales/*.json messages and a matching `placeholders` object there.
-export const t = (key, substitutions) => chrome.i18n.getMessage(key, substitutions) || key;
+export const t = (key, substitutions) => browser.i18n.getMessage(key, substitutions) || key;
 
 // Diagnostic logger.
 const SYSINFO_LOG_TAG = "[SysInfo]";
@@ -20,7 +20,7 @@ export const swarn = (...args) => console.warn(SYSINFO_LOG_TAG, ...args);
 const _sysinfoRoot = document.documentElement;
 _sysinfoRoot.dataset.sysinfoLoaded = String(Date.now());
 _sysinfoRoot.dataset.sysinfoVersion =
-	(chrome.runtime && chrome.runtime.getManifest && chrome.runtime.getManifest().version) || "?";
+	(browser.runtime && browser.runtime.getManifest && browser.runtime.getManifest().version) || "?";
 
 // Heartbeat to the background — proves to the SW console that the content
 // script reached this point even if the page console is filtered.
@@ -29,10 +29,10 @@ try {
 		{
 			action: "diagPing",
 			source: "content-script-load",
-			href: location.href,
+			path: location.pathname,
 			time: Date.now()
 		},
-		() => { if (chrome.runtime.lastError) { /* no-op */ } }
+		() => { if (browser.runtime.lastError) { /* no-op */ } }
 	);
 } catch (e) { /* swallow */ }
 

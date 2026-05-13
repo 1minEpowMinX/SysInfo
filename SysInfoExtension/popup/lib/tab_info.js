@@ -3,7 +3,7 @@
 
 import { state } from "./state.js";
 import { t } from "./compat.js";
-import { el } from "./dom.js";
+import { el, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 import { fetchSysinfo, copyValue } from "./agent.js";
 
@@ -34,7 +34,7 @@ export function renderInfoTab() {
 	const list = el("div", {}, rows.map(r => {
 		const isCopied = state.copied === r.key;
 		return el("div", { class: "info-row" + (isError ? " disabled" : "") }, [
-			el("div", { class: "info-icon", html: r.icon }),
+			el("div", { class: "info-icon" }, svgIcon(r.icon)),
 			el("div", { class: "info-content" }, [
 				el("div", { class: "info-label" }, r.label),
 				el("div", { class: "info-value" + (r.mono ? " mono" : "") }, r.value)
@@ -43,8 +43,7 @@ export function renderInfoTab() {
 				class: "copy-btn" + (isCopied ? " copied" : ""),
 				title: isCopied ? t("copied") : t("copy"),
 				onclick: () => !isError && copyValue(r.key, r.value),
-				html: isCopied ? I.check : I.copy
-			})
+			}, svgIcon(isCopied ? I.check : I.copy))
 		]);
 	}));
 
@@ -52,7 +51,7 @@ export function renderInfoTab() {
 		class: "btn btn-primary",
 		onclick: () => { fetchSysinfo(); }
 	}, [
-		el("span", { html: I.refresh, style: { display: "inline-flex" } }),
+		el("span", { style: { display: "inline-flex" } }, svgIcon(I.refresh)),
 		el("span", {}, t("refresh"))
 	]);
 

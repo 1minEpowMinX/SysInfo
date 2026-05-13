@@ -10,7 +10,7 @@ export let state = {
 	status: "loading", // loading | active | error | version-mismatch
 	agentVersion: null,
 	agentBuild: null,
-	extVersion: chrome.runtime.getManifest().version,
+	extVersion: browser.runtime.getManifest().version,
 	sysinfo: null,
 	copied: null,
 	history: []

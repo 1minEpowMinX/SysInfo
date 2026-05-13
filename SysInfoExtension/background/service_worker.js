@@ -58,6 +58,7 @@ worker. When a message is received, it checks the `msg.action` property to deter
 action requested. */
 browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	if (!msg || !msg.action) return;
+	if (sender.id && sender.id !== browser.runtime.id) return;
 
 	if (msg.action === "diagPing") {
 		// Content-script-loaded heartbeat — visible in this SW console

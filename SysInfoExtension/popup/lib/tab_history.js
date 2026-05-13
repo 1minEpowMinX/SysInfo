@@ -4,7 +4,7 @@
 
 import { state } from "./state.js";
 import { t } from "./compat.js";
-import { el, formatWhen } from "./dom.js";
+import { el, formatWhen, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 
 /**
@@ -25,9 +25,10 @@ export function renderHistoryTab() {
 	if (items.length === 0) {
 		body = el("div", { class: "hist-empty" }, t("historyEmpty"));
 	} else {
-		body = el("div", { class: "hist-list" }, items.slice(0, 10).map(it =>
-			el("a", {
-				class: "hist-item", href: it.url || "#", target: "_blank", rel: "noopener"
+		body = el("div", { class: "hist-list" }, items.slice(0, 10).map(it => {
+			const safeUrl = /^https?:\/\//i.test(it.url) ? it.url : "#";
+			return el("a", {
+				class: "hist-item", href: safeUrl, target: "_blank", rel: "noopener"
 			}, [
 				el("span", { class: "hist-id" }, it.id || "—"),
 				el("div", { class: "hist-content" }, [
@@ -35,9 +36,9 @@ export function renderHistoryTab() {
 					el("div", { class: "hist-meta" },
 						[it.portalId || it.portal, formatWhen(it.when)].filter(Boolean).join(" · "))
 				]),
-				el("span", { html: I.external, style: { color: "var(--text-sub)", display: "inline-flex" } })
-			])
-		));
+				el("span", { style: { color: "var(--text-sub)", display: "inline-flex" } }, svgIcon(I.external))
+			]);
+		}));
 	}
 
 	return el("div", { class: "pad-tight" }, [head, body]);

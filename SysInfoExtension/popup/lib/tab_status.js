@@ -2,7 +2,7 @@
 
 import { state } from "./state.js";
 import { t } from "./compat.js";
-import { el } from "./dom.js";
+import { el, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 import { statusInfo } from "./render.js";
 import { checkStatus } from "./agent.js";
@@ -51,7 +51,7 @@ export function renderStatusTab() {
 		class: "btn btn-primary",
 		onclick: () => { checkStatus(); }
 	}, [
-		el("span", { html: I.refresh, style: { display: "inline-flex" } }),
+		el("span", { style: { display: "inline-flex" } }, svgIcon(I.refresh)),
 		el("span", {}, t("retry"))
 	]);
 

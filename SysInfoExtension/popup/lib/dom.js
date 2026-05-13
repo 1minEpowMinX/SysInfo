@@ -1,14 +1,25 @@
 // DOM helpers: tiny `el()` builder + a couple of reusable widgets.
 
 /**
+ * The function `svgIcon` parses an inline SVG string via `DOMParser` and returns the root
+ * `<svg>` element. Using `DOMParser` with `image/svg+xml` type is safe: scripts inside the
+ * parsed document are never executed, and the returned element can be appended directly to
+ * the live DOM like any other node.
+ * @param svgStr - A raw `<svg>...</svg>` string to parse.
+ * @returns The parsed `SVGSVGElement`.
+ */
+export function svgIcon(svgStr) {
+	return new DOMParser().parseFromString(svgStr, "image/svg+xml").documentElement;
+}
+
+/**
  * The function `el` creates a DOM element of the given `tag`, applies `attrs`, and appends
  * `children`. The `attrs` object supports a special `"class"` key (maps to `className`), an
- * `"html"` key (sets `innerHTML`), an `"on*"` prefix (attaches event listeners), a `"style"`
- * key (merges into `element.style`), and any other key is set as an attribute via
- * `setAttribute`. String and number children are wrapped in text nodes; `null`/`false` children
- * are skipped.
+ * `"on*"` prefix (attaches event listeners), a `"style"` key (merges into `element.style`),
+ * and any other key is set as an attribute via `setAttribute`. String and number children are
+ * wrapped in text nodes; `null`/`false` children are skipped.
  * @param tag - The HTML tag name for the element to create (e.g. `"div"`, `"button"`).
- * @param attrs - Object of attributes, event handlers, style, or special keys to apply.
+ * @param attrs - Object of attributes, event handlers, or style to apply.
  * @param children - Array of child nodes, strings, or numbers to append to the element.
  * @returns The newly created and populated `HTMLElement`.
  */
@@ -16,7 +27,6 @@ export function el(tag, attrs = {}, children = []) {
 	const e = document.createElement(tag);
 	for (const k in attrs) {
 		if (k === "class") e.className = attrs[k];
-		else if (k === "html") e.innerHTML = attrs[k];
 		else if (k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
 		else if (k === "style") Object.assign(e.style, attrs[k]);
 		else e.setAttribute(k, attrs[k]);
