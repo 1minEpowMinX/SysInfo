@@ -134,4 +134,4 @@ Feel free to check [issues page](https://github.com/1minEpowMinX/InvBinderBot/is
 ## 📝 License
 
 Copyright © 2026 [1minEpowMinX](https://github.com/1minEpowMinX).  
-This project is [LGPL V3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.
+This project is [GPL-3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.
