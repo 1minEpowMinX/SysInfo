@@ -22,7 +22,7 @@
 
 ## 🛠️ Створено за допомогою
 
-![Qt](https://img.shields.io/badge/Qt%206.10.0-009639?logo=Qt&logoColor=fff)
+![Qt](https://img.shields.io/badge/Qt%206.11.1-009639?logo=Qt&logoColor=fff)
 ![C++17](https://img.shields.io/badge/C++%2017-%2300599C.svg?logo=c%2B%2B&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=fff)
 ![Chrome extension](https://img.shields.io/badge/Google%20Chrome%20Extension-4285F4?logo=GoogleChrome&logoColor=white)
