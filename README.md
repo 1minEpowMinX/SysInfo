@@ -22,7 +22,7 @@
 
 ## 🛠️ Built With
 
-![Qt](https://img.shields.io/badge/Qt%206.10.0-009639?logo=Qt&logoColor=fff)
+![Qt](https://img.shields.io/badge/Qt%206.11.1-009639?logo=Qt&logoColor=fff)
 ![C++17](https://img.shields.io/badge/C++%2017-%2300599C.svg?logo=c%2B%2B&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=fff)
 ![Chrome extension](https://img.shields.io/badge/Google%20Chrome%20Extension-4285F4?logo=GoogleChrome&logoColor=white)
@@ -71,6 +71,34 @@ $shortcutObj.WorkingDirectory = Split-Path $source
 $shortcutObj.Save()
 ```
 
+### 4. Allow a custom browser extension *(optional)*
+
+SysInfo accepts requests **only** from **whitelisted** browser extension IDs. Official Chrome/Edge and Firefox IDs are already included, so this is only needed for custom or corporate builds with different IDs.
+
+The whitelist lives under the `Integration/AllowedExtensionIds` key. When the key is present and non-empty it **replaces** the built-in defaults.
+
+```sh
+# Linux: ~/.config/Pivdenny/SysInfo.conf
+mkdir -p ~/.config/Pivdenny
+cat >> ~/.config/Pivdenny/SysInfo.conf <<'EOF'
+
+[Integration]
+AllowedExtensionIds=your-custom-id1, your-custom-id2
+EOF
+
+# macOS: ~/Library/Preferences/com.pivdenny.SysInfo.plist
+defaults write com.pivdenny.SysInfo Integration.AllowedExtensionIds -array \
+    your-custom-id1 \
+    your-custom-id2
+
+# Windows: HKCU\Software\Pivdenny\SysInfo\Integration
+reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
+    /v AllowedExtensionIds /t REG_MULTI_SZ ^
+    /d "your-custom-id1\0your-custom-id2" /f
+```
+
+> ℹ️ To find the ID of your own extension, open `chrome://extensions` (or `about:addons` in Firefox) with developer mode enabled.
+
 ## 🚀 Usage
 
 After installation, SysInfo runs silently in the background via the system tray.
@@ -105,5 +133,5 @@ Feel free to check [issues page](https://github.com/1minEpowMinX/InvBinderBot/is
 
 ## 📝 License
 
-Copyright © 2025 [1minEpowMinX](https://github.com/1minEpowMinX).  
-This project is [LGPL V3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.
+Copyright © 2026 [1minEpowMinX](https://github.com/1minEpowMinX).  
+This project is [GPL-3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE) licensed.

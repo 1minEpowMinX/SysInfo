@@ -1,46 +1,123 @@
+/**
+ * @file main.cpp
+ * @brief Application entry point.
+ *
+ * Responsibilities, in order:
+ *   1. Set Qt application identity (org / app / version) — must precede the
+ *      QApplication constructor so QSettings, QStandardPaths and the lock
+ *      file pick up the right names.
+ *   2. Construct QApplication.
+ *   3. Acquire a single-instance lock via QLockFile in TempLocation; bail
+ *      out silently if another SysInfo is already running.
+ *   4. Load the user's UI-language translation, falling back to English.
+ *   5. Construct SettingsManager (owns QSettings) and App (composition
+ *      root) on the stack — guarantees destruction order
+ *      ~App -> ~SettingsManager -> ~QApplication.
+ *   6. Call App::start(); exit code 1 if the system tray is unavailable.
+ *   7. Log AppStart and enter the Qt event loop.
+ */
+
 #include "app/app.h"
+#include "core/logging/logger.h"
+#include "core/settings/settings_manager.h"
 
 #include <QApplication>
+#include <QDir>
+#include <QFile>
 #include <QLocale>
+#include <QLockFile>
+#include <QStandardPaths>
 #include <QTranslator>
-#include <QSystemSemaphore>
-#include <QSharedMemory>
+
+namespace
+{
+
+	/**
+	 * @brief Lazily-initialised lock file used to enforce single-instance behaviour.
+	 *
+	 * Held by reference for the entire lifetime of the process so the lock
+	 * is released only on exit. Stale-lock detection is disabled
+	 * (setStaleLockTime(0)) — if a previous SysInfo crashed, the user can
+	 * delete the lock file manually rather than us silently stealing it.
+	 */
+	QLockFile &singleInstanceLock()
+	{
+		static QLockFile lock(
+			QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
+				.absoluteFilePath("SysInfo.lock"));
+		lock.setStaleLockTime(0);
+		return lock;
+	}
+
+	/// @return true if this process is the first SysInfo instance, false otherwise.
+	bool acquireSingleInstance()
+	{
+		return singleInstanceLock().tryLock(100);
+	}
+
+	/**
+	 * @brief Try to load the most preferred UI-language translation.
+	 *
+	 * Walks QLocale::system().uiLanguages() in user-preference order and
+	 * stops at the first ":/i18n/sysinfo_<locale>.qm" that loads
+	 * successfully. If none match, no translator is installed and the
+	 * source-language English strings are used as-is.
+	 *
+	 * @param a          Application instance to install the translator on.
+	 * @param translator Out parameter — must outlive QApplication::exec().
+	 */
+	void loadTranslator(QApplication &a, QTranslator &translator)
+	{
+		const QStringList uiLanguages = QLocale::system().uiLanguages();
+
+		for (const QString &locale : uiLanguages)
+		{
+			const QString baseName = "sysinfo_" + QLocale(locale).name();
+			const QString path = ":/i18n/" + baseName + ".qm";
+
+			if (!QFile::exists(path))
+			{
+				continue;
+			}
+
+			if (translator.load(path))
+			{
+				a.installTranslator(&translator);
+				return;
+			}
+
+			Logger::log(Logger::EventId::TSLoadFailed,
+						QString("Translation file exists but failed to load: %1").arg(path));
+		}
+	}
+
+} // namespace
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+	QCoreApplication::setOrganizationName("Pivdenny");
+	QCoreApplication::setApplicationName("SysInfo");
+	QCoreApplication::setApplicationVersion(PROJECT_VERSION);
 
-    const QString sharedKey = "SysInfoMutex"; // For correct operation, the name must match version 1
+	QApplication a(argc, argv);
 
-    // A semaphore is needed to avoid race conditions when multiple processes start simultaneously
-    QSystemSemaphore semaphore(sharedKey + "_sem", 1);
-    semaphore.acquire();
+	if (!acquireSingleInstance())
+	{
+		return 0;
+	}
 
-    QSharedMemory sharedMemory(sharedKey);
-    bool isAlreadyRunning = false;
+	QTranslator translator;
+	loadTranslator(a, translator);
 
-    if (!sharedMemory.create(1)) {
-        // If the memory already exists, it means that the program has already been launched
-        isAlreadyRunning = true;
-    }
+	SettingsManager settings;
+	App app(settings);
+	if (!app.start())
+	{
+		return 1;
+	}
 
-    semaphore.release();
+	Logger::log(Logger::EventId::AppStart,
+				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
 
-    if (isAlreadyRunning) {
-        // Just finish the application if there is already an instance
-        return 0;
-    }
-
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "sysinfo_" + QLocale(locale).name();
-        if (translator.load(":resources/i18n/" + baseName)) {
-            a.installTranslator(&translator);
-            break;
-        }
-    }
-    App::instance().startApp();
-
-    return a.exec();
+	return a.exec();
 }
