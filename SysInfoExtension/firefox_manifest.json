@@ -12,7 +12,8 @@
 	"host_permissions": [
 		"http://localhost:8734/*",
 		"https://jira.company.local/*",
-		"https://jira-t.company.local/*"
+		"https://jira-t.company.local/*",
+		"https://jira-t2.company.local/*"
 	],
 	"action": {
 		"default_popup": "popup/popup.html",
@@ -41,7 +42,8 @@
 		{
 			"matches": [
 				"https://jira.company.local/*",
-				"https://jira-t.company.local/*"
+				"https://jira-t.company.local/*",
+				"https://jira-t2.company.local/*"
 			],
 			"js": [
 				"content/content_script.bundle.js"
