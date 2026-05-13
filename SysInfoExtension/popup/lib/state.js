@@ -2,6 +2,7 @@
 // All render functions read from `state`; mutations go through helpers in
 // agent.js / storage.js / dom event handlers and end with a `render()` call.
 
+import "./compat.js";
 import { DEFAULT_SETTINGS } from "./constants.js";
 
 export let state = {
