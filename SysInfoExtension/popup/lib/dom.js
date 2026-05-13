@@ -1,15 +1,18 @@
 // DOM helpers: tiny `el()` builder + a couple of reusable widgets.
 
 /**
- * The function `svgIcon` parses an inline SVG string via `DOMParser` and returns the root
- * `<svg>` element. Using `DOMParser` with `image/svg+xml` type is safe: scripts inside the
- * parsed document are never executed, and the returned element can be appended directly to
- * the live DOM like any other node.
+ * The function `svgIcon` parses an inline SVG string and returns the root `<svg>` element.
+ * It creates a detached `<span>`, sets its `innerHTML` to the SVG string, and returns the
+ * first child element. This keeps `innerHTML` behind an explicit boundary so `el()` itself
+ * never takes raw HTML input; callers are expected to pass only static icon strings from
+ * `icons.js`, never user-controlled data.
  * @param svgStr - A raw `<svg>...</svg>` string to parse.
  * @returns The parsed `SVGSVGElement`.
  */
 export function svgIcon(svgStr) {
-	return new DOMParser().parseFromString(svgStr, "image/svg+xml").documentElement;
+	const tmp = document.createElement("span");
+	tmp.innerHTML = svgStr;
+	return tmp.firstElementChild;
 }
 
 /**
