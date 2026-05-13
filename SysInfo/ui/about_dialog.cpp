@@ -65,7 +65,7 @@ QString AboutDialog::buildAboutHtml() const
                "<p><b>Company:</b> Pivdenny </p>"
                "<p><b>Source code:</b> <a href='https://github.com/1minEpowMinX/SysInfo'>GitHub</a></p>"
                "<p><b>Core:</b> Qt %3, C++17</p>"
-               "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>LGPL v3.0</a></p>"
+               "<p><b>License:</b> <a href='https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE'>GPL-3.0</a></p>"
                "<hr>"
                "<p><small>© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.</small></p>"
                ).arg(PROJECT_VERSION, BUILD_DATE, QT_VERSION_STR);
