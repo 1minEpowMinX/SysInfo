@@ -103,7 +103,7 @@
   // content/lib/history.js
   var pendingInsertion = null;
   function markPendingInsertion(portalId, typeId) {
-    pendingInsertion = { portalId, typeId, at: Date.now() };
+    pendingInsertion = { portalId, typeId, formPath: location.pathname, at: Date.now() };
   }
   function detectCreatedTicket(pathname) {
     const m = pathname.match(TICKET_PATH_RE);
@@ -130,15 +130,21 @@
       observer.observe(document.body, { childList: true, subtree: true });
     });
   }
-  function finalizeHistoryIfCreated() {
+  function finalizeHistoryIfCreated(fromPath) {
     if (!pendingInsertion) return;
     if (Date.now() - pendingInsertion.at > PENDING_TTL_MS) {
       pendingInsertion = null;
       return;
     }
+    if (fromPath !== void 0 && fromPath !== pendingInsertion.formPath) {
+      pendingInsertion = null;
+      return;
+    }
     const created = detectCreatedTicket(location.pathname);
-    if (!created) return;
-    if (created.portalId !== pendingInsertion.portalId) return;
+    if (!created || created.portalId !== pendingInsertion.portalId) {
+      pendingInsertion = null;
+      return;
+    }
     slog("history: ticket created", created);
     const pending = pendingInsertion;
     pendingInsertion = null;
@@ -169,7 +175,7 @@
     const prev = lastPathname;
     lastPathname = location.pathname;
     slog("url change", { from: prev, to: lastPathname });
-    finalizeHistoryIfCreated();
+    finalizeHistoryIfCreated(prev);
   }
   function setupUrlWatcher() {
     setInterval(checkUrlChange, URL_TICK_MS);

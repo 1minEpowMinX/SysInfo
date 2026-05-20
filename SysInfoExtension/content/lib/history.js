@@ -6,16 +6,14 @@ import { PENDING_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_
 let pendingInsertion = null;
 
 /**
- * The function markPendingInsertion sets a pending insertion with the specified portalId, typeId, and
- * timestamp.
- * @param portalId - Portal ID is a unique identifier for a specific portal in the system. It helps to
- * distinguish one portal from another.
- * @param typeId - Type ID is a unique identifier that represents the type of data or object being
- * inserted into the system. It helps differentiate between different types of data or objects within
- * the system.
+ * The function `markPendingInsertion` records that sysinfo was just inserted into the form at the
+ * current pathname. The record is later matched against a ticket-page URL by
+ * `finalizeHistoryIfCreated` to confirm the ticket was actually created from this form.
+ * @param portalId - The portal ID extracted from the form URL.
+ * @param typeId - The ticket-type ID extracted from the form URL.
  */
 export function markPendingInsertion(portalId, typeId) {
-	pendingInsertion = { portalId, typeId, at: Date.now() };
+	pendingInsertion = { portalId, typeId, formPath: location.pathname, at: Date.now() };
 }
 
 /**
@@ -65,14 +63,21 @@ function waitForHeading() {
 }
 
 /**
- * The function `finalizeHistoryIfCreated` checks if a pending ticket insertion has expired, detects a
- * created ticket, and saves its details to browser storage.
- * @returns If the `pendingInsertion` is not set, the function will return early. If the difference
- * between the current time and the time of the pending insertion is greater than the `PENDING_TTL_MS`,
- * then `null` will be returned. If the `created` ticket is not detected or if the `portalId` of the
- * created ticket does not match the `portalId` of the
+ * The function `finalizeHistoryIfCreated` checks whether the current page is the ticket that was
+ * created from the pending form insertion and, if so, saves an entry to history.
+ *
+ * `fromPath` must be the pathname from which the SPA navigation originated. If provided, the
+ * function requires that it matches the form path recorded by `markPendingInsertion` — any other
+ * navigation (user clicking a link, back/forward) clears the pending state and returns without
+ * saving, preventing false history entries for tickets the user merely visited.
+ *
+ * All mismatching or ambiguous conditions clear `pendingInsertion` rather than leaving it alive for
+ * a later URL change, which was the source of the false-positive bug.
+ *
+ * @param fromPath - The `location.pathname` before the navigation that triggered this call, or
+ * `undefined` when called at bootstrap (in which case the form-path guard is skipped).
  */
-export function finalizeHistoryIfCreated() {
+export function finalizeHistoryIfCreated(fromPath) {
 	if (!pendingInsertion) return;
 
 	if (Date.now() - pendingInsertion.at > PENDING_TTL_MS) {
@@ -80,9 +85,18 @@ export function finalizeHistoryIfCreated() {
 		return;
 	}
 
+	// Navigation must originate directly from the form that recorded the insertion.
+	// Any intermediate stop (another page, a different form) invalidates the pending state.
+	if (fromPath !== undefined && fromPath !== pendingInsertion.formPath) {
+		pendingInsertion = null;
+		return;
+	}
+
 	const created = detectCreatedTicket(location.pathname);
-	if (!created) return;
-	if (created.portalId !== pendingInsertion.portalId) return;
+	if (!created || created.portalId !== pendingInsertion.portalId) {
+		pendingInsertion = null;
+		return;
+	}
 
 	slog("history: ticket created", created);
 
