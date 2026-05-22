@@ -2,6 +2,7 @@
 
 import { slog } from "./compat.js";
 import { PENDING_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
+import { isTicketAllowed } from "./portals.js";
 
 let pendingInsertion = null;
 
@@ -66,13 +67,15 @@ function waitForHeading() {
  * The function `finalizeHistoryIfCreated` checks whether the current page is the ticket that was
  * created from the pending form insertion and, if so, saves an entry to history.
  *
- * `fromPath` must be the pathname from which the SPA navigation originated. If provided, the
- * function requires that it matches the form path recorded by `markPendingInsertion` — any other
- * navigation (user clicking a link, back/forward) clears the pending state and returns without
- * saving, preventing false history entries for tickets the user merely visited.
+ * Two guards are applied before saving:
+ *  1. **Form-path guard** — `fromPath` must equal the pathname recorded by `markPendingInsertion`.
+ *     Any intermediate navigation (back/forward, external link) clears the pending state so stale
+ *     records cannot match a later, unrelated ticket visit.
+ *  2. **Whitelist re-check** — `isTicketAllowed` is called against the stored form path to confirm
+ *     the portal/type pair is still in the user's whitelist at finalization time.
  *
  * All mismatching or ambiguous conditions clear `pendingInsertion` rather than leaving it alive for
- * a later URL change, which was the source of the false-positive bug.
+ * a later URL change.
  *
  * @param fromPath - The `location.pathname` before the navigation that triggered this call, or
  * `undefined` when called at bootstrap (in which case the form-path guard is skipped).
@@ -85,9 +88,14 @@ export function finalizeHistoryIfCreated(fromPath) {
 		return;
 	}
 
-	// Navigation must originate directly from the form that recorded the insertion.
-	// Any intermediate stop (another page, a different form) invalidates the pending state.
+	// Guard 1: navigation must originate directly from the form that recorded the insertion.
 	if (fromPath !== undefined && fromPath !== pendingInsertion.formPath) {
+		pendingInsertion = null;
+		return;
+	}
+
+	// Guard 2: re-verify the portal/type pair is still in the whitelist.
+	if (!isTicketAllowed(pendingInsertion.formPath)) {
 		pendingInsertion = null;
 		return;
 	}

@@ -140,6 +140,10 @@
       pendingInsertion = null;
       return;
     }
+    if (!isTicketAllowed(pendingInsertion.formPath)) {
+      pendingInsertion = null;
+      return;
+    }
     const created = detectCreatedTicket(location.pathname);
     if (!created || created.portalId !== pendingInsertion.portalId) {
       pendingInsertion = null;
