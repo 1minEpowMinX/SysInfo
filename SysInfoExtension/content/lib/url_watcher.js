@@ -8,16 +8,16 @@ let lastPathname = location.pathname;
 
 /**
  * The function `checkUrlChange` detects SPA navigations by comparing the current
- * `location.pathname` to the last recorded value. When a change is found, it updates the stored
- * pathname, emits a diagnostic log, and delegates to `finalizeHistoryIfCreated` so that any
- * pending ticket insertion is committed before the page context shifts.
+ * `location.pathname` to the last recorded value. When a change is found it updates the stored
+ * pathname, emits a diagnostic log, and calls `finalizeHistoryIfCreated` with the previous
+ * pathname so the history logic can verify the navigation originated from the correct form.
  */
 function checkUrlChange() {
 	if (location.pathname === lastPathname) return;
 	const prev = lastPathname;
 	lastPathname = location.pathname;
 	slog("url change", { from: prev, to: lastPathname });
-	finalizeHistoryIfCreated();
+	finalizeHistoryIfCreated(prev);
 }
 
 /**
