@@ -5,6 +5,6 @@
     "build": "esbuild content/content_script.js --bundle --outfile=content/content_script.bundle.js --format=iife --platform=browser"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.28.1"
   }
 }
