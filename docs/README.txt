@@ -19,7 +19,7 @@ Corresponding source code for this build is available at:
 Third-party component: Qt
 -------------------------------------------------------------------------------
 
-This product uses the Qt framework (version 6.10.2).
+This product uses the Qt framework (version 6.11.1).
 
     Copyright (C) The Qt Company Ltd. and other Qt contributors.
 
@@ -53,11 +53,11 @@ libraries.
 Complete and corresponding source code for the exact Qt version used in this
 build is published by The Qt Company at:
 
-    https://download.qt.io/archive/qt/6.10/6.10.2/single/
+    https://download.qt.io/archive/qt/6.11/6.11.1/single/
     https://code.qt.io/
 
 No modifications have been made to the Qt source code by the SysInfo
-project; the Qt binaries ship as produced by the official Qt 6.10.2 release.
+project; the Qt binaries ship as produced by the official Qt 6.11.1 release.
 
 -------------------------------------------------------------------------------
 Warranty
