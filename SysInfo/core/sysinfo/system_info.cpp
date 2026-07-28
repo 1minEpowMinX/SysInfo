@@ -6,14 +6,17 @@
 #include <QString>
 
 #ifdef Q_OS_WIN
+#include <QSettings>
+#elif defined(Q_OS_LINUX)
+#include <QFile>
+#endif
+
+#ifdef Q_OS_WIN
 #include <windows.h>
 #elif defined(Q_OS_LINUX)
 #include <sys/sysinfo.h>
 #elif defined(Q_OS_MAC)
 #include <sys/sysctl.h>
-#include <mach/mach.h>
-#include <mach/clock.h>
-#include <mach/mach_host.h>
 #endif
 
 namespace sysinfo
@@ -122,19 +125,66 @@ namespace sysinfo
 		return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
 	}
 
-	QString lastBootTime()
+	QString osBuild()
 	{
 #ifdef Q_OS_WIN
-		ULONGLONG uptimeMs = GetTickCount64();
-		QDateTime bootTime = QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
-		return bootTime.toString("dd.MM.yyyy HH:mm");
+		// Neither GetVersionEx nor QSysInfo expose the UBR, so the registry
+		// is the only source for the revision half of the build string.
+		const QSettings currentVersion(
+			QStringLiteral("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"),
+			QSettings::NativeFormat);
+
+		const QString build =
+			currentVersion.value(QStringLiteral("CurrentBuildNumber")).toString();
+		if (build.isEmpty())
+		{
+			return {};
+		}
+
+		const QVariant revision = currentVersion.value(QStringLiteral("UBR"));
+		return revision.isValid()
+				   ? build + QLatin1Char('.') + QString::number(revision.toUInt())
+				   : build;
+
+#elif defined(Q_OS_LINUX)
+		// Content looks like "#45-Ubuntu SMP PREEMPT_DYNAMIC Fri Aug 30 ...";
+		// only the leading build tag is worth keeping.
+		QFile version(QStringLiteral("/proc/sys/kernel/version"));
+		if (!version.open(QIODevice::ReadOnly | QIODevice::Text))
+		{
+			return {};
+		}
+
+		const QString tag = QString::fromUtf8(version.readLine())
+								.trimmed()
+								.section(QLatin1Char(' '), 0, 0);
+		return tag.startsWith(QLatin1Char('#')) ? tag.mid(1) : tag;
+
+#elif defined(Q_OS_MAC)
+		char build[64] = {};
+		size_t length = sizeof(build);
+		if (sysctlbyname("kern.osversion", build, &length, nullptr, 0) != 0)
+		{
+			return {};
+		}
+		return QString::fromLatin1(build);
+
+#else
+		return {};
+#endif
+	}
+
+	QDateTime bootTime()
+	{
+#ifdef Q_OS_WIN
+		const ULONGLONG uptimeMs = GetTickCount64();
+		return QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
 
 #elif defined(Q_OS_LINUX)
 		struct sysinfo s_info;
 		if (::sysinfo(&s_info) == 0) // Linux sys/sysinfo.h disambiguation
 		{
-			QDateTime bootTime = QDateTime::currentDateTime().addSecs(-s_info.uptime);
-			return bootTime.toString("dd.MM.yyyy HH:mm");
+			return QDateTime::currentDateTime().addSecs(-s_info.uptime);
 		}
 		return {};
 
@@ -145,14 +195,27 @@ namespace sysinfo
 		int mib[2] = {CTL_KERN, KERN_BOOTTIME};
 		if (sysctl(mib, 2, &boottime, &len, nullptr, 0) == 0)
 		{
-			QDateTime bootTime = QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
-			return bootTime.toString("dd.MM.yyyy HH:mm");
+			return QDateTime::fromSecsSinceEpoch(boottime.tv_sec);
 		}
 		return {};
 
 #else
 		return {};
 #endif
+	}
+
+	QString lastBootTime()
+	{
+		const QDateTime boot = bootTime();
+		return boot.isValid() ? boot.toString("dd.MM.yyyy HH:mm") : QString();
+	}
+
+	qint64 bootTimeSecs()
+	{
+		const QDateTime boot = bootTime();
+		// toSecsSinceEpoch() is timezone-independent, so the local-time
+		// QDateTime above still yields the correct absolute instant.
+		return boot.isValid() ? boot.toSecsSinceEpoch() : 0;
 	}
 
 	Info collect()
@@ -164,5 +227,6 @@ namespace sysinfo
 		s.uptime = sysinfo::lastBootTime();
 		return s;
 	}
+
 
 } // namespace sysinfo
