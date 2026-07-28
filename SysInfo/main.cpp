@@ -14,12 +14,14 @@
  *      root) on the stack — guarantees destruction order
  *      ~App -> ~SettingsManager -> ~QApplication.
  *   6. Call App::start(); exit code 1 if the system tray is unavailable.
- *   7. Log AppStart and enter the Qt event loop.
+ *   7. Log AppStart, then the DeviceInventory snapshot, and enter the Qt
+ *      event loop.
  */
 
 #include "app/app.h"
 #include "core/logging/logger.h"
 #include "core/settings/settings_manager.h"
+#include "core/sysinfo/device_inventory.h"
 
 #include <QApplication>
 #include <QDir>
@@ -118,6 +120,14 @@ int main(int argc, char *argv[])
 
 	Logger::log(Logger::EventId::AppStart,
 				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
+
+	// Emitted as its own event rather than folded into AppStart: the payload
+	// shape of an existing event id is a contract for the log analyzers that
+	// already consume it, and the two carry different concerns (process
+	// lifecycle vs. device configuration).
+	Logger::log(Logger::EventId::DeviceInventory,
+				QStringLiteral("Device inventory snapshot."),
+				sysinfo::inventory::payload());
 
 	return a.exec();
 }

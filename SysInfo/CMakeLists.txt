@@ -34,6 +34,10 @@ qt_add_library(sysinfo_core STATIC
     core/sysinfo/system_info.h
     core/sysinfo/system_info_presenter.cpp
     core/sysinfo/system_info_presenter.h
+    core/sysinfo/hardware_info.cpp
+    core/sysinfo/hardware_info.h
+    core/sysinfo/device_inventory.cpp
+    core/sysinfo/device_inventory.h
     core/settings/settings_manager.cpp
     core/settings/settings_manager.h
     core/logging/logger.cpp
@@ -56,6 +60,17 @@ target_link_libraries(sysinfo_core PUBLIC
 target_include_directories(sysinfo_core PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+# hardware_info.cpp reads the drive's media type and model out of the IO
+# registry on macOS; Windows and Linux need no extra libraries for it.
+if(APPLE)
+    find_library(IOKIT_LIBRARY IOKit REQUIRED)
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
+    target_link_libraries(sysinfo_core PRIVATE
+        ${IOKIT_LIBRARY}
+        ${COREFOUNDATION_LIBRARY}
+    )
+endif()
 
 # --- SysInfo executable: composition + UI on top of sysinfo_core.
 set(PROJECT_SOURCES
@@ -205,7 +220,8 @@ if(BUILD_TESTING)
     add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS tst_system_info tst_system_info_presenter tst_integration_server
+        DEPENDS tst_system_info tst_system_info_presenter tst_hardware_info
+                tst_device_inventory tst_integration_server
         COMMENT "Running tests"
         USES_TERMINAL
     )

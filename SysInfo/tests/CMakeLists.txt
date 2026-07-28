@@ -30,6 +30,22 @@ target_link_libraries(tst_system_info_presenter PRIVATE
 )
 sysinfo_register_test(tst_system_info_presenter)
 
+qt_add_executable(tst_hardware_info tst_hardware_info.cpp)
+set_target_properties(tst_hardware_info PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_hardware_info PRIVATE
+    sysinfo_core
+    Qt6::Test
+)
+sysinfo_register_test(tst_hardware_info)
+
+qt_add_executable(tst_device_inventory tst_device_inventory.cpp)
+set_target_properties(tst_device_inventory PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_device_inventory PRIVATE
+    sysinfo_core
+    Qt6::Test
+)
+sysinfo_register_test(tst_device_inventory)
+
 qt_add_executable(tst_integration_server tst_integration_server.cpp)
 set_target_properties(tst_integration_server PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_integration_server PRIVATE
