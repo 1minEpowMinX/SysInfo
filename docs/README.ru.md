@@ -47,7 +47,8 @@ brew install p7zip
 sudo 7z x SysInfo-3.0.0-macos-x64.7z -o/usr/local/bin/
 
 # Windows:
-New-EventLog -LogName "SysInfo" -Source "SysInfo" -MaximumSize 5MB
+New-EventLog -LogName "SysInfo" -Source "SysInfo"
+Limit-EventLog -LogName "SysInfo" -MaximumSize 5MB
 "C:\Program Files\7-Zip\7z.exe" x SysInfo-3.0.0-windows-x64.7z -o"C:\Program Files\"
 ```
 
