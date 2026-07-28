@@ -10,9 +10,9 @@
     <key>CFBundleIdentifier</key>
 	<string>com.pivdenny.SysInfo</string>
     <key>CFBundleVersion</key>
-	<string>3.0.0</string>
+	<string>3.1.0</string>
     <key>CFBundleShortVersionString</key>
-	<string>3.0.0</string>
+	<string>3.1.0</string>
     <key>CFBundleExecutable</key>
 	<string>SysInfo</string>
     <key>CFBundleIconFile</key>
