@@ -2,6 +2,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
+#include <QJsonDocument>
 #include <QString>
 
 #ifdef Q_OS_WIN
@@ -14,6 +15,25 @@
 
 #ifdef Q_OS_MACOS
 #include <os/log.h>
+#endif
+
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+namespace
+{
+
+	/**
+	 * @brief Append @p payload to @p message, space-separated.
+	 *
+	 * syslog and os_log carry one flat string, so the JSON payload rides at
+	 * the end of the line. Keeping it last, and separated by a single space,
+	 * is what lets Filebeat split the message from the object it must decode.
+	 */
+	QString joinPayload(const QString &message, const QString &payload)
+	{
+		return payload.isEmpty() ? message : message + QLatin1Char(' ') + payload;
+	}
+
+} // namespace
 #endif
 
 constexpr Logger::LogSeverity Logger::severityFromEventId(EventId id)
@@ -100,6 +120,17 @@ os_log_t Logger::osLog()
 
 void Logger::log(EventId id, const QString &msg)
 {
+	write(id, msg, QString());
+}
+
+void Logger::log(EventId id, const QString &msg, const QJsonObject &data)
+{
+	write(id, msg,
+		  QString::fromUtf8(QJsonDocument(data).toJson(QJsonDocument::Compact)));
+}
+
+void Logger::write(EventId id, const QString &msg, const QString &payload)
+{
 	const LogSeverity severity = severityFromEventId(id);
 
 	const QString fullMessage = QString("[%1] [%2] %3")
@@ -111,8 +142,12 @@ void Logger::log(EventId id, const QString &msg)
 	HANDLE eventSource = RegisterEventSourceW(nullptr, L"SysInfo");
 	if (eventSource != nullptr)
 	{
+		// The payload travels as its own insertion string so that log
+		// shippers can read it as a discrete field instead of parsing it
+		// back out of the human-readable message.
 		const std::wstring wideMessage = fullMessage.toStdWString();
-		LPCWSTR strings[] = {wideMessage.c_str()};
+		const std::wstring widePayload = payload.toStdWString();
+		LPCWSTR strings[] = {wideMessage.c_str(), widePayload.c_str()};
 
 		ReportEventW(
 			eventSource,								   // Event handler
@@ -120,7 +155,7 @@ void Logger::log(EventId id, const QString &msg)
 			0,											   // Category
 			static_cast<DWORD>(static_cast<uint16_t>(id)), // Event ID
 			nullptr,									   // User SID
-			1,											   // The number of placeholders for strings
+			payload.isEmpty() ? WORD(1) : WORD(2),		   // The number of placeholders for strings
 			0,											   // The number of bytes of event-specific data
 			strings,									   // Array of pointers to string
 			nullptr										   // A pointer to the buffer containing the binary data
@@ -131,11 +166,11 @@ void Logger::log(EventId id, const QString &msg)
 
 #elif defined(Q_OS_LINUX)
 	ensureSyslogOpen();
-	const QByteArray utf8Message = fullMessage.toUtf8();
+	const QByteArray utf8Message = joinPayload(fullMessage, payload).toUtf8();
 	syslog(toSyslogPrio(severity), "%s", utf8Message.constData());
 
 #elif defined(Q_OS_MACOS)
-	const QByteArray utf8Message = fullMessage.toUtf8();
+	const QByteArray utf8Message = joinPayload(fullMessage, payload).toUtf8();
 
 	os_log_with_type(
 		osLog(),
@@ -146,5 +181,6 @@ void Logger::log(EventId id, const QString &msg)
 #else
 	Q_UNUSED(id)
 	Q_UNUSED(msg)
+	Q_UNUSED(payload)
 #endif
 }

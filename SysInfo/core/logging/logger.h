@@ -1,6 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <QJsonObject>
 #include <QString>
 
 #ifdef Q_OS_MACOS
@@ -10,8 +11,9 @@
 /**
  * @brief Cross-platform writer to the system event log.
  *
- * Static-only facade — no instances. The single entry point is log(),
- * which dispatches to the platform-native facility:
+ * Static-only facade — no instances. The entry point is log() (optionally
+ * with a structured payload), which dispatches to the platform-native
+ * facility:
  *   - Windows: ReportEvent (the application event log; the SysInfo source
  *     is registered by the installer, not by this code).
  *   - Linux:   syslog(3).
@@ -40,6 +42,7 @@ public:
         // INFO
         AppStart             = 1000,   ///< Application started successfully.
         AppExit              = 1001,   ///< User-initiated graceful exit.
+        DeviceInventory      = 1002,   ///< Hardware/boot snapshot; carries a JSON payload.
 
         // WARNING
         TSLoadFailed         = 2000,   ///< Translation file present but failed to load.
@@ -61,7 +64,30 @@ public:
      */
     static void log(EventId id, const QString& msg);
 
+    /**
+     * @brief Write an event carrying a machine-readable payload alongside @p msg.
+     *
+     * Log shippers (Winlogbeat on Windows, Filebeat elsewhere) forward the
+     * payload to Elasticsearch, where each key becomes an aggregatable field.
+     * It is emitted as a value of its own rather than interpolated into @p msg
+     * so that consumers never have to grok a sentence apart:
+     *   - Windows: a second insertion string, surfaced as event_data.param2;
+     *   - Linux/macOS: appended after @p msg, separated by a single space.
+     *
+     * @param id   Stable event identifier (also encodes severity).
+     * @param msg  Human-readable summary, same rules as the overload above.
+     * @param data Payload object; serialised compactly. An empty object is
+     *             written as "{}" — pass none by using the other overload.
+     */
+    static void log(EventId id, const QString& msg, const QJsonObject& data);
+
 private:
+    /**
+     * @brief Shared implementation behind both log() overloads.
+     * @param payload Compact JSON, or empty to emit no payload at all.
+     */
+    static void write(EventId id, const QString& msg, const QString& payload);
+
     /// Internal severity derived from the numeric range of EventId.
     enum class LogSeverity : uint8_t
     {
