@@ -122,10 +122,10 @@ reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
 
 ## 📘 Автор
 
-### 👤 Kirill Bitskyi
+### 👤 Kyrylo Bitskyi
 
 * Github: [@1minEpowMinX](https://github.com/1minEpowMinX)
-* LinkedIn: [@Kirill Bitskyi](https://www.linkedin.com/in/kirill-bitskyi-025672284/)
+* LinkedIn: [@Kyrylo Bitskyi](https://www.linkedin.com/in/kyrylo-bitskyi-025672284/)
 
 ## 🤝 Вклад
 
