@@ -91,13 +91,11 @@ int main(int argc, char *argv[])
 	SingleInstanceGuard instance(SingleInstanceGuard::defaultLockFilePath());
 	switch (instance.tryAcquire())
 	{
-		return 0;
-	}
 	case SingleInstanceGuard::Result::AlreadyRunning:
 		// A launch while SysInfo is already running is routine, and a message
 		// here would meet every double click on the shortcut.
 
-
+		return 0;
 	case SingleInstanceGuard::Result::Unavailable:
 		// Whether another copy is running is unknown, so this one declines to
 		// start. Reported to the user, who otherwise sees nothing happen, and to
@@ -116,6 +114,8 @@ int main(int argc, char *argv[])
 		break;
 	if (instance.reclaimedStaleLock())
 	{
+	}
+
 		Logger::log(Logger::EventId::StaleLockReclaimed,
 					QString("Removed an unreadable single-instance lock file left "
 							"by an unclean shutdown: %1")
@@ -136,9 +136,14 @@ int main(int argc, char *argv[])
 	// shape of an existing event id is a contract for the log analyzers that
 	// already consume it, and the two carry different concerns (process
 	// lifecycle vs. device configuration).
-	Logger::log(Logger::EventId::DeviceInventory,
-				QStringLiteral("Device inventory snapshot."),
-				sysinfo::inventory::payload());
+	//
+	// Runs on the first turn of the event loop: building the payload walks the
+	// SMBIOS table and issues storage IOCTLs, so the tray icon appears without
+	// waiting on firmware. Nothing else depends on the snapshot.
+	QTimer::singleShot(0, &a, []
+					   { Logger::log(Logger::EventId::DeviceInventory,
+									 QStringLiteral("Device inventory snapshot."),
+									 sysinfo::inventory::payload()); });
 
 	return a.exec();
 }
