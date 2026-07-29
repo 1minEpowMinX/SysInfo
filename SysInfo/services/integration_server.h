@@ -1,6 +1,9 @@
 #ifndef INTEGRATIONSERVER_H
 #define INTEGRATIONSERVER_H
 
+#include "core/sysinfo/system_info.h"
+
+#include <QElapsedTimer>
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include <QObject>
@@ -148,9 +151,24 @@ private:
     static void applyCors(const QHttpServerRequest& req,
                           QHttpServerResponse& response);
 
+    /**
+     * @brief Returns the session snapshot, recollected at most once per TTL window.
+     *
+     * sysinfo::collect() enumerates every network interface — on Windows a
+     * GetAdaptersAddresses call costing tens of milliseconds — and route
+     * handlers run on the thread the server lives in, the GUI thread. Requests
+     * arriving within one window share a single collection.
+     *
+     * @return Cached snapshot, which may trail the true state by up to the TTL.
+     */
+    const sysinfo::Info& cachedInfo() const;
+
     SettingsManager& m_settings;     ///< Injected, not owned.
     QHttpServer httpServer;
     QTcpServer  tcpServer;
+
+    mutable sysinfo::Info m_cachedInfo;  ///< Valid only while m_cacheAge has not expired.
+    mutable QElapsedTimer m_cacheAge;    ///< Invalid until the first collection.
 };
 
 #endif // INTEGRATIONSERVER_H

@@ -8,6 +8,7 @@
 #include <QHostAddress>
 #include <QHttpServerRequest>
 #include <QHttpServerResponse>
+#include <QJsonDocument>
 #include <QJsonObject>
 
 namespace {
@@ -182,6 +183,10 @@ QHttpServerResponse forbidden()
 using Method = QHttpServerRequest::Method;
 
 IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
+/// How long a sysinfo::collect() snapshot stays good — see
+/// IntegrationServer::cachedInfo().
+constexpr qint64 kInfoCacheTtlMs = 1000;
+
     : QObject{parent}
     , m_settings(settings)
 {
@@ -196,13 +201,13 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
         // field names client-side via browser.i18n / chrome.i18n APIs,
         // so it receives the bare data payload — smaller wire format,
         // less duplicated translation logic.
-        const sysinfo::Info data = sysinfo::collect();
+        const sysinfo::Info& data = cachedInfo();
         const QJsonObject info = isFromBrowser(req)
                 ? sysinfo::presenter::toJson(data)
                 : sysinfo::presenter::toJsonWithLabels(data);
 
         QHttpServerResponse response("application/json; charset=utf-8",
-                                     QJsonDocument(info).toJson());
+                                     QJsonDocument(info).toJson(QJsonDocument::Compact));
         applyCors(req, response);
         return response;
     });
@@ -229,7 +234,7 @@ IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
         body["build"]   = QString::fromUtf8(BUILD_DATE);
 
         QHttpServerResponse response("application/json; charset=utf-8",
-                                     QJsonDocument(body).toJson());
+                                     QJsonDocument(body).toJson(QJsonDocument::Compact));
         applyCors(req, response);
         return response;
     });
@@ -303,6 +308,15 @@ void IntegrationServer::applyCors(const QHttpServerRequest& req,
     const QByteArray origin = req.headers().value("Origin").toByteArray();
 
     auto h = response.headers();
+
+const sysinfo::Info& IntegrationServer::cachedInfo() const
+{
+    if (!m_cacheAge.isValid() || m_cacheAge.hasExpired(kInfoCacheTtlMs)) {
+        m_cachedInfo = sysinfo::collect();
+        m_cacheAge.start();
+    }
+    return m_cachedInfo;
+}
 
     if (isBrowserExtensionOrigin(origin)) {
         // Reflect the exact extension origin. This is the modern
