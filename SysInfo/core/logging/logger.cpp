@@ -53,6 +53,44 @@ constexpr Logger::LogSeverity Logger::severityFromEventId(EventId id)
 }
 
 #ifdef Q_OS_WIN
+namespace
+{
+
+	/**
+	 * @brief Returns the "SysInfo" event source handle, opened once per process.
+	 *
+	 * RegisterEventSourceW is an RPC to the Event Log service, so the handle is
+	 * obtained on first use rather than per message. It stays valid for the life
+	 * of the process and is released when the static is destroyed at exit.
+	 *
+	 * A non-null handle is not by itself proof that anything gets recorded:
+	 * unless the installer has registered the source under
+	 * HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Application\SysInfo,
+	 * the service accepts the writes and discards them.
+	 *
+	 * @return Event source handle, or nullptr if registration failed.
+	 */
+	HANDLE eventSourceHandle()
+	{
+		struct Source
+		{
+			HANDLE handle = RegisterEventSourceW(nullptr, L"SysInfo");
+
+			~Source()
+			{
+				if (handle != nullptr)
+				{
+					DeregisterEventSource(handle);
+				}
+			}
+		};
+
+		static Source source;
+		return source.handle;
+	}
+
+} // namespace
+
 unsigned short Logger::toWinEventType(LogSeverity severity)
 {
 	switch (severity)
@@ -139,7 +177,7 @@ void Logger::write(EventId id, const QString &msg, const QString &payload)
 										 msg);
 
 #ifdef Q_OS_WIN
-	HANDLE eventSource = RegisterEventSourceW(nullptr, L"SysInfo");
+	const HANDLE eventSource = eventSourceHandle();
 	if (eventSource != nullptr)
 	{
 		// The payload travels as its own insertion string so that log
@@ -160,8 +198,6 @@ void Logger::write(EventId id, const QString &msg, const QString &payload)
 			strings,									   // Array of pointers to string
 			nullptr										   // A pointer to the buffer containing the binary data
 		);
-
-		DeregisterEventSource(eventSource);
 	}
 
 #elif defined(Q_OS_LINUX)
