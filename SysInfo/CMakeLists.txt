@@ -42,6 +42,8 @@ qt_add_library(sysinfo_core STATIC
     core/settings/settings_manager.h
     core/logging/logger.cpp
     core/logging/logger.h
+    core/runtime/single_instance_guard.cpp
+    core/runtime/single_instance_guard.h
 
     services/integration_server.cpp
     services/integration_server.h
@@ -222,6 +224,7 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         DEPENDS tst_system_info tst_system_info_presenter tst_hardware_info
                 tst_device_inventory tst_integration_server
+                tst_single_instance_guard
         COMMENT "Running tests"
         USES_TERMINAL
     )

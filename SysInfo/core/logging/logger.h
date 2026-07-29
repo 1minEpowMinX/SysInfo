@@ -49,11 +49,13 @@ public:
         TrayIconMissing      = 2001,   ///< Tray icon resource not found.
         ClipboardUnavailable = 2002,   ///< QApplication::clipboard() returned null.
         UiResourceMissing    = 2003,   ///< A UI asset (e.g. animation .gif) is missing.
+        StaleLockReclaimed   = 2004,   ///< Unreadable single-instance lock file removed at startup.
 
         // ERROR
-        ServerStartError     = 3000,   ///< IntegrationServer failed to bind/listen.
-        TrayUnavailable      = 3001,   ///< System tray not available — fatal for SysInfo.
-        SettingsWriteFailed  = 3002,   ///< QSettings::sync() reported a write error.
+        ServerStartError          = 3000,   ///< IntegrationServer failed to bind/listen.
+        TrayUnavailable           = 3001,   ///< System tray not available — fatal for SysInfo.
+        SettingsWriteFailed       = 3002,   ///< QSettings::sync() reported a write error.
+        SingleInstanceUnavailable = 3003,   ///< Lock file uncreatable — startup aborted.
     };
 
     /**

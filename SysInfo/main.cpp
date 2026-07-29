@@ -22,43 +22,21 @@
 #include "core/logging/logger.h"
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/device_inventory.h"
+#include "core/runtime/single_instance_guard.h"
 
 #include <QApplication>
-#include <QDir>
 #include <QFile>
 #include <QLocale>
-#include <QLockFile>
-#include <QStandardPaths>
+#include <QMessageBox>
+#include <QObject>
+#include <QTimer>
 #include <QTranslator>
 
 namespace
 {
 
 	/**
-	 * @brief Lazily-initialised lock file used to enforce single-instance behaviour.
-	 *
-	 * Held by reference for the entire lifetime of the process so the lock
-	 * is released only on exit. Stale-lock detection is disabled
-	 * (setStaleLockTime(0)) — if a previous SysInfo crashed, the user can
-	 * delete the lock file manually rather than us silently stealing it.
-	 */
-	QLockFile &singleInstanceLock()
-	{
-		static QLockFile lock(
-			QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
-				.absoluteFilePath("SysInfo.lock"));
-		lock.setStaleLockTime(0);
-		return lock;
-	}
-
-	/// @return true if this process is the first SysInfo instance, false otherwise.
-	bool acquireSingleInstance()
-	{
-		return singleInstanceLock().tryLock(100);
-	}
-
-	/**
-	 * @brief Try to load the most preferred UI-language translation.
+	 * @brief Tries to load the most preferred UI-language translation.
 	 *
 	 * Walks QLocale::system().uiLanguages() in user-preference order and
 	 * stops at the first ":/i18n/sysinfo_<locale>.qm" that loads
@@ -103,13 +81,46 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 
-	if (!acquireSingleInstance())
+	// Precedes the single-instance check, whose Unavailable branch addresses the
+	// user and must do so in the user's language.
+	QTranslator translator;
+	loadTranslator(a, translator);
+
+	// Stack-scoped, so the lock is released when main() returns rather than at
+	// static destruction.
+	SingleInstanceGuard instance(SingleInstanceGuard::defaultLockFilePath());
+	switch (instance.tryAcquire())
 	{
 		return 0;
 	}
+	case SingleInstanceGuard::Result::AlreadyRunning:
+		// A launch while SysInfo is already running is routine, and a message
+		// here would meet every double click on the shortcut.
 
-	QTranslator translator;
-	loadTranslator(a, translator);
+
+	case SingleInstanceGuard::Result::Unavailable:
+		// Whether another copy is running is unknown, so this one declines to
+		// start. Reported to the user, who otherwise sees nothing happen, and to
+		// the event log, which carries the reason a machine stopped sending
+		// inventory.
+		QMessageBox::critical(
+			nullptr, QObject::tr("Error"),
+			QObject::tr("Failed to verify that SysInfo is not already running. "
+						"The application will not start."));
+		Logger::log(Logger::EventId::SingleInstanceUnavailable,
+					QString("Could not create the single-instance lock file: %1")
+						.arg(SingleInstanceGuard::defaultLockFilePath()));
+		return 1;
+
+	case SingleInstanceGuard::Result::Acquired:
+		break;
+	if (instance.reclaimedStaleLock())
+	{
+		Logger::log(Logger::EventId::StaleLockReclaimed,
+					QString("Removed an unreadable single-instance lock file left "
+							"by an unclean shutdown: %1")
+						.arg(SingleInstanceGuard::defaultLockFilePath()));
+	}
 
 	SettingsManager settings;
 	App app(settings);

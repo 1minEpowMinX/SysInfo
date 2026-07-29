@@ -46,6 +46,14 @@ target_link_libraries(tst_device_inventory PRIVATE
 )
 sysinfo_register_test(tst_device_inventory)
 
+qt_add_executable(tst_single_instance_guard tst_single_instance_guard.cpp)
+set_target_properties(tst_single_instance_guard PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_single_instance_guard PRIVATE
+    sysinfo_core
+    Qt6::Test
+)
+sysinfo_register_test(tst_single_instance_guard)
+
 qt_add_executable(tst_integration_server tst_integration_server.cpp)
 set_target_properties(tst_integration_server PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_integration_server PRIVATE
