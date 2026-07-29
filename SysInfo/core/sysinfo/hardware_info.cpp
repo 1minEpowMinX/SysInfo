@@ -47,7 +47,7 @@ QString smbiosString(const char *strings, const char *end, quint8 index)
     }
 
     const char *cursor = strings;
-    for (quint8 i = 1; cursor < end; ++i) {
+    for (int i = 1; cursor < end; ++i) {
         const qsizetype length = qstrnlen(cursor, end - cursor);
         if (i == index) {
             return QString::fromLatin1(cursor, length).trimmed();
@@ -101,12 +101,13 @@ void parseSmbiosMemory(const QByteArray &table, Memory &memory)
     constexpr int kPartNumberOffset   = 0x1A;
     constexpr int kMinLength          = 0x1B;
 
-    while (entry + 4 <= end) {
+    // Every bound below is expressed as a subtraction of two pointers into the table.
+    while (end - entry >= 4) {
         const auto *fields = reinterpret_cast<const quint8 *>(entry);
         const quint8 type = fields[0];
         const quint8 length = fields[1];
 
-        if (length < 4 || entry + length > end) {
+        if (length < 4 || end - entry < length) {
             break; // Malformed header — stop rather than walk off the table.
         }
         if (type == 127) {
@@ -114,12 +115,14 @@ void parseSmbiosMemory(const QByteArray &table, Memory &memory)
         }
 
         // The string set runs from the end of the fixed part to a double NUL.
-        const char *strings = entry + length;
+        const char *const strings = entry + length;
         const char *cursor = strings;
-        while (cursor + 1 < end && !(cursor[0] == '\0' && cursor[1] == '\0')) {
+        while (end - cursor >= 2 && !(cursor[0] == '\0' && cursor[1] == '\0')) {
             ++cursor;
         }
-        const char *next = cursor + 2;
+        if (end - cursor < 2) {
+            break; // Set never terminates — the table is truncated.
+        }
 
         if (type == 17 && length >= kMinLength) {
             const quint16 size =
@@ -127,13 +130,13 @@ void parseSmbiosMemory(const QByteArray &table, Memory &memory)
             if (size != 0) { // Populated slot.
                 memory.type = smbiosMemoryType(fields[kMemoryTypeOffset]);
                 memory.manufacturer =
-                    smbiosString(strings, end, fields[kManufacturerOffset]);
-                memory.model = smbiosString(strings, end, fields[kPartNumberOffset]);
+                    smbiosString(strings, cursor, fields[kManufacturerOffset]);
+                memory.model = smbiosString(strings, cursor, fields[kPartNumberOffset]);
                 return;
             }
         }
 
-        entry = next;
+        entry = cursor + 2;
     }
 }
 
@@ -251,19 +254,33 @@ void windowsDiskIdentity(HANDLE disk, Storage &storage)
     QByteArray buffer(static_cast<qsizetype>(header.Size), '\0');
     if (!DeviceIoControl(disk, IOCTL_STORAGE_QUERY_PROPERTY,
                          &query, sizeof(query),
-                         buffer.data(), header.Size, &returned, nullptr)) {
+                         buffer.data(), header.Size, &returned, nullptr) ||
+        returned < sizeof(STORAGE_DEVICE_DESCRIPTOR)) {
         return;
     }
 
     const auto *descriptor =
         reinterpret_cast<const STORAGE_DEVICE_DESCRIPTOR *>(buffer.constData());
+    // Size comes from the storage driver. Cap it so that a bogus value cannot
+    // turn a metadata query into a multi-gigabyte allocation; a real
+    // descriptor is a few hundred bytes.
+    constexpr DWORD kMaxDescriptorSize = 64 * 1024;
+    if (header.Size > kMaxDescriptorSize) {
+        return;
+    }
 
-    // Offsets are relative to the start of the buffer, and 0 means absent.
-    const auto stringAt = [&buffer](DWORD offset) -> QString {
-        if (offset == 0 || offset >= static_cast<DWORD>(buffer.size())) {
+
+    returned = 0;
+    // Offsets are relative to the start of the buffer, and 0 means absent. The
+    // length is bounded by what the driver wrote: a string running to the very
+    // end of the descriptor need not carry a terminating NUL.
+    const auto stringAt = [&buffer, returned](DWORD offset) -> QString {
+        if (offset == 0 || offset >= returned) {
             return {};
         }
-        return QString::fromLatin1(buffer.constData() + offset).trimmed();
+        const char *const start = buffer.constData() + offset;
+        const qsizetype length = qstrnlen(start, returned - offset);
+        return QString::fromLatin1(start, length).trimmed();
     };
 
     storage.vendor = stringAt(descriptor->VendorIdOffset);
@@ -304,15 +321,20 @@ int windowsPhysicalCores()
         return 0;
     }
 
-    // Records are variable-length: walk by each entry's own Size field.
+    // Records are variable-length: walk by each entry's own Size field. Both
+    // the header read and the advance are bounded by what the call actually
+    // wrote, so neither a truncated tail nor a bogus Size leaves the buffer.
+    constexpr DWORD kRecordHeader =
+        sizeof(LOGICAL_PROCESSOR_RELATIONSHIP) + sizeof(DWORD);
+
     int cores = 0;
     DWORD offset = 0;
-    while (offset < length) {
+    while (length - offset >= kRecordHeader) {
         const auto *entry =
             reinterpret_cast<const SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *>(
                 buffer.constData() + offset);
-        if (entry->Size == 0) {
-            break; // Guard against a malformed record looping forever.
+        if (entry->Size < kRecordHeader || entry->Size > length - offset) {
+            break; // Malformed record — stop rather than loop or overrun.
         }
         ++cores;
         offset += entry->Size;
@@ -340,7 +362,22 @@ QByteArray windowsSmbiosTable()
     // Skip the RawSMBIOSData header that precedes the table itself:
     // calling method, version major/minor, DMI revision, then a length DWORD.
     constexpr qsizetype kHeaderSize = 8;
-    return raw.size() > kHeaderSize ? raw.mid(kHeaderSize) : QByteArray();
+    if (raw.size() <= kHeaderSize) {
+        return {};
+    }
+
+    // The length DWORD is the firmware's own statement of where the table ends,
+    // clamped to the bytes actually returned.
+    const auto *fields = reinterpret_cast<const quint8 *>(raw.constData());
+    const quint32 declared = quint32(fields[4]) | (quint32(fields[5]) << 8)
+                           | (quint32(fields[6]) << 16) | (quint32(fields[7]) << 24);
+
+    const qsizetype available = raw.size() - kHeaderSize;
+    const qsizetype length = declared == 0
+            ? available
+            : qMin(static_cast<qsizetype>(declared), available);
+
+    return raw.mid(kHeaderSize, length);
 }
 
 #elif defined(Q_OS_LINUX)
