@@ -49,3 +49,12 @@ private:
 };
 
 #endif // WELCOME_NOTIFIER_H
+    /**
+     * @brief Shows the Windows-only hint on pinning the tray icon.
+     *
+     * While the hint is displayed, a notification click emits
+     * trayGuideRequested(). Does nothing once the user has dismissed the hint
+     * for good, and nothing at all on other platforms.
+     */
+    void showTrayGuideHint();
+
