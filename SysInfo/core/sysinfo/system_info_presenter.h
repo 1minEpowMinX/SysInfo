@@ -7,7 +7,7 @@
 #include <QString>
 
 /**
- * @brief Presentation helpers for sysinfo::Info.
+ * @brief Formats sysinfo::Info for display.
  *
  * Lives in a sub-namespace to keep i18n (QObject::tr) out of the data layer:
  * sysinfo itself only collects raw values, while sysinfo::presenter renders
@@ -17,15 +17,15 @@
  */
 namespace sysinfo::presenter {
 
-/// Localised plain-text rendering, used for tray tooltip and clipboard.
+/// Renders localised plain text for the tray tooltip and clipboard.
 QString toText(const Info &s);
 
-/// Stable JSON shape — keys match the public /systeminfo API contract.
+/// Builds the stable JSON shape — keys match the public /systeminfo API contract.
 /// Used for the browser extension: it receives raw data and localises
 /// field labels itself through browser.i18n / chrome.i18n.
 QJsonObject toJson(const Info &s);
 
-/// JSON with a parallel "labels" object containing localised field
+/// Builds JSON with a parallel "labels" object containing localised field
 /// names. Used for non-browser callers (curl, support tooling, manual
 /// inspection) where there is no client-side i18n stack and the labels
 /// are useful for human reading.

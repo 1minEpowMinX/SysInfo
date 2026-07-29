@@ -35,10 +35,17 @@ namespace {
 // below is shared; only the way the bytes are obtained differs.
 
 /**
- * @brief Read string number @p index (1-based) from a structure's string set.
+ * @brief Reads string number @p index (1-based) from a structure's string set.
  *
  * SMBIOS stores strings in a NUL-separated block that follows the fixed part
  * of each structure. Index 0 is the spec's way of saying "no string".
+ *
+ * @param strings Start of the set.
+ * @param end     One past its last byte — the position of the terminating
+ *                double NUL, not the end of the whole table, so a structure
+ *                can never hand out bytes belonging to the next one.
+ * @param index   1-based position within the set.
+ * @return        The string, or empty if @p index is 0 or out of range.
  */
 QString smbiosString(const char *strings, const char *end, quint8 index)
 {
@@ -60,7 +67,7 @@ QString smbiosString(const char *strings, const char *end, quint8 index)
     return {};
 }
 
-/// Translate the SMBIOS "Memory Type" enum into the name people use.
+/// Translates the SMBIOS "Memory Type" enum into the name people use.
 QString smbiosMemoryType(quint8 code)
 {
     switch (code) {
@@ -82,7 +89,7 @@ QString smbiosMemoryType(quint8 code)
 }
 
 /**
- * @brief Fill the identity fields of @p memory from a raw SMBIOS table.
+ * @brief Fills the identity fields of @p memory from a raw SMBIOS table.
  *
  * Walks the table looking for the first populated Memory Device (type 17)
  * structure. A slot with size 0 is an empty socket and is skipped, so the
@@ -145,11 +152,13 @@ void parseSmbiosMemory(const QByteArray &table, Memory &memory)
 #ifdef Q_OS_WIN
 
 /**
- * @brief Open a device path ("\\.\C:", "\\.\PhysicalDrive0") for metadata queries.
+ * @brief Opens a device path ("\\.\C:", "\\.\PhysicalDrive0") for metadata queries.
  *
  * Requests neither read nor write access: the storage IOCTLs used below only
  * need the handle to exist, and asking for no access is what keeps them
  * working in a non-elevated process.
+ *
+ * @return Open handle, or INVALID_HANDLE_VALUE if the device cannot be opened.
  */
 HANDLE openDevice(const QString &path)
 {
@@ -233,7 +242,7 @@ QString windowsDiskType(HANDLE disk)
     return {};
 }
 
-/// Fill vendor and model from the drive's device descriptor.
+/// Fills vendor and model from the drive's device descriptor.
 void windowsDiskIdentity(HANDLE disk, Storage &storage)
 {
     STORAGE_PROPERTY_QUERY query{};
@@ -251,7 +260,16 @@ void windowsDiskIdentity(HANDLE disk, Storage &storage)
         return;
     }
 
+    // Size comes from the storage driver. Cap it so that a bogus value cannot
+    // turn a metadata query into a multi-gigabyte allocation; a real
+    // descriptor is a few hundred bytes.
+    constexpr DWORD kMaxDescriptorSize = 64 * 1024;
+    if (header.Size > kMaxDescriptorSize) {
+        return;
+    }
+
     QByteArray buffer(static_cast<qsizetype>(header.Size), '\0');
+    returned = 0;
     if (!DeviceIoControl(disk, IOCTL_STORAGE_QUERY_PROPERTY,
                          &query, sizeof(query),
                          buffer.data(), header.Size, &returned, nullptr) ||
@@ -261,16 +279,7 @@ void windowsDiskIdentity(HANDLE disk, Storage &storage)
 
     const auto *descriptor =
         reinterpret_cast<const STORAGE_DEVICE_DESCRIPTOR *>(buffer.constData());
-    // Size comes from the storage driver. Cap it so that a bogus value cannot
-    // turn a metadata query into a multi-gigabyte allocation; a real
-    // descriptor is a few hundred bytes.
-    constexpr DWORD kMaxDescriptorSize = 64 * 1024;
-    if (header.Size > kMaxDescriptorSize) {
-        return;
-    }
 
-
-    returned = 0;
     // Offsets are relative to the start of the buffer, and 0 means absent. The
     // length is bounded by what the driver wrote: a string running to the very
     // end of the descriptor need not carry a terminating NUL.
@@ -290,10 +299,10 @@ void windowsDiskIdentity(HANDLE disk, Storage &storage)
 /// @return Size of the whole physical drive in bytes, or 0 on failure.
 qint64 windowsDiskCapacity(HANDLE disk)
 {
-    // Deliberately not IOCTL_DISK_GET_LENGTH_INFO: that one is declared
-    // FILE_READ_ACCESS and so fails on the zero-access handle we hold, which
-    // would otherwise force the whole collector to require elevation.
-    // GET_DRIVE_GEOMETRY_EX is FILE_ANY_ACCESS and reports the same size.
+    // GET_DRIVE_GEOMETRY_EX rather than IOCTL_DISK_GET_LENGTH_INFO: the latter
+    // is declared FILE_READ_ACCESS and fails on the zero-access handle held
+    // here, so it costs the whole collector its freedom from elevation. Both
+    // report the same size.
     DISK_GEOMETRY_EX geometry{};
     DWORD returned = 0;
     if (!DeviceIoControl(disk, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, nullptr, 0,
@@ -526,7 +535,7 @@ QString cfStringToQString(CFStringRef value)
 }
 
 /**
- * @brief Fill media type, vendor and model from the IOKit device tree.
+ * @brief Fills media type, vendor and model from the IOKit device tree.
  *
  * Walks up from the IOMedia node of the root filesystem to the
  * IOBlockStorageDevice that owns it, whose "Device Characteristics" dictionary

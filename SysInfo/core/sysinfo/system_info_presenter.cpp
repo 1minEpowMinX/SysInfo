@@ -7,7 +7,7 @@ namespace sysinfo::presenter {
 namespace {
 
 /**
- * @brief Substitute a localised placeholder for an empty raw field.
+ * @brief Substitutes a localised placeholder for an empty raw field.
  *
  * The data layer returns empty QStrings for "no value" cases (no usable
  * IPv4, unsupported platform, syscall failure). The presenter is the only

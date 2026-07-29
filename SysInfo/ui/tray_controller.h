@@ -10,7 +10,7 @@
 class QMenu;
 
 /**
- * @brief UI adapter around QSystemTrayIcon and its context menu.
+ * @brief Adapts QSystemTrayIcon and its context menu to the application's signals.
  *
  * Exposes a small semantic surface (copyRequested / aboutRequested /
  * quitRequested / notificationClicked) instead of leaking the underlying
@@ -41,21 +41,21 @@ public:
     static bool isSystemTrayAvailable();
 
     /**
-     * @brief Build the tray icon and context menu.
+     * @brief Builds the tray icon and context menu.
      * @param iconPath Resource or filesystem path to the tray icon image.
      * @return true on success; false only on hard failures (icon currently
      *         missing is logged but does not block tray creation).
      */
     bool init(const QString& iconPath);
 
-    /// Make the tray icon visible.
+    /// Makes the tray icon visible.
     void show();
 
-    /// Update the tray-icon hover tooltip (typically the cached SystemInfo).
+    /// Updates the tray-icon hover tooltip (typically the cached SystemInfo).
     void setTooltip(const QString& text);
 
     /**
-     * @brief Display a balloon/toast notification next to the tray icon.
+     * @brief Displays a balloon/toast notification next to the tray icon.
      * @param title Short title shown bold by the OS.
      * @param body  Multi-line body (newline-separated lines work on all OS).
      * @param icon  Visual cue (info/warning/critical).
@@ -67,17 +67,17 @@ public:
                           int msecs = 5000);
 
 signals:
-    /// User selected "Copy to clipboard" from the menu.
+    /// Fires when the user selects "Copy to clipboard" from the menu.
     void copyRequested();
-    /// User selected "About" from the menu.
+    /// Fires when the user selects "About" from the menu.
     void aboutRequested();
-    /// User selected "Exit" from the menu.
+    /// Fires when the user selects "Exit" from the menu.
     void quitRequested();
-    /// User clicked any tray notification (forwarded from QSystemTrayIcon::messageClicked).
+    /// Fires when the user clicks any tray notification (forwarded from QSystemTrayIcon::messageClicked).
     void notificationClicked();
 
 private:
-    /// Build the context menu and wire its actions to the public signals.
+    /// Builds the context menu and wires its actions to the public signals.
     void buildMenu();
 
     QSystemTrayIcon*       m_icon = nullptr;   ///< Parented to this (QObject).

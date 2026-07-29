@@ -25,9 +25,9 @@ struct HttpResult {
 };
 
 /**
- * @brief One-shot HTTP request with custom method and headers.
+ * @brief Performs a one-shot HTTP request with custom method and headers.
  *
- * Built on QNetworkAccessManager — sufficient for our integration tests
+ * Built on QNetworkAccessManager — sufficient for these integration tests
  * because Qt allows raw-setting Origin / X-Sysinfo-Client / Sec-Fetch-*
  * (none of them are on QNAM's restricted-headers list).
  */
@@ -231,7 +231,7 @@ void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
     QVERIFY(doc.isObject());
 
     const QJsonObject obj = doc.object();
-    // Both fields must be present and non-empty. We compare exactly with
+    // Both fields must be present and non-empty. Compared exactly against
     // the same PROJECT_VERSION / BUILD_DATE the server is built against,
     // so a CMake project(VERSION) bump that wasn't propagated would fail
     // this test loudly.

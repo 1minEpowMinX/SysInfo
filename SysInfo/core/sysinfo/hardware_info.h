@@ -4,7 +4,7 @@
 #include <QString>
 
 /**
- * @brief Pure data layer for the device's hardware configuration.
+ * @brief Collects the device's hardware configuration as pure data.
  *
  * Split out of system_info.h because the two answer different questions:
  * sysinfo::Info describes the running session (who, where, since when) and is
@@ -23,7 +23,7 @@
 namespace sysinfo {
 
 /**
- * @brief Static CPU facts.
+ * @brief Describes the CPU with facts that do not change at runtime.
  */
 struct Cpu {
     QString model;          ///< Marketing name ("AMD Ryzen 7 5800H"); empty if unobtainable.
@@ -33,7 +33,7 @@ struct Cpu {
 };
 
 /**
- * @brief Physical memory: sizes plus the identity of the installed modules.
+ * @brief Describes physical memory: sizes plus the identity of the installed modules.
  *
  * The identity fields describe the first populated module, which stands in
  * for the machine as a whole — mixed-vendor configurations exist but are
@@ -52,7 +52,7 @@ struct Memory {
 };
 
 /**
- * @brief The drive the OS booted from.
+ * @brief Describes the drive the OS booted from.
  *
  * Describes the physical device, not the partitioning laid over it. Volume
  * sizes and free space are deliberately absent: how a drive is carved up
@@ -67,7 +67,7 @@ struct Storage {
 };
 
 /**
- * @brief Snapshot of the device's hardware configuration.
+ * @brief Groups a snapshot of the device's hardware configuration.
  */
 struct Hardware {
     Cpu     cpu;
@@ -75,32 +75,42 @@ struct Hardware {
     Storage storage;
 };
 
-/// @return Static CPU facts; individual fields are empty/0 when unobtainable.
+/**
+ * @brief Reports the CPU model, architecture and core counts.
+ *
+ * @return Static CPU facts; individual fields are empty/0 when unobtainable.
+ */
 Cpu cpuInfo();
 
 /**
- * @brief Report installed memory and, where readable, the module identity.
+ * @brief Reports installed memory and, where readable, the module identity.
  *
  * The size uses a plain syscall on every platform. The identity fields need
  * the SMBIOS table: Windows serves it through GetSystemFirmwareTable, Linux
  * through /sys/firmware/dmi (root only), and macOS not at all.
+ *
+ * @return Installed memory; individual fields are empty/0 when unobtainable.
  */
 Memory memoryInfo();
 
 /**
- * @brief Describe the drive the OS booted from.
+ * @brief Queries the drive the OS booted from.
  *
  * Every field needs platform APIs: IOCTL_STORAGE_QUERY_PROPERTY on Windows,
  * /sys/block on Linux, and IOKit on macOS. Locating the drive behind the
  * root filesystem is itself platform-specific.
+ *
+ * @return The boot drive; individual fields are empty/0 when unobtainable.
  */
 Storage storageInfo();
 
 /**
- * @brief Collect a full Hardware snapshot.
+ * @brief Collects a full Hardware snapshot.
  *
  * Convenience wrapper over cpuInfo(), memoryInfo() and storageInfo(). Every
  * call queries the OS afresh — no caching at this layer.
+ *
+ * @return All three groups, each carrying the conventions of its own getter.
  */
 Hardware collectHardware();
 

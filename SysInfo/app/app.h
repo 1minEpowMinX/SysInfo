@@ -10,7 +10,7 @@ class TrayController;
 class WelcomeNotifier;
 
 /**
- * @brief Top-level composition root.
+ * @brief Composes and owns the application's top-level objects.
  *
  * Owns and wires together the four runtime parts of SysInfo:
  *   - TrayController  : tray icon and context menu (UI),
@@ -37,8 +37,8 @@ public:
     explicit App(SettingsManager& settings, QObject* parent = nullptr);
 
     /**
-     * @brief Bring the application up: build tray UI, schedule onboarding,
-     *        start the integration server.
+     * @brief Brings the application up: builds the tray UI, schedules
+     *        onboarding, starts the integration server.
      * @return false if the system tray is unavailable on this session — a
      *         fatal configuration error; the caller (main) should exit.
      *         A failure of the integration server is non-fatal: the user
@@ -47,17 +47,17 @@ public:
     [[nodiscard]] bool start();
 
 private slots:
-    /// Refresh cached SystemInfo and copy it to the system clipboard.
+    /// Refreshes cached SystemInfo and copies it to the system clipboard.
     void onCopyRequested();
-    /// Show the modal "About SysInfo" dialog.
+    /// Shows the modal "About SysInfo" dialog.
     void onAboutRequested();
-    /// Confirm with the user, log AppExit, and quit the QApplication.
+    /// Confirms with the user, logs AppExit, and quits the QApplication.
     void onQuitRequested();
-    /// Open the Windows-only tray-pinning guide dialog.
+    /// Opens the Windows-only tray-pinning guide dialog.
     void onTrayGuideRequested();
 
 private:
-    /// Periodically (every 30 s) refresh m_cachedInfo and update the tray tooltip.
+    /// Refreshes m_cachedInfo every 30 s and updates the tray tooltip.
     void startTrayUpdateTimer();
 
     SettingsManager&    m_settings;          ///< Injected, not owned.

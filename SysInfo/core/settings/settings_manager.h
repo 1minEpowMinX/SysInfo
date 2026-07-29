@@ -4,7 +4,7 @@
 #include <QSettings>
 
 /**
- * @brief Persistent user preferences for SysInfo.
+ * @brief Stores SysInfo's persistent user preferences.
  *
  * Thin wrapper over QSettings ("Pivdenny", "SysInfo") that exposes only the
  * flags actually used by the application — no string keys leak into the
@@ -27,12 +27,12 @@ public:
 
     /// @return true if the welcome tray notification should still be shown.
     bool showWelcome() const;
-    /// Persist the welcome flag. Logs SettingsWriteFailed on QSettings I/O errors.
+    /// Persists the welcome flag. Logs SettingsWriteFailed on QSettings I/O errors.
     void setShowWelcome(bool value);
 
     /// @return true if the Windows tray-guide hint should still be shown.
     bool showTrayGuide() const;
-    /// Persist the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
+    /// Persists the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
     void setShowTrayGuide(bool value);
 
     /// @return Absolute path of the on-disk settings file. Useful for the
@@ -42,13 +42,14 @@ public:
     QString filePath() const;
 
     /**
-     * @return Browser-extension IDs administrators have whitelisted for
-     *         the IntegrationServer (key Integration/AllowedExtensionIds).
-     *         May be empty — IntegrationServer falls back to its compiled-in
-     *         defaults in that case.
+     * @brief Reads the administrator override of the IntegrationServer client whitelist.
      *
-     * Read fresh on each call so an admin can edit the registry/ini file
+     * Read fresh on each call, so an edit to the registry/ini file takes effect
      * without restarting SysInfo.
+     *
+     * @return Browser-extension IDs under the key Integration/AllowedExtensionIds.
+     *         May be empty, in which case IntegrationServer falls back to its
+     *         compiled-in defaults.
      */
     QStringList allowedExtensionIds() const;
 

@@ -8,7 +8,7 @@
 class SettingsManager;
 
 /**
- * @brief Modal "About SysInfo" window.
+ * @brief Shows the modal "About SysInfo" window.
  *
  * Shows the program version, build date, project author, support contact
  * and a snapshot of system details (host, user, OS, Qt, settings path).
@@ -34,20 +34,20 @@ public:
     explicit AboutDialog(SettingsManager& settings, QWidget* parent = nullptr);
 
 protected:
-    /// Repaint the background label scaled to the new dialog size.
+    /// Repaints the background label scaled to the new dialog size.
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    /// Configure the full-window scaled background image.
+    /// Configures the full-window scaled background image.
     void setupBackground();
 
-    /// Configure the foreground RichText label (style, flags, alignment).
+    /// Configures the foreground RichText label (style, flags, alignment).
     void setupAboutLabel();
 
-    /// Compose the static "About" body with version / author / license info.
+    /// Composes the static "About" body with version / author / license info.
     QString buildAboutHtml() const;
 
-    /// Compose the localised "system details" block (OS, host, user,
+    /// Composes the localised "system details" block (OS, host, user,
     /// settings file path) appended to the About body.
     QString buildSystemDetailsHtml() const;
 

@@ -5,7 +5,7 @@
 #include <QString>
 
 /**
- * @brief Pure data layer for system information.
+ * @brief Collects system information as pure data.
  *
  * The sysinfo namespace exposes only raw collection of OS-level facts. It
  * does not localise, format or serialise — that responsibility belongs to
@@ -15,7 +15,7 @@
 namespace sysinfo {
 
 /**
- * @brief Snapshot of the four facts SysInfo reports.
+ * @brief Holds the four facts SysInfo reports.
  *
  * Plain value type with no invariants between fields — any combination of
  * empty/non-empty strings is valid. The field names form the public JSON
@@ -39,7 +39,7 @@ QString hostname();
 QString username();
 
 /**
- * @brief Pick the best-guess "active" IPv4 address of this machine.
+ * @brief Picks the best-guess "active" IPv4 address of this machine.
  *
  * Walks all network interfaces, skips loopback/down ones and known virtual
  * bridges (Docker, VMware, Hyper-V, etc.). Prefers a VPN address (WireGuard,
@@ -52,7 +52,7 @@ QString username();
 QString activeIpAddress();
 
 /**
- * @brief Build/revision of the running OS, below the granularity of a version.
+ * @brief Reports the build/revision of the running OS, below the granularity of a version.
  *
  * Complements QSysInfo::kernelVersion(), which stops short of the patch
  * level on some platforms — notably Windows, where it reports "10.0.26200"
@@ -71,7 +71,7 @@ QString activeIpAddress();
 QString osBuild();
 
 /**
- * @brief Last boot time as a QDateTime, in local time.
+ * @brief Returns the last boot time as a QDateTime, in local time.
  *
  * The single place that performs the platform query (GetTickCount64 on
  * Windows, sysinfo() on Linux, sysctl(KERN_BOOTTIME) on macOS);
@@ -84,7 +84,7 @@ QString osBuild();
 QDateTime bootTime();
 
 /**
- * @brief Last boot time as a display string.
+ * @brief Formats the last boot time as a display string.
  *
  * @return "dd.MM.yyyy HH:mm" on success, or an empty QString when bootTime()
  *         is invalid. The presenter substitutes a localised fallback
@@ -93,7 +93,7 @@ QDateTime bootTime();
 QString lastBootTime();
 
 /**
- * @brief Last boot time as seconds since the Unix epoch.
+ * @brief Returns the last boot time as seconds since the Unix epoch.
  *
  * The machine-readable counterpart of lastBootTime(), meant for the
  * diagnostic log event, emitted as a JSON number rather than a formatted
@@ -106,12 +106,14 @@ QString lastBootTime();
 qint64 bootTimeSecs();
 
 /**
- * @brief Collect a full Info snapshot.
+ * @brief Collects a full Info snapshot.
  *
  * Convenience wrapper over the four getters above. Each call queries the
  * OS afresh — no caching at this layer.
  *
  * Hardware facts are a separate concern and live in hardware_info.h.
+ *
+ * @return Session snapshot; individual fields are empty when unobtainable.
  */
 Info collect();
 

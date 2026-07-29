@@ -4,7 +4,7 @@
 #include <QJsonObject>
 
 /**
- * @brief Payload builder for the DeviceInventory diagnostic log event.
+ * @brief Builds the payload for the DeviceInventory diagnostic log event.
  *
  * Sits beside sysinfo::presenter but serves the opposite audience: the
  * presenter renders Info for humans and localises as it goes, whereas this
@@ -18,7 +18,7 @@
 namespace sysinfo::inventory {
 
 /**
- * @brief Build the JSON payload describing this device.
+ * @brief Builds the JSON payload describing this device.
  *
  * Shape (every field except "version" is omitted when unobtainable, so that
  * Elasticsearch records "unknown" as a missing field rather than as a
@@ -63,7 +63,7 @@ namespace sysinfo::inventory {
 QJsonObject payload();
 
 /**
- * @brief Round installed RAM up to the capacity the modules are sold as.
+ * @brief Rounds installed RAM up to the capacity the modules are sold as.
  *
  * Firmware reserves a slice of physical memory, so the OS reports slightly
  * less than what is installed — 31.71 GiB on a 32 GiB machine. Rounding up
@@ -80,7 +80,7 @@ QJsonObject payload();
 int nominalMemoryGib(qint64 bytes);
 
 /**
- * @brief Snap a drive's capacity to the size it is marketed as.
+ * @brief Snaps a drive's capacity to the size it is marketed as.
  *
  * Drives are sold in decimal GB and report a little less once the
  * controller's spare area is deducted, so the byte count never equals the

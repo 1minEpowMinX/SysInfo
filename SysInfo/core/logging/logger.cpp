@@ -22,7 +22,7 @@ namespace
 {
 
 	/**
-	 * @brief Append @p payload to @p message, space-separated.
+	 * @brief Appends @p payload to @p message, space-separated.
 	 *
 	 * syslog and os_log carry one flat string, so the JSON payload rides at
 	 * the end of the line. Keeping it last, and separated by a single space,

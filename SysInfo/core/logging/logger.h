@@ -9,7 +9,7 @@
 #endif
 
 /**
- * @brief Cross-platform writer to the system event log.
+ * @brief Writes events to the platform-native system log.
  *
  * Static-only facade — no instances. The entry point is log() (optionally
  * with a structured payload), which dispatches to the platform-native
@@ -26,7 +26,7 @@ class Logger
 {
 public:
     /**
-     * @brief Stable identifier for every distinct event SysInfo can log.
+     * @brief Identifies every distinct event SysInfo can log.
      *
      * The numeric range encodes severity:
      *   - 1000–1999 : Info
@@ -59,7 +59,7 @@ public:
     };
 
     /**
-     * @brief Write a single event to the platform log.
+     * @brief Writes a single event to the platform log.
      * @param id  Stable event identifier (also encodes severity).
      * @param msg Free-form human-readable detail in English (not localised —
      *            logs are read by support, not end users).
@@ -67,7 +67,7 @@ public:
     static void log(EventId id, const QString& msg);
 
     /**
-     * @brief Write an event carrying a machine-readable payload alongside @p msg.
+     * @brief Writes an event carrying a machine-readable payload alongside @p msg.
      *
      * Log shippers (Winlogbeat on Windows, Filebeat elsewhere) forward the
      * payload to Elasticsearch, where each key becomes an aggregatable field.
@@ -85,12 +85,12 @@ public:
 
 private:
     /**
-     * @brief Shared implementation behind both log() overloads.
+     * @brief Implements both log() overloads.
      * @param payload Compact JSON, or empty to emit no payload at all.
      */
     static void write(EventId id, const QString& msg, const QString& payload);
 
-    /// Internal severity derived from the numeric range of EventId.
+    /// Enumerates severity levels, derived from the numeric range of EventId.
     enum class LogSeverity : uint8_t
     {
         Info,
@@ -101,19 +101,19 @@ private:
     static constexpr LogSeverity severityFromEventId(EventId id);
 
 #ifdef Q_OS_WIN
-    /// Map our severity to a Win32 ReportEvent type (EVENTLOG_*).
+    /// Maps severity to a Win32 ReportEvent type (EVENTLOG_*).
     static unsigned short toWinEventType(LogSeverity severity);
 #endif
 
 #ifdef Q_OS_LINUX
-    /// Map our severity to a syslog(3) priority (LOG_INFO/WARNING/ERR).
+    /// Maps severity to a syslog(3) priority (LOG_INFO/WARNING/ERR).
     static int toSyslogPrio(LogSeverity severity);
 #endif
 
 #ifdef Q_OS_MACOS
-    /// Map our severity to an os_log_type_t.
+    /// Maps severity to an os_log_type_t.
     static os_log_type_t toMacLogType(LogSeverity severity);
-    /// Lazily-initialised os_log_t singleton with subsystem "com.pivdenny.SysInfo".
+    /// Returns the lazily-initialised os_log_t for subsystem "com.pivdenny.SysInfo".
     static os_log_t osLog();
 #endif
 };

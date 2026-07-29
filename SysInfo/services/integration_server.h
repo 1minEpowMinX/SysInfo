@@ -13,7 +13,7 @@
 class SettingsManager;
 
 /**
- * @brief Local HTTP endpoint exposing system info to the browser extension.
+ * @brief Serves system info to the browser extension over local HTTP.
  *
  * Binds to 127.0.0.1 only — never to a public interface — so the
  * integration is reachable only from this machine. Three GET routes:
@@ -46,20 +46,20 @@ class SettingsManager;
  *        - Origin from a regular web page (https://evil.com, etc.) —
  *          the Origin prefix is not chrome-extension://, moz-extension://
  *          or edge-extension://.
- *        - Sec-Fetch-Mode == "navigate" — direct navigation in the
- *          address bar / bookmark / link click. Hides the JSON from
- *          browser history.
  *        - Origin carrying one of those schemes but a malformed identifier
  *          (empty, over-long, or containing anything outside the permitted
  *          character set). The value is echoed back in the CORS header, so
  *          it is validated in full rather than by scheme alone.
+ *        - Sec-Fetch-Mode == "navigate" — direct navigation in the
+ *          address bar / bookmark / link click. Hides the JSON from
+ *          browser history.
  *
  *      Accepted:
- *        - Origin starts with one of the three browser-extension URL
- *          schemes — works the same in Chrome, Firefox and Edge despite
- *          their differing Sec-Fetch-Site values for extension SW
- *          (Firefox sends "cross-site", Chromium sends "none"; we no
- *          longer rely on that field for the context decision).
+ *        - Origin is one of the three browser-extension URL schemes
+ *          followed by a well-formed identifier — the same in Chrome,
+ *          Firefox and Edge despite their differing Sec-Fetch-Site values
+ *          for extension SW (Firefox sends "cross-site", Chromium "none";
+ *          that field does not enter the context decision).
  *        - No Origin and no Sec-Fetch-* — non-browser client (curl,
  *          tests, dev tooling).
  *
@@ -90,8 +90,8 @@ class SettingsManager;
  * The server does NOT protect against:
  *   - local non-browser clients (curl, scripts, malware) — they bypass
  *     CORS entirely. Mitigated by binding to loopback and by the data
- *     being low-sensitivity in our threat model;
- *   - sibling extensions installed in the same browser that know our
+ *     being low-sensitivity in this threat model;
+ *   - sibling extensions installed in the same browser that know the
  *     public extension IDs and decide to mimic the X-Sysinfo-Client
  *     header. Extension IDs are public (visible in the Web Store /
  *     AMO listing), so the header is a claim, not a proof. Hardening
@@ -118,14 +118,14 @@ public:
     ~IntegrationServer() override;
 
     /**
-     * @brief Bind to 127.0.0.1:@p port and start serving routes.
+     * @brief Binds to 127.0.0.1:@p port and starts serving routes.
      * @param port TCP port; pass 0 to let the OS pick an ephemeral one
      *             (useful in tests — read it back via boundPort()).
      * @return true on success; false if the listen() or HTTP bind failed.
      */
     bool start(quint16 port = 8734);
 
-    /// Close the listening socket. Safe to call multiple times.
+    /// Closes the listening socket. Safe to call multiple times.
     void stop();
 
     /// @return The actual TCP port the server is bound to (0 if not listening).
@@ -140,12 +140,12 @@ private:
     ///         published SysInfo extension IDs.
     QStringList allowedExtensionIds() const;
 
-    /// Run both gates: Origin/Sec-Fetch-Mode context filter, then
+    /// Runs both gates: Origin/Sec-Fetch-Mode context filter, then
     /// X-Sysinfo-Client whitelist. See class docstring for the policy.
     /// @return true if the request should be served, false if rejected.
     bool isRequestAllowed(const QHttpServerRequest& req) const;
 
-    /// Attach CORS headers tailored to this request's Origin.
+    /// Attaches CORS headers tailored to this request's Origin.
     /// Called only after isRequestAllowed() has approved the request
     /// (or, for OPTIONS preflight, after isContextAllowed()).
     static void applyCors(const QHttpServerRequest& req,

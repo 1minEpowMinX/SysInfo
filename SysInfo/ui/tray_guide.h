@@ -9,7 +9,7 @@
 class SettingsManager;
 
 /**
- * @brief Windows-only dialog that explains how to pin the tray icon.
+ * @brief Explains how to pin the tray icon; Windows only.
  *
  * Triggered when the user clicks the onboarding tray-guide notification
  * (see WelcomeNotifier). Shows a short animated screenshot demonstrating
@@ -31,25 +31,25 @@ public:
     explicit TrayGuide(SettingsManager& settings, QWidget* parent = nullptr);
 
 private slots:
-    /// Handle the Close button — saves the "don't show again" flag and closes.
+    /// Handles the Close button — saves the "don't show again" flag and closes.
     void onCloseClicked();
 
 private:
-    /// Configure window-level flags (title, modality, stays-on-top).
+    /// Configures window-level flags (title, modality, stays-on-top).
     void setupWindow();
 
-    /// Build the looping screenshot animation; logs UiResourceMissing if the
+    /// Builds the looping screenshot animation; logs UiResourceMissing if the
     /// .gif resource is unavailable but does not abort construction.
     void setupAnimation();
 
-    /// Build the explanatory text label.
+    /// Builds the explanatory text label.
     void setupTexts();
 
-    /// Build the "Don't show again" checkbox and the Close button, plus the
+    /// Builds the "Don't show again" checkbox and the Close button, plus the
     /// signal/slot connection that makes the button work.
     void setupControls();
 
-    /// Lay out all four widgets vertically in this dialog.
+    /// Lays out all four widgets vertically in this dialog.
     void buildLayout();
 
     SettingsManager& m_settings;     ///< Injected settings store (not owned).

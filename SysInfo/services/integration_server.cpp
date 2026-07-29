@@ -11,12 +11,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-namespace {
 #include <algorithm>
 
+namespace {
 
 /**
- * @brief Officially published SysInfo extension IDs.
+ * @brief Lists the officially published SysInfo extension IDs.
  *
  * Used when SettingsManager::allowedExtensionIds() returns empty (the
  * common "out of the box" case). Administrators can override the list
@@ -27,7 +27,6 @@ const QStringList kDefaultAllowedExtensionIds = {
     QStringLiteral("sysinfo-addon@pivdenny.ua"),          // Firefox prod
 };
 
-/**
 /// Generous bound on an extension identifier: a Chromium ID is 32 characters,
 /// a Firefox per-installation UUID is 36.
 constexpr qsizetype kMaxExtensionIdLength = 64;
@@ -44,16 +43,22 @@ bool isExtensionIdChar(char c)
         || c == '-';
 }
 
- * @brief True if @p origin looks like a browser-extension URL.
+/**
+ * @brief Reports whether @p origin is a well-formed browser-extension URL.
  *
  * Extension SWs in every supported browser stamp Origin as
  *   chrome-extension://<id>     (Chrome / Chromium)
  *   moz-extension://<uuid>      (Firefox; UUID is per-installation)
  *   edge-extension://<id>       (Edge — Chromium variant)
  *
- * A legitimate web page that tries to fetch us cross-origin will instead
+ * A legitimate web page fetching this server cross-origin will instead
  * stamp Origin as https://<host> — never matches these prefixes, so this
  * one check filters out the entire class of cross-site JS attacks.
+ *
+ * Validation covers the identifier after the scheme as well: applyCors()
+ * echoes this exact value back in Access-Control-Allow-Origin, so the
+ * character whitelist is what bounds the bytes that can reach a response
+ * header.
  */
 bool isBrowserExtensionOrigin(const QByteArray& origin)
 {
@@ -79,7 +84,7 @@ bool isBrowserExtensionOrigin(const QByteArray& origin)
 }
 
 /**
- * @brief Detect whether the request is sent by a browser at all.
+ * @brief Detects whether the request is sent by a browser at all.
  *
  * Browsers stamp at least one of two header families:
  *   - Sec-Fetch-* — Chrome 76+, Firefox 90+, all Chromium-Edge;
@@ -96,13 +101,13 @@ bool isFromBrowser(const QHttpServerRequest& req)
 }
 
 /**
- * @brief Reject requests that come from contexts we never want to serve.
+ * @brief Rejects requests arriving from contexts the server never serves.
  *
  * Two filters, both based on browser-stamped, page-untouchable headers:
  *
  *   1. Sec-Fetch-Mode == "navigate"
  *      Direct navigation in the address bar / bookmark / clicked link.
- *      We don't want /systeminfo JSON to leak into browser history.
+ *      Keeps /systeminfo JSON out of browser history.
  *
  *   2. Origin from a regular web page (https://, http://, ...)
  *      A page making a cross-origin fetch — even with X-Sysinfo-Client
@@ -113,7 +118,7 @@ bool isFromBrowser(const QHttpServerRequest& req)
  *   - Origin starts with chrome-extension:// / moz-extension:// /
  *     edge-extension:// (legitimate extension SW, regardless of how the
  *     particular browser stamps Sec-Fetch-Site — Firefox sends
- *     "cross-site" here, Chrome sends "none", we no longer care);
+ *     "cross-site" here and Chrome "none"; neither enters the decision);
  *   - No Origin and no Sec-Fetch-* (curl, tests, dev tooling).
  */
 bool isContextAllowed(const QHttpServerRequest& req)
@@ -137,12 +142,12 @@ bool isContextAllowed(const QHttpServerRequest& req)
 }
 
 /**
- * @brief Whitelist check on the X-Sysinfo-Client claim.
+ * @brief Checks the X-Sysinfo-Client claim against the whitelist.
  *
  * The header is a CLAIM, not a PROOF — see IntegrationServer's class
  * docstring. It works as a defence layer because (a) presence of a
  * non-simple header forces a CORS preflight that the browser filters by
- * Origin, and (b) we already reject hostile origins in isContextAllowed().
+ * Origin, and (b) hostile origins are already rejected in isContextAllowed().
  *
  * Policy:
  *   - Browser request:
@@ -178,15 +183,15 @@ QHttpServerResponse forbidden()
     return QHttpServerResponse(QHttpServerResponse::StatusCode::Forbidden);
 }
 
+/// How long a sysinfo::collect() snapshot stays good — see
+/// IntegrationServer::cachedInfo().
+constexpr qint64 kInfoCacheTtlMs = 1000;
+
 } // namespace
 
 using Method = QHttpServerRequest::Method;
 
 IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
-/// How long a sysinfo::collect() snapshot stays good — see
-/// IntegrationServer::cachedInfo().
-constexpr qint64 kInfoCacheTtlMs = 1000;
-
     : QObject{parent}
     , m_settings(settings)
 {
@@ -206,6 +211,8 @@ constexpr qint64 kInfoCacheTtlMs = 1000;
                 ? sysinfo::presenter::toJson(data)
                 : sysinfo::presenter::toJsonWithLabels(data);
 
+        // Compact: the only readers are the extension and support tooling,
+        // both of which parse rather than eyeball the response.
         QHttpServerResponse response("application/json; charset=utf-8",
                                      QJsonDocument(info).toJson(QJsonDocument::Compact));
         applyCors(req, response);
@@ -241,7 +248,7 @@ constexpr qint64 kInfoCacheTtlMs = 1000;
 
     // CORS preflight (OPTIONS). Preflight is a handshake — it carries no
     // X-Sysinfo-Client (that header is only on the actual GET) and no body.
-    // We gate on context only: if Origin is hostile or it's a navigate
+    // Gating is on context only: if Origin is hostile or it is a navigate
     // request, reject. The actual client-id whitelist is enforced on the
     // GET that follows.
     auto preflight = [this](const QHttpServerRequest &req) -> QHttpServerResponse {
@@ -302,13 +309,6 @@ bool IntegrationServer::isRequestAllowed(const QHttpServerRequest& req) const
         && isClientAllowed(req, allowedExtensionIds());
 }
 
-void IntegrationServer::applyCors(const QHttpServerRequest& req,
-                                  QHttpServerResponse& response)
-{
-    const QByteArray origin = req.headers().value("Origin").toByteArray();
-
-    auto h = response.headers();
-
 const sysinfo::Info& IntegrationServer::cachedInfo() const
 {
     if (!m_cacheAge.isValid() || m_cacheAge.hasExpired(kInfoCacheTtlMs)) {
@@ -317,6 +317,13 @@ const sysinfo::Info& IntegrationServer::cachedInfo() const
     }
     return m_cachedInfo;
 }
+
+void IntegrationServer::applyCors(const QHttpServerRequest& req,
+                                  QHttpServerResponse& response)
+{
+    const QByteArray origin = req.headers().value("Origin").toByteArray();
+
+    auto h = response.headers();
 
     if (isBrowserExtensionOrigin(origin)) {
         // Reflect the exact extension origin. This is the modern

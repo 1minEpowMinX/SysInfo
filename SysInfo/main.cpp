@@ -1,28 +1,30 @@
 /**
  * @file main.cpp
- * @brief Application entry point.
+ * @brief Starts the application and enters the Qt event loop.
  *
  * Responsibilities, in order:
  *   1. Set Qt application identity (org / app / version) — must precede the
  *      QApplication constructor so QSettings, QStandardPaths and the lock
  *      file pick up the right names.
  *   2. Construct QApplication.
- *   3. Acquire a single-instance lock via QLockFile in TempLocation; bail
- *      out silently if another SysInfo is already running.
- *   4. Load the user's UI-language translation, falling back to English.
+ *   3. Load the user's UI-language translation, falling back to English —
+ *      before step 4, whose failure branch is user-visible.
+ *   4. Acquire the single-instance lock: exit silently if another SysInfo
+ *      already holds it, or refuse to start (with a message to the user and
+ *      to the event log) if the lock cannot be established at all.
  *   5. Construct SettingsManager (owns QSettings) and App (composition
  *      root) on the stack — guarantees destruction order
  *      ~App -> ~SettingsManager -> ~QApplication.
  *   6. Call App::start(); exit code 1 if the system tray is unavailable.
- *   7. Log AppStart, then the DeviceInventory snapshot, and enter the Qt
- *      event loop.
+ *   7. Log AppStart, queue the DeviceInventory snapshot for the first turn
+ *      of the event loop, and enter it.
  */
 
 #include "app/app.h"
 #include "core/logging/logger.h"
+#include "core/runtime/single_instance_guard.h"
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/device_inventory.h"
-#include "core/runtime/single_instance_guard.h"
 
 #include <QApplication>
 #include <QFile>
@@ -94,8 +96,8 @@ int main(int argc, char *argv[])
 	case SingleInstanceGuard::Result::AlreadyRunning:
 		// A launch while SysInfo is already running is routine, and a message
 		// here would meet every double click on the shortcut.
-
 		return 0;
+
 	case SingleInstanceGuard::Result::Unavailable:
 		// Whether another copy is running is unknown, so this one declines to
 		// start. Reported to the user, who otherwise sees nothing happen, and to
@@ -112,10 +114,10 @@ int main(int argc, char *argv[])
 
 	case SingleInstanceGuard::Result::Acquired:
 		break;
-	if (instance.reclaimedStaleLock())
-	{
 	}
 
+	if (instance.reclaimedStaleLock())
+	{
 		Logger::log(Logger::EventId::StaleLockReclaimed,
 					QString("Removed an unreadable single-instance lock file left "
 							"by an unclean shutdown: %1")

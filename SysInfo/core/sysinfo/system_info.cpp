@@ -196,7 +196,7 @@ namespace sysinfo
 		return {};
 
 #elif defined(Q_OS_MAC)
-		// macOS does not have sysinfo, so we use sysctl
+		// macOS does not have sysinfo, so sysctl supplies the value
 		struct timeval boottime;
 		size_t len = sizeof(boottime); // Buffer size
 		int mib[2] = {CTL_KERN, KERN_BOOTTIME};

@@ -16,7 +16,7 @@ constexpr qint64 kGib = 1024LL * 1024 * 1024;
 constexpr qint64 kGb  = 1000LL * 1000 * 1000;
 
 /**
- * @brief Insert @p value under @p key only if the data layer produced one.
+ * @brief Inserts @p value under @p key only if the data layer produced one.
  *
  * The collectors signal "no value" with an empty string or 0 (see the Cpu /
  * Memory / Storage docs). Forwarding those verbatim would make an unknown
@@ -37,7 +37,7 @@ void insertIfSet(QJsonObject &obj, const QString &key, qint64 value)
     }
 }
 
-/// Insert a whole group, unless every field in it was unobtainable.
+/// Inserts a whole group, unless every field in it was unobtainable.
 void insertGroupIfSet(QJsonObject &obj, const QString &key, const QJsonObject &group)
 {
     if (!group.isEmpty()) {
