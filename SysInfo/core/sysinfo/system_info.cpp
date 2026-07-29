@@ -1,6 +1,8 @@
 #include "system_info.h"
 
+#include <QAbstractSocket>
 #include <QDateTime>
+#include <QHostAddress>
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QString>
@@ -53,13 +55,14 @@ namespace sysinfo
 			return false;
 		}
 
-		bool looksLikeVpn(const QNetworkInterface &iface)
+		/// @param nameLower Lower-cased humanReadableName(), passed in because
+		///                 the caller has already computed it.
+		bool looksLikeVpn(const QNetworkInterface &iface, const QString &nameLower)
 		{
             if (iface.type() == QNetworkInterface::Virtual) {
 				return true;
             }
 
-			const QString nameLower = iface.humanReadableName().toLower();
 			static const char *const kVpnKeywords[] = {
 				"vpn", "wireguard", "tailscale", "openvpn",
 				"anyconnect", "cisco", "zerotier", "tun", "tap"};
@@ -78,7 +81,7 @@ namespace sysinfo
 	{
 		QString vpnIp, lanIp;
 
-		const auto &interfaces = QNetworkInterface::allInterfaces();
+		const QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
 		for (const QNetworkInterface &iface : interfaces)
 		{
 			const auto flags = iface.flags();
@@ -94,26 +97,30 @@ namespace sysinfo
 				continue;
             }
 
-			const bool isVpn = looksLikeVpn(iface);
+			const bool isVpn = looksLikeVpn(iface, nameLower);
+			// Only the first address of each kind is ever used, so an
+			// interface that cannot improve the answer is skipped whole.
+            if (isVpn ? !vpnIp.isEmpty() : !lanIp.isEmpty()) {
+				continue;
+            }
 
-			const auto &entries = iface.addressEntries();
+			const QList<QNetworkAddressEntry> entries = iface.addressEntries();
 			for (const QNetworkAddressEntry &entry : entries)
 			{
-				const QString ip = entry.ip().toString();
-                if (ip.contains(QLatin1Char(':'))) {
-					continue; // Skip IPv6
+				const QHostAddress address = entry.ip();
+				// Asking the address for its protocol beats formatting every
+				// IPv6 address into a string only to throw it away.
+                if (address.protocol() != QAbstractSocket::IPv4Protocol) {
+					continue;
                 }
 
-				if (isVpn)
-				{
-					if (vpnIp.isEmpty())
-						vpnIp = ip;
-				}
-				else if (lanIp.isEmpty())
-				{
-					lanIp = ip;
-				}
+				(isVpn ? vpnIp : lanIp) = address.toString();
+				break;
 			}
+
+            if (!vpnIp.isEmpty()) {
+				break; // A VPN address always wins — nothing left to look for.
+            }
 		}
 
         if (!vpnIp.isEmpty()) {
