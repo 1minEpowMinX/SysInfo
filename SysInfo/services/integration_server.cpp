@@ -4,12 +4,15 @@
 #include "core/sysinfo/system_info.h"
 #include "core/sysinfo/system_info_presenter.h"
 
+#include <QByteArrayList>
 #include <QHostAddress>
 #include <QHttpServerRequest>
 #include <QHttpServerResponse>
 #include <QJsonObject>
 
 namespace {
+#include <algorithm>
+
 
 /**
  * @brief Officially published SysInfo extension IDs.
@@ -24,6 +27,22 @@ const QStringList kDefaultAllowedExtensionIds = {
 };
 
 /**
+/// Generous bound on an extension identifier: a Chromium ID is 32 characters,
+/// a Firefox per-installation UUID is 36.
+constexpr qsizetype kMaxExtensionIdLength = 64;
+
+/// Characters permitted in the identifier half of an extension origin: a
+/// superset of the two real formats (a Chromium ID is 32 lowercase letters, a
+/// Firefox UUID is hex digits and hyphens), admitting anything that is neither
+/// a separator, whitespace nor a control byte.
+bool isExtensionIdChar(char c)
+{
+    return (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')
+        || c == '-';
+}
+
  * @brief True if @p origin looks like a browser-extension URL.
  *
  * Extension SWs in every supported browser stamp Origin as
@@ -37,9 +56,25 @@ const QStringList kDefaultAllowedExtensionIds = {
  */
 bool isBrowserExtensionOrigin(const QByteArray& origin)
 {
-    return origin.startsWith("chrome-extension://")
-        || origin.startsWith("moz-extension://")
-        || origin.startsWith("edge-extension://");
+    static const QByteArrayList kSchemes = {
+        QByteArrayLiteral("chrome-extension://"),
+        QByteArrayLiteral("moz-extension://"),
+        QByteArrayLiteral("edge-extension://"),
+    };
+
+    for (const QByteArray& scheme : kSchemes) {
+        if (!origin.startsWith(scheme)) {
+            continue;
+        }
+
+        const char* const idBegin = origin.constData() + scheme.size();
+        const char* const idEnd   = origin.constData() + origin.size();
+        if (idBegin == idEnd || idEnd - idBegin > kMaxExtensionIdLength) {
+            return false;
+        }
+        return std::all_of(idBegin, idEnd, isExtensionIdChar);
+    }
+    return false;
 }
 
 /**

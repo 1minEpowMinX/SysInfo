@@ -46,6 +46,10 @@ class SettingsManager;
  *        - Sec-Fetch-Mode == "navigate" — direct navigation in the
  *          address bar / bookmark / link click. Hides the JSON from
  *          browser history.
+ *        - Origin carrying one of those schemes but a malformed identifier
+ *          (empty, over-long, or containing anything outside the permitted
+ *          character set). The value is echoed back in the CORS header, so
+ *          it is validated in full rather than by scheme alone.
  *
  *      Accepted:
  *        - Origin starts with one of the three browser-extension URL

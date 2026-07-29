@@ -131,6 +131,8 @@ private slots:
     // Context filter (Origin + Sec-Fetch-Mode)
     void pageOrigin_isRejected();
     void navigateMode_isRejected();
+    void malformedExtensionOrigin_isRejected_data();
+    void malformedExtensionOrigin_isRejected();
 
     // Client whitelist (X-Sysinfo-Client)
     void extensionOriginWithoutClientId_isRejected();
@@ -364,6 +366,47 @@ void TestIntegrationServer::navigateMode_isRejected()
                                      {{"Sec-Fetch-Mode", "navigate"}});
 
     QCOMPARE(r.statusCode, 403);
+}
+
+void TestIntegrationServer::malformedExtensionOrigin_isRejected_data()
+{
+    QTest::addColumn<QByteArray>("origin");
+
+    // The extension scheme alone is not enough: whatever follows it is
+    // echoed back in Access-Control-Allow-Origin, so the identifier must
+    // look like one before it is served — and to reflect — it.
+    QTest::newRow("empty id")
+        << QByteArray("chrome-extension://");
+    QTest::newRow("path traversal")
+        << QByteArray("chrome-extension://abcdef/../../evil");
+    QTest::newRow("dotted host")
+        << QByteArray("moz-extension://evil.com");
+    QTest::newRow("wildcard")
+        << QByteArray("chrome-extension://*");
+    QTest::newRow("comma-separated second origin")
+        << QByteArray("chrome-extension://abcdef,https://evil.com");
+    QTest::newRow("over-long id")
+        << (QByteArray("edge-extension://") + QByteArray(200, 'a'));
+}
+
+void TestIntegrationServer::malformedExtensionOrigin_isRejected()
+{
+    QFETCH(QByteArray, origin);
+
+    SettingsManager settings;
+    IntegrationServer server(settings);
+    QVERIFY(server.start(0));
+
+    QNetworkAccessManager nam;
+    const HttpResult r = httpRequest(nam, systeminfoUrl(server), "GET", {
+        {"Origin",           origin},
+        {"X-Sysinfo-Client", kChromeProdId},
+    });
+
+    QCOMPARE(r.statusCode, 403);
+    // Nothing may be reflected back for a rejected origin.
+    QVERIFY2(header(r, "Access-Control-Allow-Origin") != origin,
+             "a rejected origin must never be echoed into the CORS header");
 }
 
 // --- Client whitelist --------------------------------------------------------
