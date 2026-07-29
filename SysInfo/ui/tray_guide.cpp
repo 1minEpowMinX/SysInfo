@@ -4,7 +4,6 @@
 #include "core/settings/settings_manager.h"
 
 #include <QMovie>
-#include <QObject>
 #include <QVBoxLayout>
 
 TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
@@ -22,7 +21,7 @@ TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
 
 void TrayGuide::setupWindow()
 {
-    setWindowTitle(QObject::tr("How to pin an icon to the tray"));
+    setWindowTitle(tr("How to pin an icon to the tray"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
     setModal(true);
 }
@@ -44,7 +43,7 @@ void TrayGuide::setupAnimation()
 
 void TrayGuide::setupTexts()
 {
-    m_textLabel = new QLabel(QObject::tr(
+    m_textLabel = new QLabel(tr(
         "<p><b>To keep the app visible in the notification area:</b><br>"
         "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
         "2️. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
@@ -55,8 +54,8 @@ void TrayGuide::setupTexts()
 
 void TrayGuide::setupControls()
 {
-    m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"), this);
-    m_closeButton   = new QPushButton(QObject::tr("Close"), this);
+    m_dontShowAgain = new QCheckBox(tr("Don't show again"), this);
+    m_closeButton   = new QPushButton(tr("Close"), this);
 
     connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
 }

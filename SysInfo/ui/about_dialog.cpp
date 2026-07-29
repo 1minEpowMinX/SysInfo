@@ -4,7 +4,6 @@
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/system_info.h"
 
-#include <QObject>
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QSysInfo>
@@ -15,7 +14,7 @@ AboutDialog::AboutDialog(SettingsManager& settings, QWidget* parent)
     , backgroundLabel(new QLabel(this))
     , aboutLabel(new QLabel(this))
 {
-    setWindowTitle(QObject::tr("About"));
+    setWindowTitle(tr("About SysInfo"));
     resize(650, 650);
 
     setupBackground();
@@ -51,7 +50,7 @@ void AboutDialog::setupAboutLabel()
 
 QString AboutDialog::buildAboutHtml() const
 {
-    return QObject::tr(
+    return tr(
                "<h2><b>SysInfo</b></h2>"
                "<p><b>The application collects system information and assists in diagnostics:</b><br>"
                "• Displays device information (device name, user, IP address, uptime).<br>"
@@ -73,7 +72,7 @@ QString AboutDialog::buildAboutHtml() const
 
 QString AboutDialog::buildSystemDetailsHtml() const
 {
-    return QObject::tr(
+    return tr(
                "<p span style='color: gray;'><b>OS:</b> %1<br>"
                "<b>User:</b> %2<br>"
                "<b>Device:</b> %3<br>"
