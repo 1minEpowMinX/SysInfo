@@ -40,6 +40,7 @@ qt_add_library(sysinfo_core STATIC
     core/sysinfo/device_inventory.h
     core/settings/settings_manager.cpp
     core/settings/settings_manager.h
+    core/settings/onboarding_flags.h
     core/logging/logger.cpp
     core/logging/logger.h
     core/runtime/single_instance_guard.cpp
@@ -80,6 +81,7 @@ set(PROJECT_SOURCES
 
     app/app.cpp
     app/app.h
+    app/notification_sink.h
     app/user_prompt.h
     app/welcome_notifier.cpp
     app/welcome_notifier.h

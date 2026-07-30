@@ -1,7 +1,8 @@
 #ifndef TRAY_CONTROLLER_H
 #define TRAY_CONTROLLER_H
 
-#include <QObject>
+#include "app/notification_sink.h"
+
 #include <QString>
 #include <QSystemTrayIcon>
 
@@ -15,7 +16,7 @@ class QMenu;
  * Exposes a small semantic surface (copyRequested / aboutRequested /
  * quitRequested / notificationClicked) instead of leaking the underlying
  * QSystemTrayIcon to the App layer. The QSystemTrayIcon::messageClicked
- * signal is forwarded as TrayController::notificationClicked, decoupling
+ * signal is forwarded as NotificationSink::notificationClicked, decoupling
  * consumers from Qt's vocabulary.
  *
  * Memory model:
@@ -25,7 +26,7 @@ class QMenu;
  *     The destructor is declared out-of-line so QMenu can stay
  *     forward-declared in this header.
  */
-class TrayController : public QObject
+class TrayController : public NotificationSink
 {
     Q_OBJECT
 public:
@@ -58,17 +59,11 @@ public:
     /// Updates the tray-icon hover tooltip (typically the cached SystemInfo).
     void setTooltip(const QString& text);
 
-    /**
-     * @brief Displays a balloon/toast notification next to the tray icon.
-     * @param title Short title shown bold by the OS.
-     * @param body  Multi-line body (newline-separated lines work on all OS).
-     * @param icon  Visual cue (info/warning/critical).
-     * @param msecs How long the notification stays visible.
-     */
+    /// Displays a balloon/toast notification next to the tray icon. Does
+    /// nothing before init() has built the icon.
     void showNotification(const QString& title,
                           const QString& body,
-                          QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::Information,
-                          int msecs = 5000);
+                          int msecs) override;
 
 signals:
     /// Fires when the user selects "Copy to clipboard" from the menu.
@@ -77,8 +72,6 @@ signals:
     void aboutRequested();
     /// Fires when the user selects "Exit" from the menu.
     void quitRequested();
-    /// Fires when the user clicks any tray notification (forwarded from QSystemTrayIcon::messageClicked).
-    void notificationClicked();
 
 private:
     /// Builds the context menu and wires its actions to the public signals.

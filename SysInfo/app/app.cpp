@@ -21,6 +21,9 @@ namespace {
 /// changed IP address or boot time can stay absent from the tooltip.
 constexpr int kTrayUpdateIntervalMs = 30'000;
 
+/// How long the "copied to the clipboard" confirmation stays on screen.
+constexpr int kCopyNoticeMs         = 5'000;
+
 constexpr const char* kTrayIconPath = ":/resources/icons/sysinfo_icon.png";
 
 } // namespace
@@ -56,7 +59,8 @@ bool App::start()
 
     startTrayUpdateTimer();
 
-    m_notifier = new WelcomeNotifier(*m_tray, m_settings, this);
+    m_notifier = new WelcomeNotifier(*m_tray, m_settings,
+                                     WelcomeNotifier::kDefaultLifetimes, this);
     connect(m_notifier, &WelcomeNotifier::trayGuideRequested,
             this, &App::onTrayGuideRequested);
     m_notifier->scheduleShow();
@@ -102,8 +106,7 @@ void App::onCopyRequested()
 
     m_tray->showNotification(tr("System information"),
                              tr("Information copied to the clipboard."),
-                             QSystemTrayIcon::Information,
-                             5000);
+                             kCopyNoticeMs);
 }
 
 void App::onAboutRequested()

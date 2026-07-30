@@ -3,19 +3,19 @@
 
 #include <QObject>
 
-class SettingsManager;
-class TrayController;
+class NotificationSink;
+class OnboardingFlags;
 
 /**
  * @brief Shows the onboarding notifications after a delay.
  *
  * After a configurable delay, shows a one-time welcome tray message and,
  * on Windows only, a one-time hint on how to pin the tray icon. Both
- * notifications are guarded by SettingsManager flags so they fire at most
- * once per user profile.
+ * notifications are guarded by OnboardingFlags so they fire at most once per
+ * user profile.
  *
- * Does not own TrayController or SettingsManager — both are injected by
- * reference and must outlive the notifier (guaranteed by the owning App).
+ * Does not own the NotificationSink or the OnboardingFlags — both are injected
+ * by reference and must outlive the notifier (guaranteed by the owning App).
  *
  * onTimerFired() runs at most once per scheduleShow() call via a
  * QTimer::singleShot, so no internal de-duplication is needed.
@@ -33,12 +33,30 @@ public:
     static constexpr int kDefaultDelayMs = 60'000;
 
     /**
-     * @param tray     Tray adapter used to display notifications.
-     * @param settings Settings store consulted for the one-shot flags.
-     * @param parent   Standard Qt parent.
+     * @brief Groups how long each notification stays on screen.
+     *
+     * A notification's lifetime is also the span during which an incoming
+     * click belongs to it, so these values govern the sequencing and not just
+     * the display.
      */
-    explicit WelcomeNotifier(TrayController& tray,
-                             SettingsManager& settings,
+    struct Lifetimes
+    {
+        int welcomeMs;    ///< Welcome message.
+        int trayGuideMs;  ///< Windows tray-pinning hint.
+    };
+
+    /// Lifetimes the application runs with.
+    static constexpr Lifetimes kDefaultLifetimes{15'000, 25'000};
+
+    /**
+     * @param sink      Destination for the notifications.
+     * @param flags     One-shot flags consulted before each notification.
+     * @param lifetimes How long each notification stays up.
+     * @param parent    Standard Qt parent.
+     */
+    explicit WelcomeNotifier(NotificationSink& sink,
+                             OnboardingFlags& flags,
+                             Lifetimes lifetimes = kDefaultLifetimes,
                              QObject* parent = nullptr);
 
     /// Schedules the welcome/guide notifications to fire after @p delayMs.
@@ -62,8 +80,9 @@ private:
      */
     void showTrayGuideHint();
 
-    TrayController&  m_tray;       ///< Injected tray adapter (not owned).
-    SettingsManager& m_settings;   ///< Injected settings store (not owned).
+    NotificationSink& m_sink;      ///< Injected notification destination (not owned).
+    OnboardingFlags&  m_flags;     ///< Injected one-shot flags (not owned).
+    Lifetimes         m_lifetimes; ///< How long each notification stays up.
 };
 
 #endif // WELCOME_NOTIFIER_H

@@ -1,6 +1,8 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 
+#include "onboarding_flags.h"
+
 #include <QSettings>
 
 /**
@@ -16,7 +18,7 @@
  * App / TrayGuide. Copy and move are deleted because QSettings holds OS
  * resources that should not be duplicated.
  */
-class SettingsManager
+class SettingsManager : public OnboardingFlags
 {
 public:
     /// Opens the store for organisation "Pivdenny", application "SysInfo".
@@ -28,14 +30,14 @@ public:
     SettingsManager& operator=(SettingsManager&&) = delete;
 
     /// @return true if the welcome tray notification should still be shown.
-    bool showWelcome() const;
+    bool showWelcome() const override;
     /// Persists the welcome flag. Logs SettingsWriteFailed on QSettings I/O errors.
-    void setShowWelcome(bool value);
+    void setShowWelcome(bool value) override;
 
     /// @return true if the Windows tray-guide hint should still be shown.
-    bool showTrayGuide() const;
+    bool showTrayGuide() const override;
     /// Persists the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
-    void setShowTrayGuide(bool value);
+    void setShowTrayGuide(bool value) override;
 
     /// @return Absolute path of the on-disk settings file. Useful for the
     ///         About dialog, support tickets and manual cleanup. Provides

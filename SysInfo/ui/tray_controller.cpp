@@ -6,7 +6,7 @@
 #include <QMenu>
 
 TrayController::TrayController(QObject* parent)
-    : QObject(parent)
+    : NotificationSink(parent)
 {}
 
 // Out-of-line destructor: unique_ptr<QMenu> needs a complete type for its
@@ -41,7 +41,7 @@ bool TrayController::init(const QString& iconPath)
     buildMenu();
 
     connect(m_icon, &QSystemTrayIcon::messageClicked,
-            this, &TrayController::notificationClicked);
+            this, &NotificationSink::notificationClicked);
 
     return true;
 }
@@ -80,10 +80,9 @@ void TrayController::setTooltip(const QString& text)
 
 void TrayController::showNotification(const QString& title,
                                       const QString& body,
-                                      QSystemTrayIcon::MessageIcon icon,
                                       int msecs)
 {
     if (m_icon) {
-        m_icon->showMessage(title, body, icon, msecs);
+        m_icon->showMessage(title, body, QSystemTrayIcon::Information, msecs);
     }
 }
