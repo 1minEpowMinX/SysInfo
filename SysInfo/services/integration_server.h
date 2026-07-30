@@ -10,7 +10,7 @@
 #include <QStringList>
 #include <QTcpServer>
 
-class SettingsManager;
+class ExtensionWhitelist;
 
 /**
  * @brief Serves system info to the browser extension over local HTTP.
@@ -64,9 +64,9 @@ class SettingsManager;
  *          tests, dev tooling).
  *
  *   2. Client whitelist (isClientAllowed)
- *      Checks the X-Sysinfo-Client header against the configured list
- *      of officially published SysInfo extension IDs (default + any
- *      Integration/AllowedExtensionIds override from SettingsManager).
+ *      Checks the X-Sysinfo-Client header against the compiled-in list of
+ *      officially published SysInfo extension IDs, or against the
+ *      administrator override when the ExtensionWhitelist supplies one.
  *
  *      Rejected:
  *        - Browser request without X-Sysinfo-Client — catches stale
@@ -107,12 +107,11 @@ class IntegrationServer : public QObject
     Q_OBJECT
 public:
     /**
-     * @param settings  Application settings store; consulted on every
-     *                  request for the AllowedExtensionIds whitelist.
-     *                  Must outlive this server.
+     * @param whitelist Source of the administrator override, consulted on
+     *                  every request. Not owned; must outlive this server.
      * @param parent    Standard Qt parent.
      */
-    explicit IntegrationServer(SettingsManager& settings,
+    explicit IntegrationServer(ExtensionWhitelist& whitelist,
                                QObject *parent = nullptr);
     ~IntegrationServer() override;
 
@@ -134,7 +133,7 @@ public:
     bool isListening() const;
 
 private:
-    /// @return The active whitelist: SettingsManager override if non-empty,
+    /// @return The active whitelist: the injected override if non-empty,
     ///         otherwise the compiled-in default list of officially
     ///         published SysInfo extension IDs.
     QStringList allowedExtensionIds() const;
@@ -162,7 +161,7 @@ private:
      */
     const sysinfo::Info& cachedInfo() const;
 
-    SettingsManager& m_settings;     ///< Injected, not owned.
+    ExtensionWhitelist& m_whitelist; ///< Injected, not owned.
     QHttpServer httpServer;          ///< Route table; bound to tcpServer by start().
     QTcpServer  tcpServer;           ///< Listening socket, and the only one bound.
 

@@ -1,6 +1,6 @@
 #include "integration_server.h"
 
-#include "core/settings/settings_manager.h"
+#include "core/settings/extension_whitelist.h"
 #include "core/sysinfo/system_info.h"
 #include "core/sysinfo/system_info_presenter.h"
 
@@ -18,9 +18,9 @@ namespace {
 /**
  * @brief Lists the officially published SysInfo extension IDs.
  *
- * Used when SettingsManager::allowedExtensionIds() returns empty (the
- * common "out of the box" case). Administrators can override the list
- * via the Integration/AllowedExtensionIds key without rebuilding.
+ * Used when the injected ExtensionWhitelist returns empty (the common
+ * "out of the box" case). Administrators can override the list via the
+ * Integration/AllowedExtensionIds key without rebuilding.
  */
 const QStringList kDefaultAllowedExtensionIds = {
     QStringLiteral("mjdcgdoembmihkaajaabkffkejompofj"),  // Chrome / Edge prod
@@ -191,9 +191,9 @@ constexpr qint64 kInfoCacheTtlMs = 1000;
 
 using Method = QHttpServerRequest::Method;
 
-IntegrationServer::IntegrationServer(SettingsManager& settings, QObject *parent)
+IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist, QObject *parent)
     : QObject{parent}
-    , m_settings(settings)
+    , m_whitelist(whitelist)
 {
     httpServer.route("/systeminfo", Method::Get,
                      [this](const QHttpServerRequest &req) -> QHttpServerResponse {
@@ -299,7 +299,7 @@ bool IntegrationServer::isListening() const {
 
 QStringList IntegrationServer::allowedExtensionIds() const
 {
-    const QStringList override = m_settings.allowedExtensionIds();
+    const QStringList override = m_whitelist.allowedExtensionIds();
     return override.isEmpty() ? kDefaultAllowedExtensionIds : override;
 }
 

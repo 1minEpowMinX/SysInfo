@@ -41,6 +41,7 @@ qt_add_library(sysinfo_core STATIC
     core/settings/settings_manager.cpp
     core/settings/settings_manager.h
     core/settings/onboarding_flags.h
+    core/settings/extension_whitelist.h
     core/logging/logger.cpp
     core/logging/logger.h
     core/runtime/single_instance_guard.cpp

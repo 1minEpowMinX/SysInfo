@@ -1,6 +1,7 @@
 #ifndef SETTINGSMANAGER_H
 #define SETTINGSMANAGER_H
 
+#include "extension_whitelist.h"
 #include "onboarding_flags.h"
 
 #include <QSettings>
@@ -14,11 +15,20 @@
  * message and Windows tray-guide hint), the administrator override of the
  * IntegrationServer whitelist, and the path of the store itself.
  *
+ * Serves two ports, and is the only implementation of either: OnboardingFlags,
+ * through which WelcomeNotifier reads both one-shot flags and clears the
+ * welcome one, and ExtensionWhitelist, through which IntegrationServer reads
+ * the administrator override. Those consumers hold the port they need rather
+ * than this class, which is what lets a test substitute the flags or the
+ * whitelist without a QSettings behind them. The constructor, filePath() and
+ * setShowTrayGuide() sit outside both ports and are reachable only through the
+ * concrete type.
+ *
  * Not a singleton: instantiate once in main() and inject by reference into
- * App / TrayGuide. Copy and move are deleted because QSettings holds OS
- * resources that should not be duplicated.
+ * App, which passes the ports on to the objects it builds. Copy and move are
+ * deleted because QSettings holds OS resources that should not be duplicated.
  */
-class SettingsManager : public OnboardingFlags
+class SettingsManager : public OnboardingFlags, public ExtensionWhitelist
 {
 public:
     /// Opens the store for organisation "Pivdenny", application "SysInfo".
@@ -37,7 +47,8 @@ public:
     /// @return true if the Windows tray-guide hint should still be shown.
     bool showTrayGuide() const override;
     /// Persists the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
-    void setShowTrayGuide(bool value) override;
+    /// Outside OnboardingFlags: App retires this hint, not the notifier.
+    void setShowTrayGuide(bool value);
 
     /// @return Absolute path of the on-disk settings file. Useful for the
     ///         About dialog, support tickets and manual cleanup. Provides
@@ -55,7 +66,7 @@ public:
      *         May be empty, in which case IntegrationServer falls back to its
      *         compiled-in defaults.
      */
-    QStringList allowedExtensionIds() const;
+    QStringList allowedExtensionIds() const override;
 
 private:
     QSettings m_settings;
