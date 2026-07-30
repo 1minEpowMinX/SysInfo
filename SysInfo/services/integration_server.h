@@ -96,8 +96,7 @@ class SettingsManager;
  *     header. Extension IDs are public (visible in the Web Store /
  *     AMO listing), so the header is a claim, not a proof. Hardening
  *     to "proof" requires native messaging with a shared secret, which
- *     is out of scope for the current version's portable distribution
- *     model.
+ *     the portable distribution model does not carry.
  *
  * Lifecycle is explicit: construct → start(port) → stop() / destructor.
  * start() returns false if the port is busy or binding fails — the App
@@ -119,8 +118,8 @@ public:
 
     /**
      * @brief Binds to 127.0.0.1:@p port and starts serving routes.
-     * @param port TCP port; pass 0 to let the OS pick an ephemeral one
-     *             (useful in tests — read it back via boundPort()).
+     * @param port TCP port; pass 0 to let the OS pick an ephemeral one, then
+     *             read its choice back via boundPort().
      * @return true on success; false if the listen() or HTTP bind failed.
      */
     bool start(quint16 port = 8734);
@@ -164,8 +163,8 @@ private:
     const sysinfo::Info& cachedInfo() const;
 
     SettingsManager& m_settings;     ///< Injected, not owned.
-    QHttpServer httpServer;
-    QTcpServer  tcpServer;
+    QHttpServer httpServer;          ///< Route table; bound to tcpServer by start().
+    QTcpServer  tcpServer;           ///< Listening socket, and the only one bound.
 
     mutable sysinfo::Info m_cachedInfo;  ///< Valid only while m_cacheAge has not expired.
     mutable QElapsedTimer m_cacheAge;    ///< Invalid until the first collection.

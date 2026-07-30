@@ -46,7 +46,8 @@ signals:
     void trayGuideRequested();
 
 private:
-    /// Timer callback: shows the welcome message, then schedules the tray hint.
+    /// Shows the welcome message and schedules the tray hint for the moment it
+    /// expires; goes straight to the hint when the welcome flag is already clear.
     void onTimerFired();
 
     /**

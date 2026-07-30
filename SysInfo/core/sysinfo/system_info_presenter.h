@@ -11,9 +11,7 @@
  *
  * Lives in a sub-namespace to keep i18n (QObject::tr) out of the data layer:
  * sysinfo itself only collects raw values, while sysinfo::presenter renders
- * them for human or API consumption. Thanks to this split, tests of the
- * data layer (tst_system_info) can verify field shapes without spinning up
- * a QTranslator.
+ * them for human or API consumption.
  */
 namespace sysinfo::presenter {
 

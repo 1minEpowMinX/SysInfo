@@ -408,6 +408,7 @@ QString valueAfterColon(const QString &line)
     return colon < 0 ? QString() : line.mid(colon + 1).trimmed();
 }
 
+/// @return The "model name" field of /proc/cpuinfo, or empty if it is absent.
 QString linuxCpuModel()
 {
     const QStringList lines =
@@ -420,6 +421,8 @@ QString linuxCpuModel()
     return {};
 }
 
+/// @return Physical (non-SMT) core count, or 0 when /proc/cpuinfo carries no
+///         topology keys.
 int linuxPhysicalCores()
 {
     // A physical core is identified by its (socket, core) pair; counting
@@ -465,6 +468,7 @@ QString linuxRootBlockDevice()
     return device.startsWith("/dev/") ? QString::fromUtf8(device.mid(5)) : QString();
 }
 
+/// Fills vendor, model and capacity of @p disk from its /sys/class/block entry.
 void linuxStorageIdentity(const QString &disk, Storage &storage)
 {
     const QString base = QStringLiteral("/sys/class/block/") + disk;
@@ -480,6 +484,7 @@ void linuxStorageIdentity(const QString &disk, Storage &storage)
     }
 }
 
+/// @return "nvme", "ssd", "hdd", or empty if @p disk exposes no rotational flag.
 QString linuxDiskType(const QString &disk)
 {
     if (disk.startsWith(QLatin1String("nvme"))) {
@@ -498,6 +503,8 @@ QString linuxDiskType(const QString &disk)
 
 #elif defined(Q_OS_MAC)
 
+/// @return The string value of sysctl @p name, or empty if the query fails or
+///         the value has zero length.
 QString sysctlString(const char *name)
 {
     size_t len = 0;
@@ -512,6 +519,7 @@ QString sysctlString(const char *name)
     return QString::fromUtf8(buffer.constData());
 }
 
+/// @return The integer value of sysctl @p name, or 0 if the query fails.
 qint64 sysctlNumber(const char *name)
 {
     qint64 value = 0; // Zero-initialised so a 32-bit answer reads back cleanly.
@@ -519,6 +527,8 @@ qint64 sysctlNumber(const char *name)
     return sysctlbyname(name, &value, &len, nullptr, 0) == 0 ? value : 0;
 }
 
+/// @return @p value transcoded from UTF-8 and trimmed, or empty if it is null
+///         or will not transcode.
 QString cfStringToQString(CFStringRef value)
 {
     if (value == nullptr) {

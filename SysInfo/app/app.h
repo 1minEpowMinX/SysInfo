@@ -12,11 +12,13 @@ class WelcomeNotifier;
 /**
  * @brief Composes and owns the application's top-level objects.
  *
- * Owns and wires together the four runtime parts of SysInfo:
- *   - TrayController  : tray icon and context menu (UI),
- *   - WelcomeNotifier : delayed onboarding notifications,
- *   - IntegrationServer : local HTTP endpoint for the browser extension,
- *   - cached SystemInfo string used for the tray tooltip and clipboard.
+ * Owns and wires together the three runtime parts of SysInfo:
+ *   - TrayController    : tray icon and context menu (UI),
+ *   - WelcomeNotifier   : delayed onboarding notifications,
+ *   - IntegrationServer : local HTTP endpoint for the browser extension.
+ *
+ * Also holds the rendered SystemInfo string that feeds the tray tooltip and
+ * the clipboard.
  *
  * Holds no business logic of its own beyond
  *   "periodically refresh the tray tooltip with a fresh SystemInfo snapshot".
@@ -57,7 +59,8 @@ private slots:
     void onTrayGuideRequested();
 
 private:
-    /// Refreshes m_cachedInfo every 30 s and updates the tray tooltip.
+    /// Collects a fresh snapshot every 30 s, replacing m_cachedInfo and the
+    /// tray tooltip only when the rendered text differs from the cached one.
     void startTrayUpdateTimer();
 
     SettingsManager&    m_settings;          ///< Injected, not owned.

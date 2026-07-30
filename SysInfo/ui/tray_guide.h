@@ -56,7 +56,7 @@ private:
 
     QLabel*      m_gifLabel;         ///< Holds the animated screenshot.
     QLabel*      m_textLabel;        ///< Multi-line explanatory text.
-    QCheckBox*   m_dontShowAgain;    ///< Persists "Show this hint again?" preference.
+    QCheckBox*   m_dontShowAgain;    ///< "Don't show again"; read on close to clear the flag.
     QPushButton* m_closeButton;      ///< Close action.
 };
 

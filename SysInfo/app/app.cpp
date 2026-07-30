@@ -16,6 +16,9 @@
 #include <QTimer>
 
 namespace {
+
+/// Interval between tray tooltip re-collections, and therefore the longest a
+/// changed IP address or boot time can stay absent from the tooltip.
 constexpr int kTrayUpdateIntervalMs = 30'000;
 constexpr int kWelcomeDelayMs       = 60'000;
 constexpr const char* kTrayIconPath = ":/resources/icons/sysinfo_icon.png";

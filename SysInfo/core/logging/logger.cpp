@@ -121,6 +121,7 @@ int Logger::toSyslogPrio(LogSeverity severity)
 	}
 }
 
+/// Opens the syslog connection under the identity "SysInfo", once per process.
 static void ensureSyslogOpen()
 {
 	static const bool opened = []()

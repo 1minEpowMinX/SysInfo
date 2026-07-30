@@ -36,21 +36,19 @@ namespace sysinfo::inventory {
  * @endcode
  *
  * Everything here describes the machine as it was bought, at the granularity
- * a person would use to describe it. Three kinds of figure are left out on
- * purpose:
- *   - usage (free space, available memory) — it would describe the moment of
- *     collection rather than the device, and differ on every boot;
- *   - partitioning (system volume size) — it varies per install rather than
+ * a person would use to describe it. Three kinds of figure fall outside that
+ * and are absent from the document:
+ *   - usage (free space, available memory), which describes the moment of
+ *     collection rather than the device;
+ *   - partitioning (system volume size), which varies per install rather than
  *     per machine;
- *   - exact byte counts — sizes are reported only as the capacity the
- *     component is sold with.
+ *   - exact byte counts.
  *
- * So "total_gib" and "disk_capacity_gb" are *nominal*: rounded to 32 GiB and
- * 1000 GB rather than to the 31.71 and 1024.2 the OS reports, because that is
- * the value that groups identical machines together. Their units follow the
- * convention of what they measure — memory is counted in binary GiB, drive
- * capacity in the decimal GB drives are sold in — hence the differing
- * suffixes.
+ * "total_gib" and "disk_capacity_gb" are therefore *nominal*: 32 GiB and
+ * 1000 GB where the OS reports 31.71 and 1024.2, so that identical machines
+ * group together. Their units follow the convention of what they measure —
+ * memory in binary GiB, drive capacity in the decimal GB drives are sold in —
+ * hence the differing suffixes.
  *
  * "boot_time" is a bare number rather than a formatted string so a date
  * field can read it directly. It is in epoch *seconds*, so that field must be
@@ -67,13 +65,13 @@ QJsonObject payload();
  *
  * Firmware reserves a slice of physical memory, so the OS reports slightly
  * less than what is installed — 31.71 GiB on a 32 GiB machine. Rounding up
- * to the next multiple of 2 GiB recovers the figure a human would quote,
- * which is what makes a "group by RAM size" aggregation readable. Sizes that
- * are not multiples of 2 GiB do not exist in practice, so nothing legitimate
- * is rounded away.
+ * to the next multiple of 2 GiB recovers the figure a human would quote, which
+ * is what makes a "group by RAM size" aggregation readable. Sizes that are not
+ * multiples of 2 GiB do not exist in practice, so nothing legitimate is
+ * rounded away.
  *
- * Exposed alongside payload() because how a size is rounded is part of the
- * field contract, not an implementation detail.
+ * Part of the field contract of "memory.total_gib", not an implementation
+ * detail of payload().
  *
  * @return Nominal size in GiB, or 0 if @p bytes is not a positive count.
  */

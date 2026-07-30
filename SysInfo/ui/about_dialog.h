@@ -34,7 +34,8 @@ public:
     explicit AboutDialog(SettingsManager& settings, QWidget* parent = nullptr);
 
 protected:
-    /// Repaints the background label scaled to the new dialog size.
+    /// Stretches the background label over the new dialog size and re-lays the
+    /// text column against its right edge.
     void resizeEvent(QResizeEvent *event) override;
 
 private:

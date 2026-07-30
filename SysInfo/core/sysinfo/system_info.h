@@ -9,8 +9,7 @@
  *
  * The sysinfo namespace exposes only raw collection of OS-level facts. It
  * does not localise, format or serialise — that responsibility belongs to
- * sysinfo::presenter (see system_info_presenter.h). This split keeps the
- * data layer testable without bringing up a QTranslator.
+ * sysinfo::presenter (see system_info_presenter.h).
  */
 namespace sysinfo {
 
@@ -108,8 +107,10 @@ qint64 bootTimeSecs();
 /**
  * @brief Collects a full Info snapshot.
  *
- * Convenience wrapper over the four getters above. Each call queries the
- * OS afresh — no caching at this layer.
+ * Convenience wrapper over hostname(), username(), activeIpAddress() and
+ * lastBootTime(). Each call queries the OS afresh — no caching at this layer.
+ * osBuild() and bootTimeSecs() serve the diagnostic log event and are not
+ * part of the snapshot.
  *
  * Hardware facts are a separate concern and live in hardware_info.h.
  *

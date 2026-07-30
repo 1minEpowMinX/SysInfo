@@ -6,19 +6,18 @@
 /**
  * @brief Collects the device's hardware configuration as pure data.
  *
- * Split out of system_info.h because the two answer different questions:
- * sysinfo::Info describes the running session (who, where, since when) and is
- * re-polled for the tray, whereas the structures here describe near-immutable
- * hardware and are collected once for the diagnostic log event.
+ * The structures here describe near-immutable hardware and are collected once
+ * for the diagnostic log event. The running session (who, where, since when),
+ * re-polled for the tray, is sysinfo::Info in system_info.h.
  *
  * Same conventions as the rest of the data layer: nothing is localised, and
  * "no value" is an empty QString or 0 — never a placeholder. Sizes are raw
  * byte counts; rounding them into human-readable figures is the payload
  * builder's job (see device_inventory.h).
  *
- * Nothing here collects a serial number or any other per-unit identifier:
- * the fields are deliberately limited to the model of a component, which
- * describes the machine's class without fingerprinting the machine itself.
+ * Every field carries the model of a component and no per-unit identifier —
+ * no serial numbers anywhere — so the data describes the machine's class
+ * without fingerprinting the machine itself.
  */
 namespace sysinfo {
 
@@ -35,10 +34,9 @@ struct Cpu {
 /**
  * @brief Describes physical memory: sizes plus the identity of the installed modules.
  *
- * The identity fields describe the first populated module, which stands in
- * for the machine as a whole — mixed-vendor configurations exist but are
- * rare enough that reporting every module would bloat the log event for no
- * analytical gain.
+ * The identity fields describe the first populated module and stand in for the
+ * machine as a whole; a mixed-vendor configuration is reported by that module
+ * alone.
  *
  * They come from SMBIOS/DMI, which is not readable everywhere: Windows
  * exposes it to any process, Linux only to root, and Apple Silicon has no
@@ -54,10 +52,9 @@ struct Memory {
 /**
  * @brief Describes the drive the OS booted from.
  *
- * Describes the physical device, not the partitioning laid over it. Volume
- * sizes and free space are deliberately absent: how a drive is carved up
- * varies per install and changes over the machine's life, so neither belongs
- * in a snapshot of its specification.
+ * Covers the physical device, not the partitioning laid over it: volume sizes
+ * and free space are absent, being properties of an install rather than of the
+ * drive's specification.
  */
 struct Storage {
     QString systemDiskType;        ///< "nvme", "ssd" or "hdd"; empty if undetermined.
@@ -70,9 +67,9 @@ struct Storage {
  * @brief Groups a snapshot of the device's hardware configuration.
  */
 struct Hardware {
-    Cpu     cpu;
-    Memory  memory;
-    Storage storage;
+    Cpu     cpu;      ///< Processor facts, as cpuInfo() reports them.
+    Memory  memory;   ///< Installed memory, as memoryInfo() reports it.
+    Storage storage;  ///< Boot drive, as storageInfo() reports it.
 };
 
 /**

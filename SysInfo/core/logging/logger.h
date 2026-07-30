@@ -86,6 +86,9 @@ public:
 private:
     /**
      * @brief Implements both log() overloads.
+     * @param id      Stable event identifier (also encodes severity).
+     * @param msg     Human-readable summary, prefixed with a UTC timestamp and
+     *                the numeric id before it reaches the platform facility.
      * @param payload Compact JSON, or empty to emit no payload at all.
      */
     static void write(EventId id, const QString& msg, const QString& payload);
@@ -98,6 +101,7 @@ private:
         Error
     };
 
+    /// Maps @p id onto the severity encoded in its numeric range.
     static constexpr LogSeverity severityFromEventId(EventId id);
 
 #ifdef Q_OS_WIN

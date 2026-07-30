@@ -7,9 +7,10 @@
  * @brief Stores SysInfo's persistent user preferences.
  *
  * Thin wrapper over QSettings ("Pivdenny", "SysInfo") that exposes only the
- * flags actually used by the application — no string keys leak into the
- * rest of the codebase. Currently tracks two one-shot onboarding flags
- * (welcome message and Windows tray-guide hint).
+ * values actually used by the application — no string keys leak into the
+ * rest of the codebase. Covers the two one-shot onboarding flags (welcome
+ * message and Windows tray-guide hint), the administrator override of the
+ * IntegrationServer whitelist, and the path of the store itself.
  *
  * Not a singleton: instantiate once in main() and inject by reference into
  * App / TrayGuide. Copy and move are deleted because QSettings holds OS
@@ -18,6 +19,7 @@
 class SettingsManager
 {
 public:
+    /// Opens the store for organisation "Pivdenny", application "SysInfo".
     SettingsManager();
 
     SettingsManager(const SettingsManager&) = delete;

@@ -41,6 +41,8 @@ namespace sysinfo
 	namespace
 	{
 
+		/// Reports whether @p nameLower names a virtualisation or bridge adapter
+		/// rather than a real network interface.
 		bool looksLikeVirtualBridge(const QString &nameLower)
 		{
 			static const char *const kBridgeKeywords[] = {
@@ -55,6 +57,7 @@ namespace sysinfo
 			return false;
 		}
 
+		/// Reports whether @p iface carries a VPN tunnel rather than a LAN link.
 		/// @param nameLower Lower-cased humanReadableName(), passed in because
 		///                 the caller has already computed it.
 		bool looksLikeVpn(const QNetworkInterface &iface, const QString &nameLower)
