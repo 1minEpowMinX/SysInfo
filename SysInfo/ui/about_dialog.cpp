@@ -1,16 +1,12 @@
 #include "about_dialog.h"
 
 #include "core/logging/logger.h"
-#include "core/settings/settings_manager.h"
-#include "core/sysinfo/system_info.h"
 
 #include <QPixmap>
 #include <QResizeEvent>
-#include <QSysInfo>
 
-AboutDialog::AboutDialog(SettingsManager& settings, QWidget* parent)
+AboutDialog::AboutDialog(const QString& systemDetailsHtml, QWidget* parent)
     : QDialog(parent)
-    , m_settings(settings)
     , backgroundLabel(new QLabel(this))
     , aboutLabel(new QLabel(this))
 {
@@ -20,7 +16,7 @@ AboutDialog::AboutDialog(SettingsManager& settings, QWidget* parent)
     setupBackground();
     setupAboutLabel();
 
-    aboutLabel->setText(buildAboutHtml() + buildSystemDetailsHtml());
+    aboutLabel->setText(buildAboutHtml() + systemDetailsHtml);
     aboutLabel->adjustSize();
 }
 
@@ -68,19 +64,6 @@ QString AboutDialog::buildAboutHtml() const
                "<hr>"
                "<p><small>© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.</small></p>"
                ).arg(PROJECT_VERSION, BUILD_DATE, QT_VERSION_STR);
-}
-
-QString AboutDialog::buildSystemDetailsHtml() const
-{
-    return tr(
-               "<p span style='color: gray;'><b>OS:</b> %1<br>"
-               "<b>User:</b> %2<br>"
-               "<b>Device:</b> %3<br>"
-               "<b>Settings file:</b> %4</p>")
-        .arg(QSysInfo::prettyProductName(),
-             sysinfo::username(),
-             sysinfo::hostname(),
-             m_settings.filePath());
 }
 
 void AboutDialog::resizeEvent(QResizeEvent *event)

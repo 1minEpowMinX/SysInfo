@@ -108,7 +108,10 @@ void App::onCopyRequested()
 
 void App::onAboutRequested()
 {
-    AboutDialog dlg(m_settings);
+    const QString details =
+        sysinfo::presenter::toSystemDetailsHtml(sysinfo::collect(),
+                                                m_settings.filePath());
+    AboutDialog dlg(details);
     dlg.exec();
 }
 

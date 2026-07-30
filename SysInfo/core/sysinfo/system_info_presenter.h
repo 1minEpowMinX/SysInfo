@@ -29,6 +29,19 @@ QJsonObject toJson(const Info &s);
 /// are useful for human reading.
 QJsonObject toJsonWithLabels(const Info &s);
 
+/**
+ * @brief Renders the localised "system details" block of the About dialog.
+ *
+ * Reads the host name and the user name off @p s and asks QSysInfo for the OS
+ * product name; the uptime and the IP address are not part of this block.
+ *
+ * @param s                Session snapshot; only hostname and username are read.
+ * @param settingsFilePath Absolute path of the on-disk settings file.
+ * @return A rich-text paragraph naming the OS, the user, the device and the
+ *         settings file.
+ */
+QString toSystemDetailsHtml(const Info &s, const QString &settingsFilePath);
+
 } // namespace sysinfo::presenter
 
 #endif // SYSTEM_INFO_PRESENTER_H
