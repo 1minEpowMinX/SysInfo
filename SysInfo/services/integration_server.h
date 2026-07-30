@@ -100,7 +100,7 @@ class SettingsManager;
  *
  * Lifecycle is explicit: construct → start(port) → stop() / destructor.
  * start() returns false if the port is busy or binding fails — the App
- * layer surfaces this to the user via QMessageBox.
+ * layer decides how to surface that to the user.
  */
 class IntegrationServer : public QObject
 {

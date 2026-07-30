@@ -35,18 +35,22 @@ public:
 
     /**
      * @return true if the system tray is available on this platform/session.
-     *         Must be checked before calling init() — a missing tray is a
-     *         fatal configuration error for SysInfo.
+     *         init() refuses to build anything while it is false; SysInfo
+     *         treats a missing tray as a fatal configuration error.
      */
     static bool isSystemTrayAvailable();
 
     /**
      * @brief Builds the tray icon and context menu.
+     *
+     * An icon that fails to load is logged as TrayIconMissing and does not
+     * block creation — the tray entry appears with an empty icon.
+     *
      * @param iconPath Resource or filesystem path to the tray icon image.
-     * @return true on success; false only on hard failures (icon currently
-     *         missing is logged but does not block tray creation).
+     * @return true once the icon and menu exist; false if the system tray is
+     *         unavailable, or if this controller is already initialised.
      */
-    bool init(const QString& iconPath);
+    [[nodiscard]] bool init(const QString& iconPath);
 
     /// Makes the tray icon visible.
     void show();

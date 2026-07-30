@@ -80,9 +80,12 @@ set(PROJECT_SOURCES
 
     app/app.cpp
     app/app.h
+    app/user_prompt.h
     app/welcome_notifier.cpp
     app/welcome_notifier.h
 
+    ui/message_box_prompt.cpp
+    ui/message_box_prompt.h
     ui/tray_controller.cpp
     ui/tray_controller.h
     ui/tray_guide.cpp

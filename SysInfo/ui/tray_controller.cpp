@@ -20,6 +20,18 @@ bool TrayController::isSystemTrayAvailable()
 
 bool TrayController::init(const QString& iconPath)
 {
+    // Without a tray there is nowhere to put the icon, and QSystemTrayIcon
+    // would silently accept every call afterwards.
+    if (!isSystemTrayAvailable()) {
+        return false;
+    }
+
+    // A second call would orphan the previous icon on this QObject and drop
+    // the menu that the tray icon still points at.
+    if (m_icon != nullptr) {
+        return false;
+    }
+
     m_icon = new QSystemTrayIcon(QIcon(iconPath), this);
     if (m_icon->icon().isNull()) {
         Logger::log(Logger::EventId::TrayIconMissing,

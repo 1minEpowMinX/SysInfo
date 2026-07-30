@@ -1,5 +1,6 @@
 #include "app.h"
 
+#include "user_prompt.h"
 #include "welcome_notifier.h"
 #include "core/logging/logger.h"
 #include "core/settings/settings_manager.h"
@@ -12,7 +13,6 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QMessageBox>
 #include <QTimer>
 
 namespace {
@@ -20,31 +20,33 @@ namespace {
 /// Interval between tray tooltip re-collections, and therefore the longest a
 /// changed IP address or boot time can stay absent from the tooltip.
 constexpr int kTrayUpdateIntervalMs = 30'000;
-constexpr int kWelcomeDelayMs       = 60'000;
+
 constexpr const char* kTrayIconPath = ":/resources/icons/sysinfo_icon.png";
+
 } // namespace
 
-App::App(SettingsManager& settings, QObject* parent)
+App::App(SettingsManager& settings, UserPrompt& prompt, QObject* parent)
     : QObject(parent)
     , m_settings(settings)
+    , m_prompt(prompt)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
 
 bool App::start()
 {
-    if (!TrayController::isSystemTrayAvailable()) {
-        QMessageBox::critical(nullptr, tr("Error"),
-                              tr("The system tray is unavailable."));
+    // Gates on the tray before anything is collected: a failure here ends the
+    // run, and sysinfo::collect() walks every network interface.
+    m_tray = new TrayController(this);
+    if (!m_tray->init(kTrayIconPath)) {
+        m_prompt.showError(tr("Error"),
+                           tr("The system tray is unavailable."));
         Logger::log(Logger::EventId::TrayUnavailable,
                     "The system tray is unavailable. The application will be terminated.");
         return false;
     }
 
     m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
-
-    m_tray = new TrayController(this);
-    m_tray->init(kTrayIconPath);
     m_tray->setTooltip(m_cachedInfo);
     m_tray->show();
 
@@ -57,13 +59,13 @@ bool App::start()
     m_notifier = new WelcomeNotifier(*m_tray, m_settings, this);
     connect(m_notifier, &WelcomeNotifier::trayGuideRequested,
             this, &App::onTrayGuideRequested);
-    m_notifier->scheduleShow(kWelcomeDelayMs);
+    m_notifier->scheduleShow();
 
     m_server = new IntegrationServer(m_settings, this);
     if (!m_server->start()) {
-        QMessageBox::critical(nullptr, tr("Error"),
-                              tr("Failed to start the local server. "
-                                 "Integration with Jira SM is unavailable."));
+        m_prompt.showError(tr("Error"),
+                           tr("Failed to start the local server. "
+                              "Integration with Jira SM is unavailable."));
         Logger::log(Logger::EventId::ServerStartError,
                     "Failed to start the local server. "
                     "Integration with Jira SM is unavailable.");
@@ -116,9 +118,7 @@ void App::onQuitRequested()
         "The application collects system information and assists in diagnostics."
         "<p><b>Do you still want to close the application?</b></p>");
 
-    const auto reply = QMessageBox::question(nullptr, tr("Exit"), text,
-                                             QMessageBox::Yes | QMessageBox::No);
-    if (reply == QMessageBox::Yes) {
+    if (m_prompt.confirm(tr("Exit"), text)) {
         Logger::log(Logger::EventId::AppExit, "Application terminated by user.");
         qApp->quit();
     }

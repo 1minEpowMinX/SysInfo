@@ -29,6 +29,9 @@ class WelcomeNotifier : public QObject
 {
     Q_OBJECT
 public:
+    /// Delay scheduleShow() applies unless the caller names another one.
+    static constexpr int kDefaultDelayMs = 60'000;
+
     /**
      * @param tray     Tray adapter used to display notifications.
      * @param settings Settings store consulted for the one-shot flags.
@@ -39,7 +42,7 @@ public:
                              QObject* parent = nullptr);
 
     /// Schedules the welcome/guide notifications to fire after @p delayMs.
-    void scheduleShow(int delayMs = 60'000);
+    void scheduleShow(int delayMs = kDefaultDelayMs);
 
 signals:
     /// Fires when the user clicks the Windows tray-guide hint notification.
