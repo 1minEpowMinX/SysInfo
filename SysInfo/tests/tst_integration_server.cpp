@@ -155,16 +155,17 @@ private slots:
 
 void TestIntegrationServer::initTestCase()
 {
-    // Isolate QSettings("Pivdenny", "SysInfo") so settingsOverride_* tests
-    // don't touch the developer's real registry/ini file.
     QStandardPaths::setTestModeEnabled(true);
 }
 
 void TestIntegrationServer::cleanup()
 {
-    // Wipe any test-mode settings between cases so override leakage cannot
-    // affect the next test's whitelist.
-    QSettings("Pivdenny", "SysInfo").clear();
+    // Drop only the key these cases write, so override leakage cannot affect
+    // the next test's whitelist. Removing the whole group would take the
+    // onboarding flags with it: QStandardPaths test mode does not redirect
+    // QSettings away from the Windows registry, so this reaches the store the
+    // installed SysInfo reads.
+    QSettings("Pivdenny", "SysInfo").remove("Integration/AllowedExtensionIds");
 }
 
 // --- Lifecycle ---------------------------------------------------------------
