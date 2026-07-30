@@ -132,7 +132,9 @@ void App::onQuitRequested()
 
 void App::onTrayGuideRequested()
 {
-    auto* guide = new TrayGuide(m_settings);
+    auto* guide = new TrayGuide;
     guide->setAttribute(Qt::WA_DeleteOnClose);
+    connect(guide, &TrayGuide::dismissedForGood, this,
+            [this] { m_settings.setShowTrayGuide(false); });
     guide->show();
 }

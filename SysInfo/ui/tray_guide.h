@@ -6,15 +6,15 @@
 #include <QLabel>
 #include <QPushButton>
 
-class SettingsManager;
-
 /**
  * @brief Explains how to pin the tray icon; Windows only.
  *
  * Triggered when the user clicks the onboarding tray-guide notification
  * (see WelcomeNotifier). Shows a short animated screenshot demonstrating
- * the drag-from-overflow gesture, plus a "Don't show again" checkbox that
- * persists the choice via SettingsManager.
+ * the drag-from-overflow gesture, plus a "Don't show again" checkbox.
+ *
+ * Persists nothing of its own: a ticked checkbox is reported as
+ * dismissedForGood() and the receiver decides what to store.
  *
  * The dialog is modal and self-disposing: App creates it with
  * Qt::WA_DeleteOnClose, so it deletes itself once the user closes it.
@@ -22,16 +22,15 @@ class SettingsManager;
 class TrayGuide : public QDialog {
     Q_OBJECT
 public:
-    /**
-     * @param settings Reference to the app-wide settings store; used to
-     *                 persist the "Don't show again" choice. Must outlive
-     *                 the dialog.
-     * @param parent   Standard Qt parent.
-     */
-    explicit TrayGuide(SettingsManager& settings, QWidget* parent = nullptr);
+    /// @param parent Standard Qt parent.
+    explicit TrayGuide(QWidget* parent = nullptr);
+
+signals:
+    /// Fires on close when the user ticked "Don't show again".
+    void dismissedForGood();
 
 private slots:
-    /// Handles the Close button — saves the "don't show again" flag and closes.
+    /// Handles the Close button — reports a ticked checkbox, then closes.
     void onCloseClicked();
 
 private:
@@ -51,8 +50,6 @@ private:
 
     /// Lays out all four widgets vertically in this dialog.
     void buildLayout();
-
-    SettingsManager& m_settings;     ///< Injected settings store (not owned).
 
     QLabel*      m_gifLabel;         ///< Holds the animated screenshot.
     QLabel*      m_textLabel;        ///< Multi-line explanatory text.

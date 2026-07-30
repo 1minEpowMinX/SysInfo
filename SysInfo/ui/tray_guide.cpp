@@ -1,14 +1,12 @@
 #include "tray_guide.h"
 
 #include "core/logging/logger.h"
-#include "core/settings/settings_manager.h"
 
 #include <QMovie>
 #include <QVBoxLayout>
 
-TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
+TrayGuide::TrayGuide(QWidget* parent)
     : QDialog(parent)
-    , m_settings(settings)
 {
     setupWindow();
     setupAnimation();
@@ -73,7 +71,7 @@ void TrayGuide::buildLayout()
 void TrayGuide::onCloseClicked()
 {
     if (m_dontShowAgain->isChecked()) {
-        m_settings.setShowTrayGuide(false);
+        emit dismissedForGood();
     }
 
     close();
