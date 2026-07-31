@@ -4,32 +4,29 @@
 #include <QObject>
 #include <QString>
 
+class DialogPresenter;
 class IntegrationServer;
 class SettingsManager;
-class TrayController;
+class TrayView;
 class UserPrompt;
 class WelcomeNotifier;
 
 /**
- * @brief Composes and owns the application's top-level objects.
+ * @brief Wires the application's runtime parts together and coordinates them.
  *
- * Owns and wires together the three runtime parts of SysInfo:
- *   - TrayController    : tray icon and context menu (UI),
- *   - WelcomeNotifier   : delayed onboarding notifications,
- *   - IntegrationServer : local HTTP endpoint for the browser extension.
+ * Drives the three things SysInfo does once it is up:
+ *   - keeps the tray tooltip carrying a fresh SystemInfo snapshot,
+ *   - answers the tray menu (copy, about, exit),
+ *   - schedules the onboarding notifications and opens what they ask for.
  *
- * Also holds the rendered SystemInfo string that feeds the tray tooltip and
- * the clipboard.
+ * Owns only what it creates: WelcomeNotifier and IntegrationServer. The tray,
+ * the dialogs, the settings store and the prompt are injected and outlive it —
+ * in practice all four live on the stack of main(), with App declared last so
+ * it is destroyed first.
  *
- * Holds no business logic of its own beyond
- *   "periodically refresh the tray tooltip with a fresh SystemInfo snapshot".
- *
- * Everything user-facing goes through the injected UserPrompt, so this class
- * names no widget type and blocks on no dialog of its own.
- *
- * Both injected references must outlive this App instance — in practice all
- * three live on the stack of main(), with App declared last so it is destroyed
- * first.
+ * Every collaborator is reached through a port, so this class names no widget
+ * type and blocks on no dialog of its own; which of them are modal is decided
+ * behind DialogPresenter.
  */
 class App : public QObject
 {
@@ -40,10 +37,15 @@ public:
      * @param settings Application-wide settings store. Not owned; must outlive App.
      * @param prompt   Channel for errors and confirmations. Not owned; must
      *                 outlive App.
+     * @param tray     Tray icon and menu. Not owned; must outlive App.
+     * @param dialogs  Channel for the application's windows. Not owned; must
+     *                 outlive App.
      * @param parent   Standard Qt parent.
      */
     explicit App(SettingsManager& settings,
                  UserPrompt& prompt,
+                 TrayView& tray,
+                 DialogPresenter& dialogs,
                  QObject* parent = nullptr);
 
     /**
@@ -59,11 +61,11 @@ public:
 private slots:
     /// Refreshes cached SystemInfo and copies it to the system clipboard.
     void onCopyRequested();
-    /// Shows the modal "About SysInfo" dialog.
+    /// Opens the "About SysInfo" window with a fresh snapshot rendered into it.
     void onAboutRequested();
     /// Confirms with the user, logs AppExit, and quits the QApplication.
     void onQuitRequested();
-    /// Opens the Windows-only tray-pinning guide dialog.
+    /// Opens the tray-pinning guide.
     void onTrayGuideRequested();
 
 private:
@@ -73,8 +75,9 @@ private:
 
     SettingsManager&    m_settings;          ///< Injected, not owned.
     UserPrompt&         m_prompt;            ///< Injected, not owned.
-    TrayController*     m_tray     = nullptr; ///< Parent-owned via QObject(this).
-    WelcomeNotifier*    m_notifier = nullptr; ///< Parent-owned.
+    TrayView&           m_tray;              ///< Injected, not owned.
+    DialogPresenter&    m_dialogs;           ///< Injected, not owned.
+    WelcomeNotifier*    m_notifier = nullptr; ///< Parent-owned via QObject(this).
     IntegrationServer*  m_server   = nullptr; ///< Parent-owned.
     QString             m_cachedInfo;        ///< Last rendered tray tooltip text.
 };

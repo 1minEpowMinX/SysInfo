@@ -16,7 +16,7 @@
  * Persists nothing of its own: a ticked checkbox is reported as
  * dismissedForGood() and the receiver decides what to store.
  *
- * The dialog is modal and self-disposing: App creates it with
+ * The dialog is modal and self-disposing: WidgetDialogs creates it with
  * Qt::WA_DeleteOnClose, so it deletes itself once the user closes it.
  */
 class TrayGuide : public QDialog {

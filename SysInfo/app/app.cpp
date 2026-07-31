@@ -1,15 +1,14 @@
 #include "app.h"
 
-#include "user_prompt.h"
 #include "welcome_notifier.h"
 #include "core/logging/logger.h"
+#include "core/ports/dialog_presenter.h"
+#include "core/ports/tray_view.h"
+#include "core/ports/user_prompt.h"
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/system_info.h"
 #include "core/sysinfo/system_info_presenter.h"
 #include "services/integration_server.h"
-#include "ui/about_dialog.h"
-#include "ui/tray_controller.h"
-#include "ui/tray_guide.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -24,14 +23,18 @@ constexpr int kTrayUpdateIntervalMs = 30'000;
 /// How long the "copied to the clipboard" confirmation stays on screen.
 constexpr int kCopyNoticeMs         = 5'000;
 
-constexpr const char* kTrayIconPath = ":/resources/icons/sysinfo_icon.png";
-
 } // namespace
 
-App::App(SettingsManager& settings, UserPrompt& prompt, QObject* parent)
+App::App(SettingsManager& settings,
+         UserPrompt& prompt,
+         TrayView& tray,
+         DialogPresenter& dialogs,
+         QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_prompt(prompt)
+    , m_tray(tray)
+    , m_dialogs(dialogs)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
@@ -40,8 +43,7 @@ bool App::start()
 {
     // Gates on the tray before anything is collected: a failure here ends the
     // run, and sysinfo::collect() walks every network interface.
-    m_tray = new TrayController(this);
-    if (!m_tray->init(kTrayIconPath)) {
+    if (!m_tray.init()) {
         m_prompt.showError(tr("Error"),
                            tr("The system tray is unavailable."));
         Logger::log(Logger::EventId::TrayUnavailable,
@@ -50,16 +52,21 @@ bool App::start()
     }
 
     m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
-    m_tray->setTooltip(m_cachedInfo);
-    m_tray->show();
+    m_tray.setTooltip(m_cachedInfo);
+    m_tray.show();
 
-    connect(m_tray, &TrayController::copyRequested,  this, &App::onCopyRequested);
-    connect(m_tray, &TrayController::aboutRequested, this, &App::onAboutRequested);
-    connect(m_tray, &TrayController::quitRequested,  this, &App::onQuitRequested);
+    connect(&m_tray, &TrayView::copyRequested,  this, &App::onCopyRequested);
+    connect(&m_tray, &TrayView::aboutRequested, this, &App::onAboutRequested);
+    connect(&m_tray, &TrayView::quitRequested,  this, &App::onQuitRequested);
+
+    // The guide retires itself from inside its own window, and the flag it
+    // clears is this layer's to persist.
+    connect(&m_dialogs, &DialogPresenter::trayGuideDismissedForGood, this,
+            [this] { m_settings.setShowTrayGuide(false); });
 
     startTrayUpdateTimer();
 
-    m_notifier = new WelcomeNotifier(*m_tray, m_settings,
+    m_notifier = new WelcomeNotifier(m_tray, m_settings,
                                      WelcomeNotifier::kDefaultLifetimes, this);
     connect(m_notifier, &WelcomeNotifier::trayGuideRequested,
             this, &App::onTrayGuideRequested);
@@ -85,7 +92,7 @@ void App::startTrayUpdateTimer()
         const QString fresh = sysinfo::presenter::toText(sysinfo::collect());
         if (fresh != m_cachedInfo) {
             m_cachedInfo = fresh;
-            m_tray->setTooltip(m_cachedInfo);
+            m_tray.setTooltip(m_cachedInfo);
         }
     });
     timer->start(kTrayUpdateIntervalMs);
@@ -102,20 +109,18 @@ void App::onCopyRequested()
 
     m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
     clipboard->setText(m_cachedInfo);
-    m_tray->setTooltip(m_cachedInfo);
+    m_tray.setTooltip(m_cachedInfo);
 
-    m_tray->showNotification(tr("System information"),
-                             tr("Information copied to the clipboard."),
-                             kCopyNoticeMs);
+    m_tray.showNotification(tr("System information"),
+                            tr("Information copied to the clipboard."),
+                            kCopyNoticeMs);
 }
 
 void App::onAboutRequested()
 {
-    const QString details =
+    m_dialogs.showAbout(
         sysinfo::presenter::toSystemDetailsHtml(sysinfo::collect(),
-                                                m_settings.filePath());
-    AboutDialog dlg(details);
-    dlg.exec();
+                                                m_settings.filePath()));
 }
 
 void App::onQuitRequested()
@@ -132,9 +137,5 @@ void App::onQuitRequested()
 
 void App::onTrayGuideRequested()
 {
-    auto* guide = new TrayGuide;
-    guide->setAttribute(Qt::WA_DeleteOnClose);
-    connect(guide, &TrayGuide::dismissedForGood, this,
-            [this] { m_settings.setShowTrayGuide(false); });
-    guide->show();
+    m_dialogs.showTrayGuide();
 }

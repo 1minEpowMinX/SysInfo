@@ -62,13 +62,13 @@ target_link_libraries(tst_single_instance_guard PRIVATE
 )
 sysinfo_register_test(tst_single_instance_guard)
 
-# Compiles the notifier and its port straight in: both live in the SysInfo
-# executable rather than in sysinfo_core, and neither pulls in Qt6::Widgets.
+# Compiles the notifier straight in: it lives in the SysInfo executable rather
+# than in sysinfo_core, and pulls in no Qt6::Widgets. Its port comes from
+# sysinfo_core, which is where NotificationSink is moc'd.
 qt_add_executable(tst_welcome_notifier
     tst_welcome_notifier.cpp
     ../app/welcome_notifier.cpp
     ../app/welcome_notifier.h
-    ../app/notification_sink.h
 )
 set_target_properties(tst_welcome_notifier PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_welcome_notifier PRIVATE

@@ -1,4 +1,4 @@
-#include "app/notification_sink.h"
+#include "core/ports/notification_sink.h"
 #include "app/welcome_notifier.h"
 #include "core/settings/onboarding_flags.h"
 

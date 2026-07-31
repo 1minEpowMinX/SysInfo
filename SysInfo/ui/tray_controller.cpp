@@ -5,8 +5,14 @@
 #include <QIcon>
 #include <QMenu>
 
-TrayController::TrayController(QObject* parent)
-    : NotificationSink(parent)
+#include <utility>
+
+const QString TrayController::kDefaultIconPath =
+    QStringLiteral(":/resources/icons/sysinfo_icon.png");
+
+TrayController::TrayController(QString iconPath, QObject* parent)
+    : TrayView(parent)
+    , m_iconPath(std::move(iconPath))
 {}
 
 // Out-of-line destructor: unique_ptr<QMenu> needs a complete type for its
@@ -18,7 +24,7 @@ bool TrayController::isSystemTrayAvailable()
     return QSystemTrayIcon::isSystemTrayAvailable();
 }
 
-bool TrayController::init(const QString& iconPath)
+bool TrayController::init()
 {
     // Without a tray there is nowhere to put the icon, and QSystemTrayIcon
     // would silently accept every call afterwards.
@@ -32,7 +38,7 @@ bool TrayController::init(const QString& iconPath)
         return false;
     }
 
-    m_icon = new QSystemTrayIcon(QIcon(iconPath), this);
+    m_icon = new QSystemTrayIcon(QIcon(m_iconPath), this);
     if (m_icon->icon().isNull()) {
         Logger::log(Logger::EventId::TrayIconMissing,
                     "Tray icon failed to load from resources.");
@@ -56,9 +62,9 @@ void TrayController::buildMenu()
     QAction* about = m_menu->addAction(tr("About"));
     QAction* quit  = m_menu->addAction(tr("Exit"));
 
-    connect(copy,  &QAction::triggered, this, &TrayController::copyRequested);
-    connect(about, &QAction::triggered, this, &TrayController::aboutRequested);
-    connect(quit,  &QAction::triggered, this, &TrayController::quitRequested);
+    connect(copy,  &QAction::triggered, this, &TrayView::copyRequested);
+    connect(about, &QAction::triggered, this, &TrayView::aboutRequested);
+    connect(quit,  &QAction::triggered, this, &TrayView::quitRequested);
 
     m_icon->setContextMenu(m_menu.get());
 }

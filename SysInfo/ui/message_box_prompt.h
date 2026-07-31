@@ -1,7 +1,7 @@
 #ifndef MESSAGE_BOX_PROMPT_H
 #define MESSAGE_BOX_PROMPT_H
 
-#include "app/user_prompt.h"
+#include "core/ports/user_prompt.h"
 
 /**
  * @brief Serves UserPrompt through QMessageBox.

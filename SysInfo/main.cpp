@@ -12,10 +12,10 @@
  *   4. Acquire the single-instance lock: exit silently if another SysInfo
  *      already holds it, or refuse to start (with a message to the user and
  *      to the event log) if the lock cannot be established at all.
- *   5. Construct SettingsManager (owns QSettings), MessageBoxPrompt (the
- *      widget-backed UserPrompt) and App (composition root) on the stack —
- *      guarantees destruction order
- *      ~App -> ~MessageBoxPrompt -> ~SettingsManager -> ~QApplication.
+ *   5. Construct the widget-backed implementations of the ports App depends on
+ *      — SettingsManager (owns QSettings), MessageBoxPrompt, TrayController
+ *      and WidgetDialogs — then App itself, all on the stack. Declaration
+ *      order guarantees App is destroyed before anything it was handed.
  *   6. Call App::start(); exit code 1 if the system tray is unavailable.
  *   7. Log AppStart, queue the DeviceInventory snapshot for the first turn
  *      of the event loop, and enter it.
@@ -27,6 +27,8 @@
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/device_inventory.h"
 #include "ui/message_box_prompt.h"
+#include "ui/tray_controller.h"
+#include "ui/widget_dialogs.h"
 
 #include <QApplication>
 #include <QFile>
@@ -128,7 +130,9 @@ int main(int argc, char *argv[])
 
 	SettingsManager settings;
 	MessageBoxPrompt prompt;
-	App app(settings, prompt);
+	TrayController tray;
+	WidgetDialogs dialogs;
+	App app(settings, prompt, tray, dialogs);
 	if (!app.start())
 	{
 		return 1;

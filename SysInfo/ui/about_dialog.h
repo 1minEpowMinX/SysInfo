@@ -14,8 +14,8 @@
  * sysinfo::presenter::toSystemDetailsHtml(), so the values are those of the
  * moment the dialog opened and do not refresh while it is up.
  *
- * Lifetime: created on the stack by App::onAboutRequested() and shown
- * via QDialog::exec(); destroyed when exec() returns.
+ * Lifetime: created on the stack by WidgetDialogs::showAbout() and shown via
+ * QDialog::exec(); destroyed when exec() returns.
  */
 class AboutDialog : public QDialog
 {

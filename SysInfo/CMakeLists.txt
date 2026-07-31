@@ -43,6 +43,14 @@ endif()
 # Lives as a STATIC library so test binaries can link it directly instead
 # of recompiling the same .cpp files into every test executable.
 qt_add_library(sysinfo_core STATIC
+    # Ports whose implementations live in ui/. They sit below both app/ and
+    # ui/ so that neither has to include the other; the ports of core/settings
+    # stay beside the store that implements them.
+    core/ports/notification_sink.h
+    core/ports/tray_view.h
+    core/ports/dialog_presenter.h
+    core/ports/user_prompt.h
+
     core/sysinfo/system_info.cpp
     core/sysinfo/system_info.h
     core/sysinfo/system_info_presenter.cpp
@@ -101,8 +109,6 @@ set(PROJECT_SOURCES
 
     app/app.cpp
     app/app.h
-    app/notification_sink.h
-    app/user_prompt.h
     app/welcome_notifier.cpp
     app/welcome_notifier.h
 
@@ -110,6 +116,8 @@ set(PROJECT_SOURCES
     ui/message_box_prompt.h
     ui/tray_controller.cpp
     ui/tray_controller.h
+    ui/widget_dialogs.cpp
+    ui/widget_dialogs.h
     ui/tray_guide.cpp
     ui/tray_guide.h
     ui/about_dialog.cpp
