@@ -83,6 +83,12 @@
 	"sysinfoUptime": {
 		"message": "Uptime"
 	},
+	"sysinfoNoIp": {
+		"message": "No IP"
+	},
+	"sysinfoUnavailable": {
+		"message": "Unavailable"
+	},
 	"copy": {
 		"message": "Copy"
 	},

@@ -83,6 +83,12 @@
 	"sysinfoUptime": {
 		"message": "Час вмикання"
 	},
+	"sysinfoNoIp": {
+		"message": "Немає IP"
+	},
+	"sysinfoUnavailable": {
+		"message": "Недоступно"
+	},
 	"copy": {
 		"message": "Копіювати"
 	},

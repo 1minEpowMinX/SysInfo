@@ -11,12 +11,17 @@ import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.j
  * @returns The function `buildSysInfoLines(data)` returns an array of strings where each element
  * contains two lines of system information data joined by a comma and a space.
  */
+// The agent reports an unobtainable value as an empty string: it carries data,
+// and how a missing value is spelled belongs to the client that displays it.
+// Without this the line would read "IP address: " and stop there.
+const orFallback = (value, fallbackKey) => value || t(fallbackKey);
+
 export function buildSysInfoLines(data) {
 	const raw = [
 		`${t("sysinfoHostname")}: ${data.hostname}`,
 		`${t("sysinfoUsername")}: ${data.username}`,
-		`${t("sysinfoIP")}: ${data.ip}`,
-		`${t("sysinfoUptime")}: ${data.uptime}`
+		`${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
+		`${t("sysinfoUptime")}: ${orFallback(data.uptime, "sysinfoUnavailable")}`
 	];
 	const result = [];
 	for (let i = 0; i < raw.length; i += 2) {

@@ -83,6 +83,12 @@
 	"sysinfoUptime": {
 		"message": "Время включения"
 	},
+	"sysinfoNoIp": {
+		"message": "Нет IP"
+	},
+	"sysinfoUnavailable": {
+		"message": "Недоступно"
+	},
 	"copy": {
 		"message": "Копировать"
 	},
