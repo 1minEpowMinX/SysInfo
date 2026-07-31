@@ -38,6 +38,14 @@ target_link_libraries(tst_hardware_info PRIVATE
 )
 sysinfo_register_test(tst_hardware_info)
 
+qt_add_executable(tst_smbios_memory tst_smbios_memory.cpp)
+set_target_properties(tst_smbios_memory PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_smbios_memory PRIVATE
+    sysinfo_core
+    Qt6::Test
+)
+sysinfo_register_test(tst_smbios_memory)
+
 qt_add_executable(tst_device_inventory tst_device_inventory.cpp)
 set_target_properties(tst_device_inventory PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_device_inventory PRIVATE

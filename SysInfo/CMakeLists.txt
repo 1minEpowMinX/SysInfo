@@ -246,7 +246,7 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         DEPENDS tst_system_info tst_system_info_presenter tst_hardware_info
-                tst_device_inventory tst_integration_server
+                tst_smbios_memory tst_device_inventory tst_integration_server
                 tst_single_instance_guard tst_welcome_notifier
         COMMENT "Running tests"
         USES_TERMINAL
