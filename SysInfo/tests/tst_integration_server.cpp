@@ -1,4 +1,5 @@
 #include "services/integration_server.h"
+#include "services/request_policy.h"
 #include "core/settings/extension_whitelist.h"
 
 #include <QByteArray>
@@ -94,10 +95,12 @@ QByteArray header(const HttpResult &r, const QByteArray &name)
     return {};
 }
 
-// Built-in default extension IDs (kept in sync with kDefaultAllowedExtensionIds
-// in integration_server.cpp). Tests rely on these matching.
-constexpr const char *kChromeProdId = "mjdcgdoembmihkaajaabkffkejompofj";
-constexpr const char *kFirefoxProdId = "sysinfo-addon@pivdenny.ua";
+// Read off the policy rather than restated, so these cannot drift from the
+// list the server actually serves.
+const QByteArray kChromeProdId =
+    integration::defaultAllowedExtensionIds().at(0).toUtf8();
+const QByteArray kFirefoxProdId =
+    integration::defaultAllowedExtensionIds().at(1).toUtf8();
 
 QUrl statusUrl(const IntegrationServer &server)
 {

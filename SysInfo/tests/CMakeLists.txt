@@ -77,6 +77,14 @@ target_link_libraries(tst_welcome_notifier PRIVATE
 )
 sysinfo_register_test(tst_welcome_notifier)
 
+qt_add_executable(tst_request_policy tst_request_policy.cpp)
+set_target_properties(tst_request_policy PROPERTIES WIN32_EXECUTABLE OFF)
+target_link_libraries(tst_request_policy PRIVATE
+    sysinfo_core
+    Qt6::Test
+)
+sysinfo_register_test(tst_request_policy)
+
 qt_add_executable(tst_integration_server tst_integration_server.cpp)
 set_target_properties(tst_integration_server PROPERTIES WIN32_EXECUTABLE OFF)
 target_link_libraries(tst_integration_server PRIVATE

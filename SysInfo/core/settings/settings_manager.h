@@ -63,7 +63,7 @@ public:
      * without restarting SysInfo.
      *
      * @return Browser-extension IDs under the key Integration/AllowedExtensionIds.
-     *         May be empty, in which case IntegrationServer falls back to its
+     *         May be empty, in which case the access policy falls back to its
      *         compiled-in defaults.
      */
     QStringList allowedExtensionIds() const override;

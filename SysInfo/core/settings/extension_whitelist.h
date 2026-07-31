@@ -12,7 +12,7 @@
  *
  * Carries the override alone and not the effective whitelist: an empty list
  * means "not configured", and the compiled-in defaults that stand in for it
- * belong to IntegrationServer.
+ * belong to the access policy in services/request_policy.h.
  */
 class ExtensionWhitelist
 {
