@@ -39,6 +39,7 @@ public:
     bool showWelcome() const override { return welcome; }
     void setShowWelcome(bool value) override { welcome = value; }
     bool showTrayGuide() const override { return trayGuide; }
+    void setShowTrayGuide(bool value) override { trayGuide = value; }
 
     bool welcome   = true;
     bool trayGuide = true;

@@ -5,7 +5,9 @@
 #include "core/ports/dialog_presenter.h"
 #include "core/ports/tray_view.h"
 #include "core/ports/user_prompt.h"
-#include "core/settings/settings_manager.h"
+#include "core/settings/extension_whitelist.h"
+#include "core/settings/onboarding_flags.h"
+#include "core/settings/settings_location.h"
 #include "core/sysinfo/info_source.h"
 #include "core/sysinfo/system_info_presenter.h"
 #include "services/integration_server.h"
@@ -25,14 +27,18 @@ constexpr int kCopyNoticeMs         = 5'000;
 
 } // namespace
 
-App::App(SettingsManager& settings,
+App::App(OnboardingFlags& flags,
+         ExtensionWhitelist& whitelist,
+         SettingsLocation& settingsLocation,
          UserPrompt& prompt,
          TrayView& tray,
          DialogPresenter& dialogs,
          sysinfo::InfoSource& info,
          QObject* parent)
     : QObject(parent)
-    , m_settings(settings)
+    , m_flags(flags)
+    , m_whitelist(whitelist)
+    , m_settingsLocation(settingsLocation)
     , m_prompt(prompt)
     , m_tray(tray)
     , m_dialogs(dialogs)
@@ -64,17 +70,17 @@ bool App::start()
     // The guide retires itself from inside its own window, and the flag it
     // clears is this layer's to persist.
     connect(&m_dialogs, &DialogPresenter::trayGuideDismissedForGood, this,
-            [this] { m_settings.setShowTrayGuide(false); });
+            [this] { m_flags.setShowTrayGuide(false); });
 
     startTrayUpdateTimer();
 
-    m_notifier = new WelcomeNotifier(m_tray, m_settings,
+    m_notifier = new WelcomeNotifier(m_tray, m_flags,
                                      WelcomeNotifier::kDefaultLifetimes, this);
     connect(m_notifier, &WelcomeNotifier::trayGuideRequested,
             this, &App::onTrayGuideRequested);
     m_notifier->scheduleShow();
 
-    m_server = new IntegrationServer(m_settings, m_info, this);
+    m_server = new IntegrationServer(m_whitelist, m_info, this);
     if (!m_server->start()) {
         m_prompt.showError(tr("Error"),
                            tr("Failed to start the local server. "
@@ -126,7 +132,7 @@ void App::onAboutRequested()
     // which changes while the process runs.
     m_dialogs.showAbout(
         sysinfo::presenter::toSystemDetailsHtml(m_info.current(),
-                                                m_settings.filePath()));
+                                                m_settingsLocation.filePath()));
 }
 
 void App::onQuitRequested()

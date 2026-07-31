@@ -5,8 +5,10 @@
 #include <QString>
 
 class DialogPresenter;
+class ExtensionWhitelist;
 class IntegrationServer;
-class SettingsManager;
+class OnboardingFlags;
+class SettingsLocation;
 class TrayView;
 class UserPrompt;
 class WelcomeNotifier;
@@ -21,10 +23,12 @@ namespace sysinfo { class InfoSource; }
  *   - answers the tray menu (copy, about, exit),
  *   - schedules the onboarding notifications and opens what they ask for.
  *
- * Owns only what it creates: WelcomeNotifier and IntegrationServer. The tray,
- * the dialogs, the settings store and the prompt are injected and outlive it —
- * in practice all four live on the stack of main(), with App declared last so
- * it is destroyed first.
+ * Owns only what it creates: WelcomeNotifier and IntegrationServer.
+ * Everything else is injected and outlives it — in practice all of it lives on
+ * the stack of main(), with App declared last so it is destroyed first. The
+ * settings store arrives as three separate ports, so this class can clear an
+ * onboarding flag and name the store's file without being able to reach the
+ * rest of what it holds.
  *
  * Every collaborator is reached through a port, so this class names no widget
  * type and blocks on no dialog of its own; which of them are modal is decided
@@ -36,7 +40,13 @@ class App : public QObject
 
 public:
     /**
-     * @param settings Application-wide settings store. Not owned; must outlive App.
+     * @param flags     One-shot onboarding flags, passed on to the notifier
+     *                  and cleared here when the guide retires itself. Not
+     *                  owned; must outlive App.
+     * @param whitelist Administrator override, passed on to the integration
+     *                  server. Not owned; must outlive App.
+     * @param settingsLocation Where the settings file lives, for the About
+     *                  dialog. Not owned; must outlive App.
      * @param prompt   Channel for errors and confirmations. Not owned; must
      *                 outlive App.
      * @param tray     Tray icon and menu. Not owned; must outlive App.
@@ -46,7 +56,9 @@ public:
      *                 builds. Not owned; must outlive App.
      * @param parent   Standard Qt parent.
      */
-    explicit App(SettingsManager& settings,
+    explicit App(OnboardingFlags& flags,
+                 ExtensionWhitelist& whitelist,
+                 SettingsLocation& settingsLocation,
                  UserPrompt& prompt,
                  TrayView& tray,
                  DialogPresenter& dialogs,
@@ -78,7 +90,9 @@ private:
     /// tray tooltip only when the rendered text differs from the cached one.
     void startTrayUpdateTimer();
 
-    SettingsManager&    m_settings;          ///< Injected, not owned.
+    OnboardingFlags&    m_flags;            ///< Injected, not owned.
+    ExtensionWhitelist& m_whitelist;         ///< Injected, not owned.
+    SettingsLocation&   m_settingsLocation;  ///< Injected, not owned.
     UserPrompt&         m_prompt;            ///< Injected, not owned.
     TrayView&           m_tray;              ///< Injected, not owned.
     DialogPresenter&    m_dialogs;           ///< Injected, not owned.

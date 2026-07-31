@@ -135,7 +135,9 @@ int main(int argc, char *argv[])
 	TrayController tray;
 	WidgetDialogs dialogs;
 	sysinfo::InfoSource info;
-	App app(settings, prompt, tray, dialogs, info);
+	// SettingsManager arrives three times because it implements three ports,
+	// and App holds each one separately rather than the store as a whole.
+	App app(settings, settings, settings, prompt, tray, dialogs, info);
 	if (!app.start())
 	{
 		return 1;

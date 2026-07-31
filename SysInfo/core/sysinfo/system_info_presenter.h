@@ -12,6 +12,12 @@
  * Lives in a sub-namespace to keep i18n (QObject::tr) out of the data layer:
  * sysinfo itself only collects raw values, while sysinfo::presenter renders
  * them for human or API consumption.
+ *
+ * Each rendering here serves one consumer — the tray tooltip, the HTTP
+ * endpoint, the About window — and they sit together because what varies
+ * between them is the shape, not the data. Moving one out to sit beside its
+ * consumer would put it past the reach of the test suite, ui/ being compiled
+ * into the executable alone.
  */
 namespace sysinfo::presenter {
 
