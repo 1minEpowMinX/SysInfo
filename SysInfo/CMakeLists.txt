@@ -26,6 +26,19 @@ set(TS_FILES
     resources/i18n/sysinfo_uk_UA.ts
 )
 
+# Platform half of the hardware collectors: exactly one of these is compiled,
+# which is what lets each of them be written without preprocessor branches.
+# APPLE is tested before UNIX because macOS satisfies both.
+if(WIN32)
+    set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_win.cpp)
+elseif(APPLE)
+    set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_mac.cpp)
+elseif(UNIX)
+    set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_linux.cpp)
+else()
+    set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_stub.cpp)
+endif()
+
 # --- Core library: pure logic + non-UI services, reusable from exe and tests.
 # Lives as a STATIC library so test binaries can link it directly instead
 # of recompiling the same .cpp files into every test executable.
@@ -36,6 +49,10 @@ qt_add_library(sysinfo_core STATIC
     core/sysinfo/system_info_presenter.h
     core/sysinfo/hardware_info.cpp
     core/sysinfo/hardware_info.h
+    core/sysinfo/hardware_info_platform.h
+    ${HARDWARE_INFO_PLATFORM_SOURCE}
+    core/sysinfo/smbios_memory.cpp
+    core/sysinfo/smbios_memory.h
     core/sysinfo/device_inventory.cpp
     core/sysinfo/device_inventory.h
     core/settings/settings_manager.cpp
@@ -65,8 +82,8 @@ target_include_directories(sysinfo_core PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-# hardware_info.cpp reads the drive's media type and model out of the IO
-# registry on macOS; Windows and Linux need no extra libraries for it.
+# hardware_info_mac.cpp reads the drive's media type and model out of the IO
+# registry; Windows and Linux need no extra libraries for it.
 if(APPLE)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
