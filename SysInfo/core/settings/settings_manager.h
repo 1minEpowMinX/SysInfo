@@ -3,7 +3,6 @@
 
 #include "extension_whitelist.h"
 #include "onboarding_flags.h"
-#include "settings_location.h"
 
 #include <QSettings>
 
@@ -16,21 +15,18 @@
  * message and Windows tray-guide hint), the administrator override of the
  * IntegrationServer whitelist, and the path of the store itself.
  *
- * Serves three ports, and is the only implementation of any of them:
- * OnboardingFlags for the one-shot notices, ExtensionWhitelist for the
- * administrator override, and SettingsLocation for the path of the file
- * itself. Every consumer holds the port it needs rather than this class, which
- * is what lets a test substitute one of them without a QSettings behind it —
- * and what keeps a consumer that only needs the path from reaching the
- * contents. Nothing but the constructor sits outside the three.
+ * Serves two ports, and is the only implementation of either: OnboardingFlags
+ * for the one-shot notices, ExtensionWhitelist for the administrator override.
+ * Every consumer holds the port it needs rather than this class, which is what
+ * lets a test substitute one of them without a QSettings behind it. Outside
+ * the two sit the constructor and filePath(), whose answer is a fixed string a
+ * caller is handed rather than an interface it queries.
  *
  * Not a singleton: instantiate once in main() and hand it to each consumer as
  * the port that consumer takes. Copy and move are deleted because QSettings
  * holds OS resources that should not be duplicated.
  */
-class SettingsManager : public OnboardingFlags,
-                        public ExtensionWhitelist,
-                        public SettingsLocation
+class SettingsManager : public OnboardingFlags, public ExtensionWhitelist
 {
 public:
     /// Opens the store for organisation "Pivdenny", application "SysInfo".
@@ -51,8 +47,16 @@ public:
     /// Persists the tray-guide flag. Logs SettingsWriteFailed on I/O errors.
     void setShowTrayGuide(bool value) override;
 
-    /// @return Absolute path of the on-disk settings file.
-    QString filePath() const override;
+    /**
+     * @brief Names the file the settings live in.
+     *
+     * Fixed for the life of the store. Useful for the About dialog, support
+     * tickets and manual cleanup, and the single point of access for it —
+     * callers must NOT instantiate their own QSettings to work it out.
+     *
+     * @return Absolute path of the on-disk settings file.
+     */
+    QString filePath() const;
 
     /**
      * @brief Reads the administrator override of the IntegrationServer client whitelist.

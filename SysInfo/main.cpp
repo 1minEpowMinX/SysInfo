@@ -13,10 +13,10 @@
  *      already holds it, or refuse to start (with a message to the user and
  *      to the event log) if the lock cannot be established at all.
  *   5. Construct what App depends on — SettingsManager (owns QSettings), the
- *      widget-backed MessageBoxPrompt, TrayController and WidgetDialogs, and
- *      the InfoSource it shares with the integration server — then App itself,
- *      all on the stack. Declaration order guarantees App is destroyed before
- *      anything it was handed.
+ *      widget-backed MessageBoxPrompt, TrayController and WidgetDialogs, the
+ *      InfoSource shared with the integration server, and the server itself —
+ *      then App, all on the stack. Declaration order guarantees App is
+ *      destroyed before anything it was handed.
  *   6. Call App::start(); exit code 1 if the system tray is unavailable.
  *   7. Log AppStart, queue the DeviceInventory snapshot for the first turn
  *      of the event loop, and enter it.
@@ -28,6 +28,7 @@
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/device_inventory.h"
 #include "core/sysinfo/info_source.h"
+#include "services/integration_server.h"
 #include "ui/message_box_prompt.h"
 #include "ui/tray_controller.h"
 #include "ui/widget_dialogs.h"
@@ -135,9 +136,10 @@ int main(int argc, char *argv[])
 	TrayController tray;
 	WidgetDialogs dialogs;
 	sysinfo::InfoSource info;
-	// SettingsManager arrives three times because it implements three ports,
-	// and App holds each one separately rather than the store as a whole.
-	App app(settings, settings, settings, prompt, tray, dialogs, info);
+	// The store is handed to each consumer as the port that consumer takes:
+	// ExtensionWhitelist here, OnboardingFlags below.
+	IntegrationServer server(settings, info);
+	App app(settings, server, prompt, tray, dialogs, info, settings.filePath());
 	if (!app.start())
 	{
 		return 1;

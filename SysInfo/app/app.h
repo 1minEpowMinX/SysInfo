@@ -5,10 +5,8 @@
 #include <QString>
 
 class DialogPresenter;
-class ExtensionWhitelist;
 class IntegrationServer;
 class OnboardingFlags;
-class SettingsLocation;
 class TrayView;
 class UserPrompt;
 class WelcomeNotifier;
@@ -16,19 +14,22 @@ class WelcomeNotifier;
 namespace sysinfo { class InfoSource; }
 
 /**
- * @brief Wires the application's runtime parts together and coordinates them.
+ * @brief Coordinates the application's runtime parts.
  *
  * Drives the three things SysInfo does once it is up:
  *   - keeps the tray tooltip carrying a fresh SystemInfo snapshot,
  *   - answers the tray menu (copy, about, exit),
  *   - schedules the onboarding notifications and opens what they ask for.
  *
- * Owns only what it creates: WelcomeNotifier and IntegrationServer.
- * Everything else is injected and outlives it — in practice all of it lives on
- * the stack of main(), with App declared last so it is destroyed first. The
- * settings store arrives as three separate ports, so this class can clear an
- * onboarding flag and name the store's file without being able to reach the
- * rest of what it holds.
+ * Creates and owns one collaborator, WelcomeNotifier, whose sequencing is its
+ * own concern. Everything else is injected and outlives it — in practice all
+ * of it lives on the stack of main(), with App declared last so it is
+ * destroyed first.
+ *
+ * Every injected argument is one this class reads itself; nothing is held
+ * merely to be handed on. Of the settings store it takes the one port whose
+ * flags it clears, plus the file path as a value, so it can name the store
+ * without being able to read it.
  *
  * Every collaborator is reached through a port, so this class names no widget
  * type and blocks on no dialog of its own; which of them are modal is decided
@@ -40,29 +41,30 @@ class App : public QObject
 
 public:
     /**
-     * @param flags     One-shot onboarding flags, passed on to the notifier
-     *                  and cleared here when the guide retires itself. Not
-     *                  owned; must outlive App.
-     * @param whitelist Administrator override, passed on to the integration
-     *                  server. Not owned; must outlive App.
-     * @param settingsLocation Where the settings file lives, for the About
-     *                  dialog. Not owned; must outlive App.
-     * @param prompt   Channel for errors and confirmations. Not owned; must
-     *                 outlive App.
-     * @param tray     Tray icon and menu. Not owned; must outlive App.
-     * @param dialogs  Channel for the application's windows. Not owned; must
-     *                 outlive App.
-     * @param info     Session snapshot, shared with the integration server it
-     *                 builds. Not owned; must outlive App.
-     * @param parent   Standard Qt parent.
+     * @param flags   One-shot onboarding flags: passed on to the notifier, and
+     *                cleared here when the guide retires itself. Not owned;
+     *                must outlive App.
+     * @param server  Integration endpoint, started by start(). Not owned; must
+     *                outlive App.
+     * @param prompt  Channel for errors and confirmations. Not owned; must
+     *                outlive App.
+     * @param tray    Tray icon and menu. Not owned; must outlive App.
+     * @param dialogs Channel for the application's windows. Not owned; must
+     *                outlive App.
+     * @param info    Session snapshot, shared with @p server. Not owned; must
+     *                outlive App.
+     * @param settingsFilePath Absolute path of the settings file, named in the
+     *                About dialog. Taken by value because it is fixed for the
+     *                life of the store.
+     * @param parent  Standard Qt parent.
      */
     explicit App(OnboardingFlags& flags,
-                 ExtensionWhitelist& whitelist,
-                 SettingsLocation& settingsLocation,
+                 IntegrationServer& server,
                  UserPrompt& prompt,
                  TrayView& tray,
                  DialogPresenter& dialogs,
                  sysinfo::InfoSource& info,
+                 QString settingsFilePath,
                  QObject* parent = nullptr);
 
     /**
@@ -90,16 +92,16 @@ private:
     /// tray tooltip only when the rendered text differs from the cached one.
     void startTrayUpdateTimer();
 
-    OnboardingFlags&    m_flags;            ///< Injected, not owned.
-    ExtensionWhitelist& m_whitelist;         ///< Injected, not owned.
-    SettingsLocation&   m_settingsLocation;  ///< Injected, not owned.
-    UserPrompt&         m_prompt;            ///< Injected, not owned.
-    TrayView&           m_tray;              ///< Injected, not owned.
-    DialogPresenter&    m_dialogs;           ///< Injected, not owned.
-    sysinfo::InfoSource& m_info;             ///< Injected, not owned.
-    WelcomeNotifier*    m_notifier = nullptr; ///< Parent-owned via QObject(this).
-    IntegrationServer*  m_server   = nullptr; ///< Parent-owned.
-    QString             m_cachedInfo;        ///< Last rendered tray tooltip text.
+    OnboardingFlags&     m_flags;    ///< Injected, not owned.
+    IntegrationServer&   m_server;   ///< Injected, not owned.
+    UserPrompt&          m_prompt;   ///< Injected, not owned.
+    TrayView&            m_tray;     ///< Injected, not owned.
+    DialogPresenter&     m_dialogs;  ///< Injected, not owned.
+    sysinfo::InfoSource& m_info;     ///< Injected, not owned.
+
+    QString          m_settingsFilePath;   ///< Named in the About dialog.
+    WelcomeNotifier* m_notifier = nullptr; ///< Parent-owned via QObject(this).
+    QString          m_cachedInfo;         ///< Last rendered tray tooltip text.
 };
 
 #endif // APP_H

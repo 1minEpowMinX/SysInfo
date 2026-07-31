@@ -5,9 +5,7 @@
 #include "core/ports/dialog_presenter.h"
 #include "core/ports/tray_view.h"
 #include "core/ports/user_prompt.h"
-#include "core/settings/extension_whitelist.h"
 #include "core/settings/onboarding_flags.h"
-#include "core/settings/settings_location.h"
 #include "core/sysinfo/info_source.h"
 #include "core/sysinfo/system_info_presenter.h"
 #include "services/integration_server.h"
@@ -15,6 +13,8 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QTimer>
+
+#include <utility>
 
 namespace {
 
@@ -28,21 +28,21 @@ constexpr int kCopyNoticeMs         = 5'000;
 } // namespace
 
 App::App(OnboardingFlags& flags,
-         ExtensionWhitelist& whitelist,
-         SettingsLocation& settingsLocation,
+         IntegrationServer& server,
          UserPrompt& prompt,
          TrayView& tray,
          DialogPresenter& dialogs,
          sysinfo::InfoSource& info,
+         QString settingsFilePath,
          QObject* parent)
     : QObject(parent)
     , m_flags(flags)
-    , m_whitelist(whitelist)
-    , m_settingsLocation(settingsLocation)
+    , m_server(server)
     , m_prompt(prompt)
     , m_tray(tray)
     , m_dialogs(dialogs)
     , m_info(info)
+    , m_settingsFilePath(std::move(settingsFilePath))
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
@@ -80,8 +80,7 @@ bool App::start()
             this, &App::onTrayGuideRequested);
     m_notifier->scheduleShow();
 
-    m_server = new IntegrationServer(m_whitelist, m_info, this);
-    if (!m_server->start()) {
+    if (!m_server.start()) {
         m_prompt.showError(tr("Error"),
                            tr("Failed to start the local server. "
                               "Integration with Jira SM is unavailable."));
@@ -132,7 +131,7 @@ void App::onAboutRequested()
     // which changes while the process runs.
     m_dialogs.showAbout(
         sysinfo::presenter::toSystemDetailsHtml(m_info.current(),
-                                                m_settingsLocation.filePath()));
+                                                m_settingsFilePath));
 }
 
 void App::onQuitRequested()
