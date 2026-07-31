@@ -38,8 +38,8 @@ QJsonObject toJson(const Info &s)
     QJsonObject obj;
     obj["hostname"] = s.hostname;
     obj["username"] = s.username;
-    obj["ip"]       = ipOrFallback(s);
-    obj["uptime"]   = uptimeOrFallback(s);
+    obj["ip"]       = s.ip;
+    obj["uptime"]   = s.uptime;
     return obj;
 }
 

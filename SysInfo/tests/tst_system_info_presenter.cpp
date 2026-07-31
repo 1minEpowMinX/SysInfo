@@ -14,8 +14,8 @@ private slots:
     void toJson_hasExpectedKeys_andNoLabels();
     void toJsonWithLabels_includesAllLabels();
     void toJsonWithLabels_containsSameDataAsToJson();
-    void toJson_substitutesFallbackForEmptyIp();
-    void toJson_substitutesFallbackForEmptyUptime();
+    void toJson_keepsEmptyIpEmpty();
+    void toJson_keepsEmptyUptimeEmpty();
     void toText_substitutesFallbacksForEmptyFields();
     void toSystemDetailsHtml_pairsEachLabelWithItsValue();
     void toSystemDetailsHtml_namesTheOperatingSystem();
@@ -82,31 +82,29 @@ void TestSystemInfoPresenter::toJsonWithLabels_containsSameDataAsToJson()
     }
 }
 
-void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyIp()
+void TestSystemInfoPresenter::toJson_keepsEmptyIpEmpty()
 {
     sysinfo::Info s = sample();
     s.ip.clear();
 
     const QJsonObject obj = sysinfo::presenter::toJson(s);
-    const QString rendered = obj.value("ip").toString();
 
-    // Presenter must fill in *something* — the model handed it an empty
-    // string and the consumer (browser extension, clipboard) should not
-    // see a blank field.
-    QVERIFY2(!rendered.isEmpty(), "empty ip should be replaced with a fallback");
-    QVERIFY2(rendered != s.hostname && rendered != s.username,
-             "fallback must not be a different field");
+    // The key stays, so the document shape does not depend on what was
+    // obtainable; the value stays raw, so no translated placeholder reaches
+    // a data field of the API contract.
+    QVERIFY2(obj.contains("ip"), "the key must survive an unobtainable value");
+    QCOMPARE(obj.value("ip").toString(), QString());
 }
 
-void TestSystemInfoPresenter::toJson_substitutesFallbackForEmptyUptime()
+void TestSystemInfoPresenter::toJson_keepsEmptyUptimeEmpty()
 {
     sysinfo::Info s = sample();
     s.uptime.clear();
 
     const QJsonObject obj = sysinfo::presenter::toJson(s);
-    const QString rendered = obj.value("uptime").toString();
 
-    QVERIFY2(!rendered.isEmpty(), "empty uptime should be replaced with a fallback");
+    QVERIFY2(obj.contains("uptime"), "the key must survive an unobtainable value");
+    QCOMPARE(obj.value("uptime").toString(), QString());
 }
 
 void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
