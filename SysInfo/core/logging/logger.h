@@ -21,6 +21,15 @@
  *
  * Severity is derived from the numeric range of the EventId, not passed
  * separately, to keep call sites concise (Logger::log(EventId::Foo, msg)).
+ *
+ * Reached statically from every layer, the widgets in ui/ included, rather
+ * than injected as a port the way the rest of SysInfo's collaborators are.
+ * The trade is deliberate: call sites stay free of a logging parameter and no
+ * constructor widens to carry one, at the price that a write cannot be
+ * observed from a test. Whether a failing QSettings::sync() produces
+ * SettingsWriteFailed, or a refused bind produces ServerStartError, is
+ * asserted nowhere; both are covered by inspection alone. Injecting the
+ * facility is what those assertions would cost.
  */
 class Logger
 {
