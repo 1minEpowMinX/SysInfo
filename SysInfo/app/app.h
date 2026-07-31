@@ -11,6 +11,8 @@ class TrayView;
 class UserPrompt;
 class WelcomeNotifier;
 
+namespace sysinfo { class InfoSource; }
+
 /**
  * @brief Wires the application's runtime parts together and coordinates them.
  *
@@ -40,12 +42,15 @@ public:
      * @param tray     Tray icon and menu. Not owned; must outlive App.
      * @param dialogs  Channel for the application's windows. Not owned; must
      *                 outlive App.
+     * @param info     Session snapshot, shared with the integration server it
+     *                 builds. Not owned; must outlive App.
      * @param parent   Standard Qt parent.
      */
     explicit App(SettingsManager& settings,
                  UserPrompt& prompt,
                  TrayView& tray,
                  DialogPresenter& dialogs,
+                 sysinfo::InfoSource& info,
                  QObject* parent = nullptr);
 
     /**
@@ -77,6 +82,7 @@ private:
     UserPrompt&         m_prompt;            ///< Injected, not owned.
     TrayView&           m_tray;              ///< Injected, not owned.
     DialogPresenter&    m_dialogs;           ///< Injected, not owned.
+    sysinfo::InfoSource& m_info;             ///< Injected, not owned.
     WelcomeNotifier*    m_notifier = nullptr; ///< Parent-owned via QObject(this).
     IntegrationServer*  m_server   = nullptr; ///< Parent-owned.
     QString             m_cachedInfo;        ///< Last rendered tray tooltip text.

@@ -1,5 +1,6 @@
 #include "services/integration_server.h"
 #include "services/request_policy.h"
+#include "core/sysinfo/info_source.h"
 #include "core/settings/extension_whitelist.h"
 
 #include <QByteArray>
@@ -166,7 +167,8 @@ private slots:
 void TestIntegrationServer::startStop_togglesListening()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(!server.isListening());
 
     QVERIFY(server.start(0));
@@ -180,8 +182,9 @@ void TestIntegrationServer::startStop_togglesListening()
 void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 {
     FakeWhitelist whitelist;
-    IntegrationServer a(whitelist);
-    IntegrationServer b(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer a(whitelist, info);
+    IntegrationServer b(whitelist, info);
     QVERIFY(a.start(0));
     QVERIFY(b.start(0));
     QVERIFY(a.boundPort() != b.boundPort());
@@ -192,7 +195,8 @@ void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 void TestIntegrationServer::statusEndpoint_returnsOk()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -206,7 +210,8 @@ void TestIntegrationServer::statusEndpoint_returnsOk()
 void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -238,7 +243,8 @@ void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
 void TestIntegrationServer::versionEndpoint_isRejectedFromBrowserWithoutClientId()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -253,7 +259,8 @@ void TestIntegrationServer::versionEndpoint_isRejectedFromBrowserWithoutClientId
 void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     // No Origin / Sec-Fetch-* — non-browser caller (curl, support).
@@ -290,7 +297,8 @@ void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()
 void TestIntegrationServer::systemInfoForExtension_returnsJsonWithoutLabels()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     // Browser caller (extension SW). The extension localises labels
@@ -321,7 +329,8 @@ void TestIntegrationServer::systemInfoForExtension_returnsJsonWithoutLabels()
 void TestIntegrationServer::corsHeaders_arePresentForNonBrowser()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -339,7 +348,8 @@ void TestIntegrationServer::corsHeaders_arePresentForNonBrowser()
 void TestIntegrationServer::pageOrigin_isRejected()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -352,7 +362,8 @@ void TestIntegrationServer::pageOrigin_isRejected()
 void TestIntegrationServer::navigateMode_isRejected()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -388,7 +399,8 @@ void TestIntegrationServer::malformedExtensionOrigin_isRejected()
     QFETCH(QByteArray, origin);
 
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -408,7 +420,8 @@ void TestIntegrationServer::malformedExtensionOrigin_isRejected()
 void TestIntegrationServer::extensionOriginWithoutClientId_isRejected()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -423,7 +436,8 @@ void TestIntegrationServer::extensionOriginWithoutClientId_isRejected()
 void TestIntegrationServer::extensionOriginWithBogusClientId_isRejected()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -438,7 +452,8 @@ void TestIntegrationServer::extensionOriginWithBogusClientId_isRejected()
 void TestIntegrationServer::extensionOriginWithChromeDefaultId_returnsOk()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -454,7 +469,8 @@ void TestIntegrationServer::extensionOriginWithChromeDefaultId_returnsOk()
 void TestIntegrationServer::extensionOriginWithFirefoxDefaultId_returnsOk()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -475,7 +491,8 @@ void TestIntegrationServer::extensionOriginWithFirefoxDefaultId_returnsOk()
 void TestIntegrationServer::preflightFromExtension_returnsNoContent()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -493,7 +510,8 @@ void TestIntegrationServer::preflightFromExtension_returnsNoContent()
 void TestIntegrationServer::preflightFromPage_isRejected()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -509,7 +527,8 @@ void TestIntegrationServer::preflightFromPage_isRejected()
 void TestIntegrationServer::preflightResponse_includesXSysinfoClientInAllowHeaders()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -531,7 +550,8 @@ void TestIntegrationServer::preflightResponse_includesXSysinfoClientInAllowHeade
 void TestIntegrationServer::corsAllowOrigin_reflectsExtensionOrigin()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     const QByteArray origin = "moz-extension://abcdef-1234-5678";
@@ -550,7 +570,8 @@ void TestIntegrationServer::corsAllowOrigin_reflectsExtensionOrigin()
 void TestIntegrationServer::corsAllowOrigin_isWildcardForNonBrowser()
 {
     FakeWhitelist whitelist;
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -566,7 +587,8 @@ void TestIntegrationServer::settingsOverride_replacesDefaults()
 {
     FakeWhitelist whitelist;
     whitelist.ids = QStringList{"corp-custom-extension-id"};
-    IntegrationServer server(whitelist);
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;

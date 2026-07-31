@@ -6,7 +6,7 @@
 #include "core/ports/tray_view.h"
 #include "core/ports/user_prompt.h"
 #include "core/settings/settings_manager.h"
-#include "core/sysinfo/system_info.h"
+#include "core/sysinfo/info_source.h"
 #include "core/sysinfo/system_info_presenter.h"
 #include "services/integration_server.h"
 
@@ -29,12 +29,14 @@ App::App(SettingsManager& settings,
          UserPrompt& prompt,
          TrayView& tray,
          DialogPresenter& dialogs,
+         sysinfo::InfoSource& info,
          QObject* parent)
     : QObject(parent)
     , m_settings(settings)
     , m_prompt(prompt)
     , m_tray(tray)
     , m_dialogs(dialogs)
+    , m_info(info)
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
@@ -51,7 +53,7 @@ bool App::start()
         return false;
     }
 
-    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
+    m_cachedInfo = sysinfo::presenter::toText(m_info.current());
     m_tray.setTooltip(m_cachedInfo);
     m_tray.show();
 
@@ -72,7 +74,7 @@ bool App::start()
             this, &App::onTrayGuideRequested);
     m_notifier->scheduleShow();
 
-    m_server = new IntegrationServer(m_settings, this);
+    m_server = new IntegrationServer(m_settings, m_info, this);
     if (!m_server->start()) {
         m_prompt.showError(tr("Error"),
                            tr("Failed to start the local server. "
@@ -89,7 +91,7 @@ void App::startTrayUpdateTimer()
 {
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        const QString fresh = sysinfo::presenter::toText(sysinfo::collect());
+        const QString fresh = sysinfo::presenter::toText(m_info.current());
         if (fresh != m_cachedInfo) {
             m_cachedInfo = fresh;
             m_tray.setTooltip(m_cachedInfo);
@@ -107,7 +109,9 @@ void App::onCopyRequested()
         return;
     }
 
-    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
+    // Answers a user action, so the window is bypassed rather than waited out.
+    m_info.refresh();
+    m_cachedInfo = sysinfo::presenter::toText(m_info.current());
     clipboard->setText(m_cachedInfo);
     m_tray.setTooltip(m_cachedInfo);
 
@@ -118,8 +122,10 @@ void App::onCopyRequested()
 
 void App::onAboutRequested()
 {
+    // No refresh(): the block names only the host and the user, neither of
+    // which changes while the process runs.
     m_dialogs.showAbout(
-        sysinfo::presenter::toSystemDetailsHtml(sysinfo::collect(),
+        sysinfo::presenter::toSystemDetailsHtml(m_info.current(),
                                                 m_settings.filePath()));
 }
 

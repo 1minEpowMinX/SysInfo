@@ -2,9 +2,9 @@
 #define INTEGRATIONSERVER_H
 
 #include "request_policy.h"
+#include "core/sysinfo/info_source.h"
 #include "core/sysinfo/system_info.h"
 
-#include <QElapsedTimer>
 #include <QHttpServer>
 #include <QHttpServerResponse>
 #include <QObject>
@@ -52,9 +52,14 @@ public:
     /**
      * @param whitelist Source of the administrator override, consulted on
      *                  every request. Not owned; must outlive this server.
+     * @param info      Session snapshot the /systeminfo route serves. Shared
+     *                  with the rest of the application, so a request arriving
+     *                  just after the tray refreshed pays for no collection of
+     *                  its own. Not owned; must outlive this server.
      * @param parent    Standard Qt parent.
      */
     explicit IntegrationServer(ExtensionWhitelist& whitelist,
+                               sysinfo::InfoSource& info,
                                QObject *parent = nullptr);
     ~IntegrationServer() override;
 
@@ -90,24 +95,10 @@ private:
     static void applyCors(const integration::RequestContext& context,
                           QHttpServerResponse& response);
 
-    /**
-     * @brief Returns the session snapshot, recollected at most once per TTL window.
-     *
-     * sysinfo::collect() enumerates every network interface — on Windows a
-     * GetAdaptersAddresses call costing tens of milliseconds — and route
-     * handlers run on the thread the server lives in, the GUI thread. Requests
-     * arriving within one window share a single collection.
-     *
-     * @return Cached snapshot, which may trail the true state by up to the TTL.
-     */
-    const sysinfo::Info& cachedInfo() const;
-
-    ExtensionWhitelist& m_whitelist; ///< Injected, not owned.
-    QHttpServer httpServer;          ///< Route table; bound to tcpServer by start().
-    QTcpServer  tcpServer;           ///< Listening socket, and the only one bound.
-
-    mutable sysinfo::Info m_cachedInfo;  ///< Valid only while m_cacheAge has not expired.
-    mutable QElapsedTimer m_cacheAge;    ///< Invalid until the first collection.
+    ExtensionWhitelist&  m_whitelist; ///< Injected, not owned.
+    sysinfo::InfoSource& m_info;      ///< Injected, not owned.
+    QHttpServer httpServer;           ///< Route table; bound to tcpServer by start().
+    QTcpServer  tcpServer;            ///< Listening socket, and the only one bound.
 };
 
 #endif // INTEGRATIONSERVER_H

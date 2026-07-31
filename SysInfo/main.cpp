@@ -12,10 +12,11 @@
  *   4. Acquire the single-instance lock: exit silently if another SysInfo
  *      already holds it, or refuse to start (with a message to the user and
  *      to the event log) if the lock cannot be established at all.
- *   5. Construct the widget-backed implementations of the ports App depends on
- *      — SettingsManager (owns QSettings), MessageBoxPrompt, TrayController
- *      and WidgetDialogs — then App itself, all on the stack. Declaration
- *      order guarantees App is destroyed before anything it was handed.
+ *   5. Construct what App depends on — SettingsManager (owns QSettings), the
+ *      widget-backed MessageBoxPrompt, TrayController and WidgetDialogs, and
+ *      the InfoSource it shares with the integration server — then App itself,
+ *      all on the stack. Declaration order guarantees App is destroyed before
+ *      anything it was handed.
  *   6. Call App::start(); exit code 1 if the system tray is unavailable.
  *   7. Log AppStart, queue the DeviceInventory snapshot for the first turn
  *      of the event loop, and enter it.
@@ -26,6 +27,7 @@
 #include "core/runtime/single_instance_guard.h"
 #include "core/settings/settings_manager.h"
 #include "core/sysinfo/device_inventory.h"
+#include "core/sysinfo/info_source.h"
 #include "ui/message_box_prompt.h"
 #include "ui/tray_controller.h"
 #include "ui/widget_dialogs.h"
@@ -132,7 +134,8 @@ int main(int argc, char *argv[])
 	MessageBoxPrompt prompt;
 	TrayController tray;
 	WidgetDialogs dialogs;
-	App app(settings, prompt, tray, dialogs);
+	sysinfo::InfoSource info;
+	App app(settings, prompt, tray, dialogs, info);
 	if (!app.start())
 	{
 		return 1;

@@ -30,17 +30,16 @@ QHttpServerResponse forbidden()
     return QHttpServerResponse(QHttpServerResponse::StatusCode::Forbidden);
 }
 
-/// How long a sysinfo::collect() snapshot stays good — see
-/// IntegrationServer::cachedInfo().
-constexpr qint64 kInfoCacheTtlMs = 1000;
-
 } // namespace
 
 using Method = QHttpServerRequest::Method;
 
-IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist, QObject *parent)
+IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist,
+                                     sysinfo::InfoSource& info,
+                                     QObject *parent)
     : QObject{parent}
     , m_whitelist(whitelist)
+    , m_info(info)
 {
     httpServer.route("/systeminfo", Method::Get,
                      [this](const QHttpServerRequest &req) -> QHttpServerResponse {
@@ -54,7 +53,7 @@ IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist, QObject *par
         // field names client-side via browser.i18n / chrome.i18n APIs,
         // so it receives the bare data payload — smaller wire format,
         // less duplicated translation logic.
-        const sysinfo::Info& data = cachedInfo();
+        const sysinfo::Info& data = m_info.current();
         const QJsonObject info = integration::isFromBrowser(context)
                 ? sysinfo::presenter::toJson(data)
                 : sysinfo::presenter::toJsonWithLabels(data);
@@ -156,15 +155,6 @@ QStringList IntegrationServer::allowedExtensionIds() const
 bool IntegrationServer::isRequestAllowed(const integration::RequestContext& context) const
 {
     return integration::isRequestAllowed(context, allowedExtensionIds());
-}
-
-const sysinfo::Info& IntegrationServer::cachedInfo() const
-{
-    if (!m_cacheAge.isValid() || m_cacheAge.hasExpired(kInfoCacheTtlMs)) {
-        m_cachedInfo = sysinfo::collect();
-        m_cacheAge.start();
-    }
-    return m_cachedInfo;
 }
 
 void IntegrationServer::applyCors(const integration::RequestContext& context,

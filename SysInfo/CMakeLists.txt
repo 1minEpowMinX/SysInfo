@@ -53,6 +53,8 @@ qt_add_library(sysinfo_core STATIC
 
     core/sysinfo/system_info.cpp
     core/sysinfo/system_info.h
+    core/sysinfo/info_source.cpp
+    core/sysinfo/info_source.h
     core/sysinfo/system_info_presenter.cpp
     core/sysinfo/system_info_presenter.h
     core/sysinfo/hardware_info.cpp
@@ -256,7 +258,8 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         DEPENDS tst_system_info tst_system_info_presenter tst_hardware_info
-                tst_smbios_memory tst_device_inventory tst_integration_server
+                tst_smbios_memory tst_info_source tst_device_inventory
+                tst_integration_server
                 tst_request_policy tst_single_instance_guard tst_welcome_notifier
         COMMENT "Running tests"
         USES_TERMINAL
