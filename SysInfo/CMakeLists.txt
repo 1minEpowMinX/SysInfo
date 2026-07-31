@@ -39,9 +39,10 @@ else()
     set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_stub.cpp)
 endif()
 
-# --- Core library: pure logic + non-UI services, reusable from exe and tests.
-# Lives as a STATIC library so test binaries can link it directly instead
-# of recompiling the same .cpp files into every test executable.
+# --- Core library: the data, settings, logging and runtime layers, reusable
+# from the executable and the tests. Lives as a STATIC library so test
+# binaries can link it directly instead of recompiling the same .cpp files
+# into every test executable.
 qt_add_library(sysinfo_core STATIC
     # Ports whose implementations live in ui/. They sit below both app/ and
     # ui/ so that neither has to include the other; the ports of core/settings
@@ -73,18 +74,12 @@ qt_add_library(sysinfo_core STATIC
     core/logging/logger.h
     core/runtime/single_instance_guard.cpp
     core/runtime/single_instance_guard.h
-
-    services/integration_server.cpp
-    services/integration_server.h
-    services/request_policy.cpp
-    services/request_policy.h
 )
 
 # PUBLIC: headers of sysinfo_core expose Qt types — consumers must see them.
 target_link_libraries(sysinfo_core PUBLIC
     Qt6::Core
     Qt6::Network
-    Qt6::HttpServer
 )
 
 # PUBLIC include directory lets every consumer write
@@ -105,7 +100,22 @@ if(APPLE)
     )
 endif()
 
-# --- SysInfo executable: composition + UI on top of sysinfo_core.
+# --- Service library: the local HTTP endpoint, on top of sysinfo_core.
+# Separate from it so that a test of the data layer does not link an HTTP
+# server it never speaks to.
+qt_add_library(sysinfo_services STATIC
+    services/integration_server.cpp
+    services/integration_server.h
+    services/request_policy.cpp
+    services/request_policy.h
+)
+
+target_link_libraries(sysinfo_services PUBLIC
+    sysinfo_core
+    Qt6::HttpServer
+)
+
+# --- SysInfo executable: composition + UI on top of the two libraries.
 set(PROJECT_SOURCES
     main.cpp
 
@@ -134,7 +144,7 @@ qt_add_executable(SysInfo
 )
 
 target_link_libraries(SysInfo PRIVATE
-    sysinfo_core
+    sysinfo_services
     Qt6::Widgets
 )
 
