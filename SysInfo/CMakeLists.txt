@@ -218,6 +218,27 @@ install(TARGETS SysInfo
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# Desktop integration for freedesktop systems. sysinfo.desktop carries
+# "Icon=sysinfo", which is an icon-theme name rather than a path, so the icon
+# only resolves once it is installed into the theme under exactly that
+# basename — hence the RENAME on the scalable entry.
+#
+# Placed after GNUInstallDirs, which defines CMAKE_INSTALL_DATAROOTDIR.
+if(UNIX AND NOT APPLE)
+    install(FILES "${CMAKE_SOURCE_DIR}/resources/sysinfo.desktop"
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications"
+    )
+
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/resources/icons/hicolor"
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons"
+    )
+
+    install(FILES "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_app.svg"
+        DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps"
+        RENAME "sysinfo.svg"
+    )
+endif()
+
 # Qt deploy script for Win/macOS/Linux (used by `cmake --install`)
 qt_generate_deploy_app_script(
     TARGET SysInfo
@@ -260,6 +281,16 @@ add_custom_command(TARGET SysInfo POST_BUILD
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SysInfo)
+endif()
+
+# The .ico and .icns are derived from resources/icons/sysinfo_app.svg and
+# committed, because neither format has a vector form and the platforms demand
+# them. Turn this on to rebuild them after the artwork changes:
+#   cmake -DSYSINFO_BUILD_ICON_BUILDER=ON . && cmake --build . --target regenerate_icons
+option(SYSINFO_BUILD_ICON_BUILDER
+    "Build the tool that regenerates the platform icon containers" OFF)
+if(SYSINFO_BUILD_ICON_BUILDER)
+    add_subdirectory(tools/icon_builder)
 endif()
 
 include(CTest)
