@@ -1,8 +1,9 @@
 #ifndef DIALOG_PRESENTER_H
 #define DIALOG_PRESENTER_H
 
+#include "core/sysinfo/about_facts.h"
+
 #include <QObject>
-#include <QString>
 
 /**
  * @brief Opens the application's windows and reports what the user did in them.
@@ -23,12 +24,11 @@ public:
 
     /**
      * @brief Opens the "About SysInfo" window.
-     * @param systemDetailsHtml Rich-text block describing the machine, as
-     *                          sysinfo::presenter::toSystemDetailsHtml()
-     *                          renders it. Shown as handed over and not
-     *                          refreshed while the window is up.
+     * @param facts Machine-describing values to display, as
+     *              sysinfo::presenter::toAboutFacts() collects them. Read once
+     *              when the window opens and not refreshed while it is up.
      */
-    virtual void showAbout(const QString& systemDetailsHtml) = 0;
+    virtual void showAbout(const sysinfo::AboutFacts& facts) = 0;
 
     /**
      * @brief Opens the guide on pinning the tray icon.

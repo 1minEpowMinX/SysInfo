@@ -57,17 +57,12 @@ QJsonObject toJsonWithLabels(const Info &s)
     return obj;
 }
 
-QString toSystemDetailsHtml(const Info &s, const QString &settingsFilePath)
+AboutFacts toAboutFacts(const Info &s, const QString &settingsFilePath)
 {
-    return QObject::tr(
-               "<p span style='color: gray;'><b>OS:</b> %1<br>"
-               "<b>User:</b> %2<br>"
-               "<b>Device:</b> %3<br>"
-               "<b>Settings file:</b> %4</p>")
-        .arg(QSysInfo::prettyProductName(),
-             s.username,
-             s.hostname,
-             settingsFilePath);
+    return AboutFacts{QSysInfo::prettyProductName(),
+                      s.username,
+                      s.hostname,
+                      settingsFilePath};
 }
 
 } // namespace sysinfo::presenter

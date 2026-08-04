@@ -49,8 +49,7 @@ App::App(OnboardingFlags& flags,
 
 bool App::start()
 {
-    // Gates on the tray before anything is collected: a failure here ends the
-    // run, and sysinfo::collect() walks every network interface.
+    // Gates on the tray before anything is collected to to avoid an idle load.
     if (!m_tray.init()) {
         m_prompt.showError(tr("Error"),
                            tr("The system tray is unavailable."));
@@ -127,11 +126,8 @@ void App::onCopyRequested()
 
 void App::onAboutRequested()
 {
-    // No refresh(): the block names only the host and the user, neither of
-    // which changes while the process runs.
     m_dialogs.showAbout(
-        sysinfo::presenter::toSystemDetailsHtml(m_info.current(),
-                                                m_settingsFilePath));
+        sysinfo::presenter::toAboutFacts(m_info.current(), m_settingsFilePath));
 }
 
 void App::onQuitRequested()

@@ -4,11 +4,18 @@
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
+#include <QSize>
 
 #include <utility>
 
+namespace
+{
+    /// Size rendered once to tell a loadable icon from a missing file.
+    constexpr QSize kProbeIconSize(16, 16);
+}
+
 const QString TrayController::kDefaultIconPath =
-    QStringLiteral(":/resources/icons/sysinfo_icon.png");
+    QStringLiteral(":/resources/icons/sysinfo_app.svg");
 
 TrayController::TrayController(QString iconPath, QObject* parent)
     : TrayView(parent)
@@ -38,11 +45,17 @@ bool TrayController::init()
         return false;
     }
 
-    m_icon = new QSystemTrayIcon(QIcon(m_iconPath), this);
-    if (m_icon->icon().isNull()) {
+    const QIcon icon(m_iconPath);
+
+    // QIcon stores the path without reading it, so isNull() answers false even
+    // for a path that resolves to nothing. Rendering one pixmap is what tells
+    // a real icon from a missing file.
+    if (icon.pixmap(kProbeIconSize).isNull()) {
         Logger::log(Logger::EventId::TrayIconMissing,
                     "Tray icon failed to load from resources.");
     }
+
+    m_icon = new QSystemTrayIcon(icon, this);
 
     buildMenu();
 

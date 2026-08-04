@@ -17,8 +17,9 @@ private slots:
     void toJson_keepsEmptyIpEmpty();
     void toJson_keepsEmptyUptimeEmpty();
     void toText_substitutesFallbacksForEmptyFields();
-    void toSystemDetailsHtml_pairsEachLabelWithItsValue();
-    void toSystemDetailsHtml_namesTheOperatingSystem();
+    void toAboutFacts_carriesEachFieldToItsOwnMember();
+    void toAboutFacts_namesTheOperatingSystem();
+    void toAboutFacts_keepsEmptyFieldsEmpty();
 };
 
 namespace {
@@ -123,38 +124,52 @@ void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
              qPrintable("empty uptime leaked into text: " + text));
 }
 
-void TestSystemInfoPresenter::toSystemDetailsHtml_pairsEachLabelWithItsValue()
+void TestSystemInfoPresenter::toAboutFacts_carriesEachFieldToItsOwnMember()
 {
     const sysinfo::Info s = sample();
-    const QString settingsPath = QStringLiteral("C:/tmp/SysInfo.ini");
+    const QString settingsPath =
+        QStringLiteral("\\HKEY_CURRENT_USER\\Software\\Pivdenny\\SysInfo");
 
-    const QString html = sysinfo::presenter::toSystemDetailsHtml(s, settingsPath);
+    const sysinfo::AboutFacts facts =
+        sysinfo::presenter::toAboutFacts(s, settingsPath);
 
-    QVERIFY(html.contains(s.username));
-    QVERIFY(html.contains(s.hostname));
-    QVERIFY(html.contains(settingsPath));
+    // Username and hostname are both plain strings of the same shape, so a
+    // swapped assignment would still populate every member; comparing them
+    // member by member is what pins the mapping down.
+    QCOMPARE(facts.username, s.username);
+    QCOMPARE(facts.hostname, s.hostname);
+    QCOMPARE(facts.settingsFilePath, settingsPath);
 
-    // A swapped .arg() order still contains every value, so what pins the
-    // pairing down is the order the template lays them out in:
-    // OS, User, Device, Settings file.
-    QVERIFY2(html.indexOf(s.username) < html.indexOf(s.hostname),
-             qPrintable("user and device values are swapped: " + html));
-    QVERIFY2(html.indexOf(s.hostname) < html.indexOf(settingsPath),
-             qPrintable("device and settings path are swapped: " + html));
-
-    // The block describes the machine, not the session.
-    QVERIFY2(!html.contains(s.ip),
-             qPrintable("the IP address does not belong here: " + html));
-    QVERIFY2(!html.contains(s.uptime),
-             qPrintable("the uptime does not belong here: " + html));
+    // The panel describes the machine, not the session.
+    QVERIFY2(!facts.operatingSystem.contains(s.ip),
+             "the IP address does not belong here");
+    QVERIFY2(!facts.operatingSystem.contains(s.uptime),
+             "the uptime does not belong here");
 }
 
-void TestSystemInfoPresenter::toSystemDetailsHtml_namesTheOperatingSystem()
+void TestSystemInfoPresenter::toAboutFacts_namesTheOperatingSystem()
 {
-    const QString html =
-        sysinfo::presenter::toSystemDetailsHtml(sample(), QStringLiteral("path"));
+    const sysinfo::AboutFacts facts =
+        sysinfo::presenter::toAboutFacts(sample(), QStringLiteral("path"));
 
-    QVERIFY(html.contains(QSysInfo::prettyProductName()));
+    QCOMPARE(facts.operatingSystem, QSysInfo::prettyProductName());
+}
+
+void TestSystemInfoPresenter::toAboutFacts_keepsEmptyFieldsEmpty()
+{
+    // Unlike toText(), this rendering substitutes no placeholder: the About
+    // panel is read literally during support work, and a translated stand-in
+    // there would be indistinguishable from a real value.
+    sysinfo::Info s;
+    s.hostname = QString();
+    s.username = QString();
+
+    const sysinfo::AboutFacts facts =
+        sysinfo::presenter::toAboutFacts(s, QString());
+
+    QVERIFY(facts.username.isEmpty());
+    QVERIFY(facts.hostname.isEmpty());
+    QVERIFY(facts.settingsFilePath.isEmpty());
 }
 
 QTEST_GUILESS_MAIN(TestSystemInfoPresenter)

@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Widgets
+    Svg
     Network
     HttpServer
     LinguistTools
@@ -52,6 +53,7 @@ qt_add_library(sysinfo_core STATIC
     core/ports/dialog_presenter.h
     core/ports/user_prompt.h
 
+    core/sysinfo/about_facts.h
     core/sysinfo/system_info.cpp
     core/sysinfo/system_info.h
     core/sysinfo/info_source.cpp
@@ -146,6 +148,7 @@ qt_add_executable(SysInfo
 target_link_libraries(SysInfo PRIVATE
     sysinfo_services
     Qt6::Widgets
+    Qt6::Svg
 )
 
 # Modern Qt 6 translations
@@ -199,8 +202,8 @@ if(UNIX AND NOT APPLE)
         COPYONLY
     )
     configure_file(
-        "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.png"
-        "${CMAKE_BINARY_DIR}/resources/icons/sysinfo_icon.png"
+        "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_app.svg"
+        "${CMAKE_BINARY_DIR}/resources/icons/sysinfo_app.svg"
         COPYONLY
     )
     set_target_properties(SysInfo PROPERTIES

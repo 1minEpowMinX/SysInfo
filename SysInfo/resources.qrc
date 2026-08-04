@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>resources/animations/tray_guide.gif</file>
-        <file>resources/icons/sysinfo_background.png</file>
-        <file>resources/icons/sysinfo_icon.png</file>
+        <file>resources/icons/sysinfo_app.svg</file>
     </qresource>
 </RCC>

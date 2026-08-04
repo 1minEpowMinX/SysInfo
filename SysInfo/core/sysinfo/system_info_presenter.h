@@ -1,6 +1,7 @@
 #ifndef SYSTEM_INFO_PRESENTER_H
 #define SYSTEM_INFO_PRESENTER_H
 
+#include "about_facts.h"
 #include "system_info.h"
 
 #include <QJsonObject>
@@ -56,17 +57,21 @@ QJsonObject toJson(const Info &s);
 QJsonObject toJsonWithLabels(const Info &s);
 
 /**
- * @brief Renders the localised "system details" block of the About dialog.
+ * @brief Collects the machine-describing values the About window shows.
  *
  * Reads the host name and the user name off @p s and asks QSysInfo for the OS
  * product name; the uptime and the IP address are not part of this block.
+ * Carries every value through verbatim, empty ones included — the About window
+ * is the only place that decides how to spell a missing value, and no
+ * placeholder belongs in a field a support engineer reads literally.
  *
  * @param s                Session snapshot; only hostname and username are read.
- * @param settingsFilePath Absolute path of the on-disk settings file.
- * @return A rich-text paragraph naming the OS, the user, the device and the
- *         settings file.
+ * @param settingsFilePath Where QSettings keeps this user's settings, as
+ *                         SettingsManager::filePath() reports it. A registry
+ *                         key on Windows, a file elsewhere.
+ * @return The four values, unformatted.
  */
-QString toSystemDetailsHtml(const Info &s, const QString &settingsFilePath);
+AboutFacts toAboutFacts(const Info &s, const QString &settingsFilePath);
 
 } // namespace sysinfo::presenter
 

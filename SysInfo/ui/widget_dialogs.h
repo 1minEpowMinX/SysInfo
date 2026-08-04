@@ -21,7 +21,7 @@ public:
     explicit WidgetDialogs(QObject* parent = nullptr) : DialogPresenter(parent) {}
 
     /// Opens the modal "About SysInfo" window, returning when it closes.
-    void showAbout(const QString& systemDetailsHtml) override;
+    void showAbout(const sysinfo::AboutFacts& facts) override;
 
     /// Opens the tray-pinning guide, returning while it is still on screen.
     void showTrayGuide() override;

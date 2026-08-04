@@ -3,9 +3,9 @@
 #include "about_dialog.h"
 #include "tray_guide.h"
 
-void WidgetDialogs::showAbout(const QString& systemDetailsHtml)
+void WidgetDialogs::showAbout(const sysinfo::AboutFacts& facts)
 {
-    AboutDialog dialog(systemDetailsHtml);
+    AboutDialog dialog(facts);
     dialog.exec();
 }
 
