@@ -94,18 +94,18 @@ void TestInfoSource::current_handsBackWhatTheCollectorProduced()
 {
     sysinfo::InfoSource source(kShortTtlMs, [] {
         sysinfo::Info info;
-        info.hostname = QStringLiteral("box");
-        info.username = QStringLiteral("someone");
-        info.ip       = QStringLiteral("10.0.0.1");
-        info.uptime   = QStringLiteral("01.01.2026 00:00");
+        info.hostname     = QStringLiteral("box");
+        info.username     = QStringLiteral("someone");
+        info.ip           = QStringLiteral("10.0.0.1");
+        info.lastBootTime = QStringLiteral("01.01.2026 00:00");
         return info;
     });
 
     const sysinfo::Info &info = source.current();
-    QCOMPARE(info.hostname, QStringLiteral("box"));
-    QCOMPARE(info.username, QStringLiteral("someone"));
-    QCOMPARE(info.ip,       QStringLiteral("10.0.0.1"));
-    QCOMPARE(info.uptime,   QStringLiteral("01.01.2026 00:00"));
+    QCOMPARE(info.hostname,     QStringLiteral("box"));
+    QCOMPARE(info.username,     QStringLiteral("someone"));
+    QCOMPARE(info.ip,           QStringLiteral("10.0.0.1"));
+    QCOMPARE(info.lastBootTime, QStringLiteral("01.01.2026 00:00"));
 }
 
 QTEST_GUILESS_MAIN(TestInfoSource)

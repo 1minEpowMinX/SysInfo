@@ -17,18 +17,20 @@ namespace sysinfo {
  * @brief Holds the four facts SysInfo reports.
  *
  * Plain value type with no invariants between fields — any combination of
- * empty/non-empty strings is valid. The field names form the public JSON
- * contract of the /systeminfo HTTP endpoint, so do not rename without
- * also updating the API consumers (browser extension).
+ * empty/non-empty strings is valid.
  *
  * Empty fields signal "no value" rather than carrying a localised
  * placeholder — formatting is the presenter's job, not the model's.
+ *
+ * These names are internal. What the /systeminfo endpoint puts on the wire is
+ * fixed separately, in sysinfo::presenter::toJson(), which is where the public
+ * key of each field lives.
  */
 struct Info {
-    QString hostname;   ///< Network host name; empty if unobtainable.
-    QString username;   ///< Login name; empty if neither USERNAME nor USER is set.
-    QString ip;         ///< Best-guess active IPv4 address; empty if none found.
-    QString uptime;     ///< "dd.MM.yyyy HH:mm"; empty if unsupported or syscall failed.
+    QString hostname;      ///< Network host name; empty if unobtainable.
+    QString username;      ///< Login name; empty if neither USERNAME nor USER is set.
+    QString ip;            ///< Best-guess active IPv4 address; empty if none found.
+    QString lastBootTime;  ///< "dd.MM.yyyy HH:mm"; empty if unsupported or syscall failed.
 };
 
 /// @return The OS-reported host name (QHostInfo::localHostName), or empty.

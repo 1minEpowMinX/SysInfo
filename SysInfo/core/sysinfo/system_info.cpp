@@ -234,7 +234,7 @@ namespace sysinfo
 		s.hostname = sysinfo::hostname();
 		s.username = sysinfo::username();
 		s.ip = sysinfo::activeIpAddress();
-		s.uptime = sysinfo::lastBootTime();
+		s.lastBootTime = sysinfo::lastBootTime();
 		return s;
 	}
 

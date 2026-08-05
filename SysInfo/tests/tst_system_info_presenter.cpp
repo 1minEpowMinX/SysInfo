@@ -26,10 +26,10 @@ namespace {
 sysinfo::Info sample()
 {
     sysinfo::Info s;
-    s.hostname = "host-a";
-    s.username = "user-b";
-    s.ip       = "10.11.12.13";
-    s.uptime   = "01.01.2026 12:00";
+    s.hostname     = "host-a";
+    s.username     = "user-b";
+    s.ip           = "10.11.12.13";
+    s.lastBootTime = "01.01.2026 12:00";
     return s;
 }
 } // namespace
@@ -42,7 +42,7 @@ void TestSystemInfoPresenter::toText_formatsAllFields()
     QVERIFY(text.contains(s.hostname));
     QVERIFY(text.contains(s.username));
     QVERIFY(text.contains(s.ip));
-    QVERIFY(text.contains(s.uptime));
+    QVERIFY(text.contains(s.lastBootTime));
 }
 
 void TestSystemInfoPresenter::toJson_hasExpectedKeys_andNoLabels()
@@ -53,7 +53,7 @@ void TestSystemInfoPresenter::toJson_hasExpectedKeys_andNoLabels()
     QCOMPARE(obj.value("hostname").toString(), s.hostname);
     QCOMPARE(obj.value("username").toString(), s.username);
     QCOMPARE(obj.value("ip").toString(),       s.ip);
-    QCOMPARE(obj.value("uptime").toString(),   s.uptime);
+    QCOMPARE(obj.value("uptime").toString(),   s.lastBootTime);
     QVERIFY(!obj.contains("labels"));
 }
 
@@ -100,7 +100,7 @@ void TestSystemInfoPresenter::toJson_keepsEmptyIpEmpty()
 void TestSystemInfoPresenter::toJson_keepsEmptyUptimeEmpty()
 {
     sysinfo::Info s = sample();
-    s.uptime.clear();
+    s.lastBootTime.clear();
 
     const QJsonObject obj = sysinfo::presenter::toJson(s);
 
@@ -112,7 +112,7 @@ void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
 {
     sysinfo::Info s = sample();
     s.ip.clear();
-    s.uptime.clear();
+    s.lastBootTime.clear();
 
     const QString text = sysinfo::presenter::toText(s);
 
@@ -143,7 +143,7 @@ void TestSystemInfoPresenter::toAboutFacts_carriesEachFieldToItsOwnMember()
     // The panel describes the machine, not the session.
     QVERIFY2(!facts.operatingSystem.contains(s.ip),
              "the IP address does not belong here");
-    QVERIFY2(!facts.operatingSystem.contains(s.uptime),
+    QVERIFY2(!facts.operatingSystem.contains(s.lastBootTime),
              "the uptime does not belong here");
 }
 

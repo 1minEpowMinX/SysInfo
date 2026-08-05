@@ -19,8 +19,12 @@ QString withFallback(const QString &raw, const QString &fallback)
     return raw.isEmpty() ? fallback : raw;
 }
 
-QString ipOrFallback(const Info &s)     { return withFallback(s.ip,     QObject::tr("No IP")); }
-QString uptimeOrFallback(const Info &s) { return withFallback(s.uptime, QObject::tr("Unavailable")); }
+QString ipOrFallback(const Info &s) { return withFallback(s.ip, QObject::tr("No IP")); }
+
+QString bootTimeOrFallback(const Info &s)
+{
+    return withFallback(s.lastBootTime, QObject::tr("Unavailable"));
+}
 
 } // namespace
 
@@ -30,7 +34,7 @@ QString toText(const Info &s)
         .arg(s.hostname,
              s.username,
              ipOrFallback(s),
-             uptimeOrFallback(s));
+             bootTimeOrFallback(s));
 }
 
 QJsonObject toJson(const Info &s)
@@ -39,7 +43,7 @@ QJsonObject toJson(const Info &s)
     obj["hostname"] = s.hostname;
     obj["username"] = s.username;
     obj["ip"]       = s.ip;
-    obj["uptime"]   = s.uptime;
+    obj["uptime"]   = s.lastBootTime;
     return obj;
 }
 
