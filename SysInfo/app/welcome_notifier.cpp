@@ -20,9 +20,10 @@ void WelcomeNotifier::scheduleShow(int delayMs)
     QTimer::singleShot(delayMs, this, &WelcomeNotifier::onTimerFired);
 }
 
+// Nothing guards against a second entry: the singleShot above fires once per
+// scheduleShow() call.
 void WelcomeNotifier::onTimerFired()
 {
-    // General welcome — shown once on any supported OS.
     if (m_flags.showWelcome()) {
         m_sink.showNotification(
             tr("SysInfo runs in the background"),
@@ -48,9 +49,9 @@ void WelcomeNotifier::showTrayGuideHint()
         return;
     }
 
-    // The subscription spans this notification and nothing beyond it:
-    // SingleShotConnection ends it on the first click, the timer below ends it
-    // when the notification expires unclicked.
+    // QSystemTrayIcon::messageClicked reports that a notification was clicked
+    // but not which one, so the window the click arrives in is the only thing
+    // identifying its source — hence a subscription bounded by this hint.
     const QMetaObject::Connection link =
         connect(&m_sink, &NotificationSink::notificationClicked,
                 this, &WelcomeNotifier::trayGuideRequested,

@@ -2,6 +2,9 @@
 
 #include <QMessageBox>
 
+// There is no parent to pass: SysInfo lives in the tray and has no main window
+// to centre a dialog on.
+
 void MessageBoxPrompt::showError(const QString& title, const QString& text)
 {
     QMessageBox::critical(nullptr, title, text);

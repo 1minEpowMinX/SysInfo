@@ -7,6 +7,9 @@
 
 namespace sysinfo {
 
+// Models only, never a per-unit identifier: the snapshot is meant to describe
+// the machine's class without fingerprinting the machine itself.
+
 Cpu cpuInfo()
 {
     Cpu cpu;
@@ -29,6 +32,8 @@ Memory memoryInfo()
 
 Storage storageInfo()
 {
+    // Nothing about the volumes laid over the drive: their sizes and free space
+    // are properties of an install rather than of the drive's specification.
     Storage storage;
     platform::fillStorage(storage);
     return storage;

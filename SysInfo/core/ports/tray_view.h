@@ -5,9 +5,7 @@
 
 #include <QString>
 
-/**
- * @brief Presents the tray icon and reports what the user picked from it.
- *
+/*
  * The interface App drives the tray through, so the composition layer names
  * no widget type. TrayController in ui/ is the implementation the application
  * runs with.
@@ -18,6 +16,10 @@
  *
  * Which image the icon carries is left to the implementation — a resource path
  * is a detail of the widget toolkit and has no place in the port.
+ */
+
+/**
+ * @brief Presents the tray icon and reports what the user picked from it.
  */
 class TrayView : public NotificationSink
 {

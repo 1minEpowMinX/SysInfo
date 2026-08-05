@@ -1,6 +1,12 @@
 #include "settings_manager.h"
 #include "core/logging/logger.h"
 
+// Consumers take one of the two ports rather than this class, which is what
+// lets a test substitute either without a QSettings behind it. filePath() sits
+// outside both: its answer is a fixed string a caller is handed, not an
+// interface it queries. Copy and move are deleted because QSettings holds OS
+// resources that should not be duplicated.
+
 SettingsManager::SettingsManager()
     : m_settings("Pivdenny", "SysInfo")
 {}

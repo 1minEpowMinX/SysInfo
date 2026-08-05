@@ -11,7 +11,7 @@
  * Windows and Linux hand out the same table and differ only in how the bytes
  * are obtained, so the parser is shared between their platform
  * implementations. It calls no OS API of its own — the input is a byte array —
- * and so compiles, and can be exercised, on every platform.
+ * and compiles on every platform.
  */
 namespace sysinfo::smbios {
 

@@ -6,8 +6,7 @@
 /**
  * @brief Serves UserPrompt through QMessageBox.
  *
- * Parents every box to nullptr: SysInfo lives in the tray and has no main
- * window to centre a dialog on.
+ * Parents every box to nullptr.
  *
  * Holds no state, so one instance serves the whole run.
  */

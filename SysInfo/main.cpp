@@ -2,24 +2,8 @@
  * @file main.cpp
  * @brief Starts the application and enters the Qt event loop.
  *
- * Responsibilities, in order:
- *   1. Set Qt application identity (org / app / version) — must precede the
- *      QApplication constructor so QSettings, QStandardPaths and the lock
- *      file pick up the right names.
- *   2. Construct QApplication.
- *   3. Load the user's UI-language translation, falling back to English —
- *      before step 4, whose failure branch is user-visible.
- *   4. Acquire the single-instance lock: exit silently if another SysInfo
- *      already holds it, or refuse to start (with a message to the user and
- *      to the event log) if the lock cannot be established at all.
- *   5. Construct what App depends on — SettingsManager (owns QSettings), the
- *      widget-backed MessageBoxPrompt, TrayController and WidgetDialogs, the
- *      InfoSource shared with the integration server, and the server itself —
- *      then App, all on the stack. Declaration order guarantees App is
- *      destroyed before anything it was handed.
- *   6. Call App::start(); exit code 1 if the system tray is unavailable.
- *   7. Log AppStart, queue the DeviceInventory snapshot for the first turn
- *      of the event loop, and enter it.
+ * The composition root: everything App and the integration server are handed
+ * is built here, on the stack, and torn down in reverse.
  */
 
 #include "app/app.h"
@@ -90,26 +74,16 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 
-	// Precedes the single-instance check, whose Unavailable branch addresses the
-	// user and must do so in the user's language.
 	QTranslator translator;
 	loadTranslator(a, translator);
 
-	// Stack-scoped, so the lock is released when main() returns rather than at
-	// static destruction.
 	SingleInstanceGuard instance(SingleInstanceGuard::defaultLockFilePath());
 	switch (instance.tryAcquire())
 	{
 	case SingleInstanceGuard::Result::AlreadyRunning:
-		// A launch while SysInfo is already running is routine, and a message
-		// here would meet every double click on the shortcut.
 		return 0;
 
 	case SingleInstanceGuard::Result::Unavailable:
-		// Whether another copy is running is unknown, so this one declines to
-		// start. Reported to the user, who otherwise sees nothing happen, and to
-		// the event log, which carries the reason a machine stopped sending
-		// inventory.
 		QMessageBox::critical(
 			nullptr, QObject::tr("Error"),
 			QObject::tr("Failed to verify that SysInfo is not already running. "
@@ -136,8 +110,7 @@ int main(int argc, char *argv[])
 	TrayController tray;
 	WidgetDialogs dialogs;
 	sysinfo::InfoSource info;
-	// The store is handed to each consumer as the port that consumer takes:
-	// ExtensionWhitelist here, OnboardingFlags below.
+    // The settings store is handed to each consumer as the interface that consumer takes
 	IntegrationServer server(settings, info);
 	App app(settings, server, prompt, tray, dialogs, info, settings.filePath());
 	if (!app.start())
@@ -148,14 +121,7 @@ int main(int argc, char *argv[])
 	Logger::log(Logger::EventId::AppStart,
 				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
 
-	// Emitted as its own event rather than folded into AppStart: the payload
-	// shape of an existing event id is a contract for the log analyzers that
-	// already consume it, and the two carry different concerns (process
-	// lifecycle vs. device configuration).
-	//
-	// Runs on the first turn of the event loop: building the payload walks the
-	// SMBIOS table and issues storage IOCTLs, so the tray icon appears without
-	// waiting on firmware. Nothing else depends on the snapshot.
+    // Async device snapshot to avoid application start delay.
 	QTimer::singleShot(0, &a, []
 					   { Logger::log(Logger::EventId::DeviceInventory,
 									 QStringLiteral("Device inventory snapshot."),

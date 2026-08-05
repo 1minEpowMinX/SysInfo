@@ -4,6 +4,9 @@
 
 namespace sysinfo::smbios {
 
+// Taking the table as an argument rather than reading it here is what keeps the
+// parser callable, and testable, on a platform that has no SMBIOS to read.
+
 namespace {
 
 /**

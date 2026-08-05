@@ -17,6 +17,13 @@
 #include <os/log.h>
 #endif
 
+// A static facade and not a port, unlike the rest of SysInfo's collaborators:
+// call sites stay free of a logging parameter and no constructor widens to
+// carry one, at the price that a write cannot be observed from a test. That a
+// failing QSettings::sync() produces SettingsWriteFailed, or a refused bind
+// ServerStartError, is asserted nowhere — injecting the facility is what those
+// assertions would cost.
+
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
 namespace
 {
@@ -65,8 +72,8 @@ namespace
 	 *
 	 * A non-null handle is not by itself proof that anything gets recorded:
 	 * unless the installer has registered the source under
-	 * HKLM\SYSTEM\CurrentControlSet\Services\EventLog\Application\SysInfo,
-	 * the service accepts the writes and discards them.
+	 * HKLM\SYSTEM\CurrentControlSet\Services\EventLog\<log>\SysInfo, the
+	 * service accepts the writes and discards them.
 	 *
 	 * @return Event source handle, or nullptr if registration failed.
 	 */
@@ -182,23 +189,23 @@ void Logger::write(EventId id, const QString &msg, const QString &payload)
 	if (eventSource != nullptr)
 	{
 		// The payload travels as its own insertion string so that log
-		// shippers can read it as a discrete field instead of parsing it
-		// back out of the human-readable message.
+		// shippers can read it as a discrete field instead of grokking a
+		// sentence apart to recover it.
 		const std::wstring wideMessage = fullMessage.toStdWString();
 		const std::wstring widePayload = payload.toStdWString();
 		LPCWSTR strings[] = {wideMessage.c_str(), widePayload.c_str()};
 
-		ReportEventW(
-			eventSource,								   // Event handler
-			toWinEventType(severity),					   // Event type
-			0,											   // Category
-			static_cast<DWORD>(static_cast<uint16_t>(id)), // Event ID
-			nullptr,									   // User SID
-			payload.isEmpty() ? WORD(1) : WORD(2),		   // The number of placeholders for strings
-			0,											   // The number of bytes of event-specific data
-			strings,									   // Array of pointers to string
-			nullptr										   // A pointer to the buffer containing the binary data
-		);
+		// The count decides how much of `strings` the service reads: one
+		// string for a bare message, two when a payload rides along.
+		ReportEventW(eventSource,
+					 toWinEventType(severity),
+					 0, // No category: the source registers no category file.
+					 static_cast<DWORD>(static_cast<uint16_t>(id)),
+					 nullptr, // No user SID.
+					 payload.isEmpty() ? WORD(1) : WORD(2),
+					 0, // No binary data.
+					 strings,
+					 nullptr);
 	}
 
 #elif defined(Q_OS_LINUX)

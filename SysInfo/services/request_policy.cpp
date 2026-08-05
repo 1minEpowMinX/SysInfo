@@ -7,6 +7,17 @@
 
 namespace integration {
 
+// RequestContext rather than QHttpServerRequest, which carries no public way to
+// set a header: a decision phrased over the request could only be exercised by
+// standing up a real socket.
+//
+// Two limits are accepted rather than closed. Local non-browser clients bypass
+// CORS entirely; that is left to IntegrationServer binding to loopback and to
+// the data being low-sensitivity in this threat model. A sibling extension can
+// read the public extension IDs off the Web Store / AMO listing and mimic
+// X-Sysinfo-Client; turning that claim into a proof needs native messaging with
+// a shared secret, which the portable distribution model does not carry.
+
 namespace {
 
 /// Generous bound on an extension identifier: a Chromium ID is 32 characters,
@@ -54,6 +65,8 @@ bool isBrowserExtensionOrigin(const QByteArray &origin)
             continue;
         }
 
+        // corsAllowOrigin() echoes this exact value back, so the checks below
+        // are what bound the bytes that can reach a response header.
         const char *const idBegin = origin.constData() + scheme.size();
         const char *const idEnd   = origin.constData() + origin.size();
         if (idBegin == idEnd || idEnd - idBegin > kMaxExtensionIdLength) {
@@ -71,6 +84,8 @@ bool isFromBrowser(const RequestContext &request)
 
 bool isContextAllowed(const RequestContext &request)
 {
+    // Direct navigation — address bar, bookmark, link click. Refusing it keeps
+    // the JSON out of the user's browser history.
     if (request.secFetchMode == "navigate") {
         return false;
     }
@@ -82,7 +97,8 @@ bool isContextAllowed(const RequestContext &request)
     }
 
     // Origin present — must be a known extension scheme. A page Origin
-    // (https://evil.com, etc.) falls through to false.
+    // (https://evil.com, etc.) falls through to false, which is what turns
+    // away the whole class of cross-site JS callers.
     return isBrowserExtensionOrigin(request.origin);
 }
 
@@ -92,7 +108,8 @@ bool isClientAllowed(const RequestContext &request, const QStringList &allowedId
         // Allow only non-browser clients to omit the identifier. This branch
         // is what stops a sibling browser extension that simply forgot (or
         // refused) to set X-Sysinfo-Client from sneaking in via the
-        // curl-friendly fallback.
+        // curl-friendly fallback, and what turns away a stale SysInfo
+        // extension build that predates the header.
         return !isFromBrowser(request);
     }
 
@@ -106,6 +123,10 @@ bool isRequestAllowed(const RequestContext &request, const QStringList &allowedI
 
 QByteArray corsAllowOrigin(const RequestContext &request)
 {
+    // Reflecting the exact origin is the modern replacement for a bare "*": it
+    // works with browsers that distinguish credentialed from uncredentialed
+    // requests. The wildcard is harmless on the other branch — a caller with no
+    // Origin has no page side reading the response.
     return isBrowserExtensionOrigin(request.origin) ? request.origin
                                                     : QByteArrayLiteral("*");
 }

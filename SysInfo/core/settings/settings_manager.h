@@ -17,14 +17,11 @@
  *
  * Serves two ports, and is the only implementation of either: OnboardingFlags
  * for the one-shot notices, ExtensionWhitelist for the administrator override.
- * Every consumer holds the port it needs rather than this class, which is what
- * lets a test substitute one of them without a QSettings behind it. Outside
- * the two sit the constructor and filePath(), whose answer is a fixed string a
- * caller is handed rather than an interface it queries.
+ * Every consumer holds the port it needs rather than this class. Outside the
+ * two sit the constructor and filePath().
  *
  * Not a singleton: instantiate once in main() and hand it to each consumer as
- * the port that consumer takes. Copy and move are deleted because QSettings
- * holds OS resources that should not be duplicated.
+ * the port that consumer takes. Copy and move are deleted.
  */
 class SettingsManager : public OnboardingFlags, public ExtensionWhitelist
 {
@@ -50,8 +47,7 @@ public:
     /**
      * @brief Names the file the settings live in.
      *
-     * Fixed for the life of the store. Useful for the About dialog, support
-     * tickets and manual cleanup, and the single point of access for it —
+     * Fixed for the life of the store, and the single point of access for it —
      * callers must NOT instantiate their own QSettings to work it out.
      *
      * @return Absolute path of the on-disk settings file.

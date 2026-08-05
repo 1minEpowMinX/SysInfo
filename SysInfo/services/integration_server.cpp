@@ -53,6 +53,8 @@ IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist,
         // field names client-side via browser.i18n / chrome.i18n APIs,
         // so it receives the bare data payload — smaller wire format,
         // less duplicated translation logic.
+        // Shared with the rest of the application, so a request arriving just
+        // after the tray refreshed pays for no collection of its own.
         const sysinfo::Info& data = m_info.current();
         const QJsonObject info = integration::isFromBrowser(context)
                 ? sysinfo::presenter::toJson(data)
@@ -85,6 +87,8 @@ IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist,
             return forbidden();
         }
 
+        // The extension reads this to warn the user when SysInfo is too old or
+        // too new for the build it has.
         QJsonObject body;
         body["version"] = QString::fromUtf8(PROJECT_VERSION);
         body["build"]   = QString::fromUtf8(BUILD_DATE);

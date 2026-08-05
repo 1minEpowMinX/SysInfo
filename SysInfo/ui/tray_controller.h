@@ -21,9 +21,8 @@ class QMenu;
  *
  * Memory model:
  *   - The tray icon is parented to this QObject and dies with the controller.
- *   - The context menu is a QWidget and cannot be parented to the tray
- *     icon (which is a bare QObject), so it is owned via std::unique_ptr.
- *     The destructor is declared out-of-line so QMenu can stay
+ *   - The context menu is held by std::unique_ptr and dies with the controller
+ *     as well. The destructor is declared out-of-line, which keeps QMenu
  *     forward-declared in this header.
  */
 class TrayController : public TrayView
@@ -67,9 +66,7 @@ public:
 private:
     /**
      * @return true if the system tray is available on this platform/session.
-     *         init() refuses to build anything while it is false; the caller
-     *         learns of it from that false, SysInfo treating a missing tray as
-     *         a fatal configuration error.
+     *         init() refuses to build anything while it is false.
      */
     static bool isSystemTrayAvailable();
 

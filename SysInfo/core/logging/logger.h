@@ -14,22 +14,17 @@
  * Static-only facade — no instances. The entry point is log() (optionally
  * with a structured payload), which dispatches to the platform-native
  * facility:
- *   - Windows: ReportEvent (the application event log; the SysInfo source
- *     is registered by the installer, not by this code).
+ *   - Windows: ReportEvent, under the event source named "SysInfo". Which log
+ *     receives the writes follows from how that source is registered at
+ *     install time; this code registers nothing and names no log.
  *   - Linux:   syslog(3).
  *   - macOS:   os_log (unified logging system).
  *
- * Severity is derived from the numeric range of the EventId, not passed
- * separately, to keep call sites concise (Logger::log(EventId::Foo, msg)).
+ * Severity is derived from the numeric range of the EventId rather than
+ * passed as a separate parameter.
  *
  * Reached statically from every layer, the widgets in ui/ included, rather
  * than injected as a port the way the rest of SysInfo's collaborators are.
- * The trade is deliberate: call sites stay free of a logging parameter and no
- * constructor widens to carry one, at the price that a write cannot be
- * observed from a test. Whether a failing QSettings::sync() produces
- * SettingsWriteFailed, or a refused bind produces ServerStartError, is
- * asserted nowhere; both are covered by inspection alone. Injecting the
- * facility is what those assertions would cost.
  */
 class Logger
 {
@@ -78,12 +73,12 @@ public:
     /**
      * @brief Writes an event carrying a machine-readable payload alongside @p msg.
      *
-     * Log shippers (Winlogbeat on Windows, Filebeat elsewhere) forward the
-     * payload to Elasticsearch, where each key becomes an aggregatable field.
-     * It is emitted as a value of its own rather than interpolated into @p msg
-     * so that consumers never have to grok a sentence apart:
+     * Emits @p data as a value of its own rather than interpolated into @p msg:
      *   - Windows: a second insertion string, surfaced as event_data.param2;
      *   - Linux/macOS: appended after @p msg, separated by a single space.
+     *
+     * Log shippers (Winlogbeat on Windows, Filebeat elsewhere) forward the
+     * payload to Elasticsearch, where each key becomes an aggregatable field.
      *
      * @param id   Stable event identifier (also encodes severity).
      * @param msg  Human-readable summary, same rules as the overload above.

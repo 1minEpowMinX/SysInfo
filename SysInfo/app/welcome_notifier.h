@@ -9,21 +9,24 @@ class OnboardingFlags;
 /**
  * @brief Shows the onboarding notifications after a delay.
  *
- * After a configurable delay, shows a one-time welcome tray message and,
- * on Windows only, a one-time hint on how to pin the tray icon. Both
- * notifications are guarded by OnboardingFlags so they fire at most once per
- * user profile.
+ * After a configurable delay, shows a welcome tray message and, on Windows
+ * only, a hint on how to pin the tray icon. Both consult OnboardingFlags
+ * before showing.
+ *
+ * The two flags are retired by different parties. The welcome flag is cleared
+ * here as the message is shown, so that message appears once per user profile.
+ * The tray-guide flag is cleared only when the user ticks "Don't show again"
+ * in the window the hint opens, so the hint returns on every run until they
+ * do.
  *
  * Does not own the NotificationSink or the OnboardingFlags — both are injected
  * by reference and must outlive the notifier (guaranteed by the owning App).
  *
- * onTimerFired() runs at most once per scheduleShow() call via a
- * QTimer::singleShot, so no internal de-duplication is needed.
+ * onTimerFired() runs at most once per scheduleShow() call, via a
+ * QTimer::singleShot.
  *
  * The two notifications are never on screen together, and the subscription to
  * notification clicks lasts only while the hint that owns it is displayed.
- * QSystemTrayIcon::messageClicked reports that a notification was clicked but
- * not which one, so arrival time is what identifies the source.
  */
 class WelcomeNotifier : public QObject
 {

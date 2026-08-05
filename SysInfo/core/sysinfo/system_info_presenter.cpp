@@ -5,6 +5,9 @@
 
 namespace sysinfo::presenter {
 
+// The renderings sit here rather than beside the consumers that ask for them:
+// ui/ is compiled into the executable alone, out of the test suite's reach.
+
 namespace {
 
 /**
@@ -39,6 +42,14 @@ QString toText(const Info &s)
 
 QJsonObject toJson(const Info &s)
 {
+    // These keys are the published API — renaming one breaks every consumer
+    // reading it. "uptime" carries the boot time and has done so since the
+    // first release; the field behind it says what it holds, and the two are
+    // reconciled here rather than by renaming the key.
+    //
+    // No placeholder stands in for an empty value: a translated one would make
+    // a data field vary with SysInfo's UI language. The browser extension
+    // supplies its own through browser.i18n / chrome.i18n.
     QJsonObject obj;
     obj["hostname"] = s.hostname;
     obj["username"] = s.username;
@@ -51,6 +62,7 @@ QJsonObject toJsonWithLabels(const Info &s)
 {
     QJsonObject obj = toJson(s);
 
+    // For callers with no client-side i18n stack to name the fields with.
     QJsonObject labels;
     labels["hostname"] = QObject::tr("Device name");
     labels["username"] = QObject::tr("User");
@@ -63,6 +75,9 @@ QJsonObject toJsonWithLabels(const Info &s)
 
 AboutFacts toAboutFacts(const Info &s, const QString &settingsFilePath)
 {
+    // No withFallback() here: a placeholder has no business in a field a
+    // support engineer reads literally, and the About window is the one place
+    // that decides how to spell a missing value.
     return AboutFacts{QSysInfo::prettyProductName(),
                       s.username,
                       s.hostname,

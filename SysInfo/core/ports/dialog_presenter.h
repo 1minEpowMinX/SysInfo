@@ -5,15 +5,17 @@
 
 #include <QObject>
 
-/**
- * @brief Opens the application's windows and reports what the user did in them.
- *
+/*
  * The interface App opens dialogs through, so the composition layer neither
  * names a widget type nor blocks on a modal loop of its own. WidgetDialogs in
  * ui/ is the implementation the application runs with.
  *
  * Whether a window is modal, and how long it stays up, is left to the
  * implementation; a caller gets no say and no return value.
+ */
+
+/**
+ * @brief Opens the application's windows and reports what the user did in them.
  */
 class DialogPresenter : public QObject
 {

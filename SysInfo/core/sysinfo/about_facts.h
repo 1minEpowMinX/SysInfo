@@ -6,12 +6,11 @@
 namespace sysinfo {
 
 /**
- * @brief The machine-describing values the About window puts on screen.
+ * @brief Holds the machine-describing values the About window puts on screen.
  *
  * Carries text only: the window decides the wording of the labels, the order
- * of the rows and the colours, so the same facts survive a redesign of it.
- * Built by sysinfo::presenter::toAboutFacts(), which is where the values come
- * from.
+ * of the rows and the colours. Built by sysinfo::presenter::toAboutFacts(),
+ * which is where the values come from.
  */
 struct AboutFacts
 {

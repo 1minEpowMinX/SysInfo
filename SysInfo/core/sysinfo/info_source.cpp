@@ -4,6 +4,11 @@
 
 namespace sysinfo {
 
+// One shared source rather than a collector per caller: collect() enumerates
+// every network interface — on Windows a GetAdaptersAddresses call costing tens
+// of milliseconds — and every caller in SysInfo runs on the GUI thread. That
+// one thread is also why nothing here is guarded.
+
 InfoSource::InfoSource(qint64 ttlMs, Collector collect)
     : m_ttlMs(ttlMs)
     , m_collect(std::move(collect))

@@ -21,25 +21,18 @@ class ExtensionWhitelist;
  *
  *   - /status     : plain "OK", used by the extension as a health probe.
  *   - /version    : JSON {"version": "X.Y.Z", "build": "YYYYMMDD"}.
- *                   The extension uses this to detect API-contract
- *                   compatibility and to warn the user if SysInfo is
- *                   too old or too new for the installed extension.
  *   - /systeminfo : JSON document produced by sysinfo::presenter. The
  *                   payload shape varies by caller:
  *                     - browser caller (extension SW)      : bare data
- *                       (hostname / username / ip / uptime). The
- *                       extension localises field names client-side
- *                       through browser.i18n / chrome.i18n.
+ *                       (hostname / username / ip / uptime);
  *                     - non-browser caller (curl, support) : same data
  *                       PLUS a "labels" object with localised field
- *                       names. Convenient for human inspection in
- *                       support tickets and dev tooling.
+ *                       names.
  *
  * Who gets served is decided by integration::isRequestAllowed() in
  * request_policy.h, which also documents the threat model and what it does
  * not cover. This class only lifts the headers out of each request and
- * applies the verdict; the preflight route consults layer 1 alone, that
- * being the only layer a preflight carries the headers for.
+ * applies the verdict; the preflight route consults layer 1 alone.
  *
  * Lifecycle is explicit: construct → start(port) → stop() / destructor.
  * start() returns false if the port is busy or binding fails — the App
@@ -52,10 +45,9 @@ public:
     /**
      * @param whitelist Source of the administrator override, consulted on
      *                  every request. Not owned; must outlive this server.
-     * @param info      Session snapshot the /systeminfo route serves. Shared
-     *                  with the rest of the application, so a request arriving
-     *                  just after the tray refreshed pays for no collection of
-     *                  its own. Not owned; must outlive this server.
+     * @param info      Session snapshot the /systeminfo route serves, shared
+     *                  with the rest of the application. Not owned; must
+     *                  outlive this server.
      * @param parent    Standard Qt parent.
      */
     explicit IntegrationServer(ExtensionWhitelist& whitelist,

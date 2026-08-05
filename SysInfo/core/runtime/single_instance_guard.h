@@ -19,14 +19,11 @@
  *     the recorded PID and process name against the running process;
  *   - names a live process — the lock is genuinely held, tryAcquire() reports
  *     AlreadyRunning;
- *   - names nobody, being empty or unparseable because the file is created
- *     first and the owner written into it second — tryAcquire() deletes it and
+ *   - names nobody, being empty or unparseable — tryAcquire() deletes it and
  *     records the deletion for reclaimedStaleLock().
  *
  * Age-based stale detection is off (QLockFile::setStaleLockTime(0)), as Qt
- * prescribes for a lock held indefinitely. That heuristic applies only where
- * the owner cannot be identified, and on a host whose recorded hostname does
- * not compare equal it lets a second instance evict a live first one.
+ * prescribes for a lock held indefinitely.
  */
 class SingleInstanceGuard
 {
@@ -35,8 +32,8 @@ public:
      * @brief Enumerates the outcomes of tryAcquire().
      *
      * AlreadyRunning and Unavailable both mean this process must not continue.
-     * They are separate values because the first is a routine second launch and
-     * the second is a fault.
+     * They are separate values: the first is a routine second launch, the
+     * second a fault.
      */
     enum class Result
     {
@@ -69,9 +66,6 @@ public:
 
     /**
      * @brief Reports whether the acquired lock replaced an unparseable leftover file.
-     *
-     * Reported instead of logged: the caller decides whether the event is worth
-     * recording.
      *
      * @return true if tryAcquire() deleted a lock file it could not parse.
      */

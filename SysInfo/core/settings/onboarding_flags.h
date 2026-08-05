@@ -13,9 +13,7 @@
  * every notice once. Each flag is readable and clearable here even though no
  * single consumer does both: WelcomeNotifier retires the welcome flag as it
  * shows the message, while the tray-guide hint is retired by the user ticking
- * "Don't show again" in the dialog it opens and cleared by App. Splitting a
- * flag's reader from its writer across the interface boundary would leave its
- * lifetime with no one place to read it in.
+ * "Don't show again" in the dialog it opens and cleared by App.
  */
 class OnboardingFlags
 {

@@ -11,6 +11,8 @@ void WidgetDialogs::showAbout(const sysinfo::AboutFacts& facts)
 
 void WidgetDialogs::showTrayGuide()
 {
+    // Heap-allocated and self-deleting rather than run with exec(): the guide
+    // has to outlive the notification click that asked for it.
     auto* guide = new TrayGuide;
     guide->setAttribute(Qt::WA_DeleteOnClose);
     connect(guide, &TrayGuide::dismissedForGood,

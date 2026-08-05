@@ -14,6 +14,9 @@ constexpr int kAcquireTimeoutMs = 100;
 SingleInstanceGuard::SingleInstanceGuard(const QString &lockFilePath)
     : m_lock(lockFilePath)
 {
+    // The age heuristic applies only where the owner cannot be identified, and
+    // on a host whose recorded hostname does not compare equal it lets a second
+    // instance evict a live first one.
     m_lock.setStaleLockTime(0);
 }
 
@@ -48,13 +51,17 @@ SingleInstanceGuard::Result SingleInstanceGuard::tryAcquire()
         return Result::AlreadyRunning;
     }
 
-    // Nothing identifies a live holder. On Windows removeStaleLockFile() refuses
+    // Nothing identifies a live holder — the file is created first and the
+    // owner written into it second, so a process that died in between leaves
+    // one that names nobody. On Windows removeStaleLockFile() refuses
     // while any process holds the file open; elsewhere a live QLockFile always
     // has readable contents. Either way only an ownerless file is removed here.
     if (!m_lock.removeStaleLockFile() || !m_lock.tryLock(kAcquireTimeoutMs)) {
         return Result::AlreadyRunning;
     }
 
+    // Recorded rather than logged here: whether the deletion is worth an event
+    // is the caller's call, not this class's.
     m_reclaimedStaleLock = true;
     return Result::Acquired;
 }

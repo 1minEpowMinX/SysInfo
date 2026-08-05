@@ -23,7 +23,7 @@ TrayController::TrayController(QString iconPath, QObject* parent)
 {}
 
 // Out-of-line destructor: unique_ptr<QMenu> needs a complete type for its
-// deleter, which pull in via the <QMenu> include above.
+// deleter, which the <QMenu> include above supplies.
 TrayController::~TrayController() = default;
 
 bool TrayController::isSystemTrayAvailable()
@@ -33,8 +33,6 @@ bool TrayController::isSystemTrayAvailable()
 
 bool TrayController::init()
 {
-    // Without a tray there is nowhere to put the icon, and QSystemTrayIcon
-    // would silently accept every call afterwards.
     if (!isSystemTrayAvailable()) {
         return false;
     }

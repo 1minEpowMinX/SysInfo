@@ -18,8 +18,7 @@
 
 namespace {
 
-/// Interval between tray tooltip re-collections, and therefore the longest a
-/// changed IP address or boot time can stay absent from the tooltip.
+/// Interval between tray tooltip re-collections.
 constexpr int kTrayUpdateIntervalMs = 30'000;
 
 /// How long the "copied to the clipboard" confirmation stays on screen.
@@ -27,6 +26,9 @@ constexpr int kCopyNoticeMs         = 5'000;
 
 } // namespace
 
+// The settings store enters as one port plus one string rather than whole, so
+// App can name the store without being able to read it. The path is by value
+// because it is fixed for the life of that store.
 App::App(OnboardingFlags& flags,
          IntegrationServer& server,
          UserPrompt& prompt,
@@ -49,7 +51,7 @@ App::App(OnboardingFlags& flags,
 
 bool App::start()
 {
-    // Gates on the tray before anything is collected to to avoid an idle load.
+    // Gates on the tray before anything is collected, to avoid an idle load.
     if (!m_tray.init()) {
         m_prompt.showError(tr("Error"),
                            tr("The system tray is unavailable."));
@@ -67,7 +69,9 @@ bool App::start()
     connect(&m_tray, &TrayView::quitRequested,  this, &App::onQuitRequested);
 
     // The guide retires itself from inside its own window, and the flag it
-    // clears is this layer's to persist.
+    // clears is this layer's to persist. Its reader sits in WelcomeNotifier;
+    // OnboardingFlags carries both halves so that the flag's lifetime has one
+    // place to be read in.
     connect(&m_dialogs, &DialogPresenter::trayGuideDismissedForGood, this,
             [this] { m_flags.setShowTrayGuide(false); });
 
@@ -113,7 +117,7 @@ void App::onCopyRequested()
         return;
     }
 
-    // Answers a user action, so the window is bypassed rather than waited out.
+    // Answers a user action, so the re-collection window is bypassed.
     m_info.refresh();
     m_cachedInfo = sysinfo::presenter::toText(m_info.current());
     clipboard->setText(m_cachedInfo);

@@ -88,7 +88,6 @@ namespace sysinfo
 		for (const QNetworkInterface &iface : interfaces)
 		{
 			const auto flags = iface.flags();
-			// Skip interfaces that are down, loopback or not running
 			if (!flags.testFlag(QNetworkInterface::IsUp) ||
 				!flags.testFlag(QNetworkInterface::IsRunning) ||
                 flags.testFlag(QNetworkInterface::IsLoopBack)) {
@@ -122,7 +121,7 @@ namespace sysinfo
 			}
 
             if (!vpnIp.isEmpty()) {
-				break; // A VPN address always wins — nothing left to look for.
+				break; // A VPN address wins: it is where support reaches the machine.
             }
 		}
 
@@ -135,6 +134,10 @@ namespace sysinfo
 		return {}; // empty = "no usable IPv4 found"; presenter localises the fallback
 	}
 
+	// The build string exists alongside QSysInfo::kernelVersion(), which stops
+	// short of the patch level on some platforms — notably Windows, where it
+	// reports "10.0.26200" and omits the update revision that changes with
+	// every cumulative update.
 	QString osBuild()
 	{
 #ifdef Q_OS_WIN
@@ -201,7 +204,7 @@ namespace sysinfo
 #elif defined(Q_OS_MAC)
 		// macOS does not have sysinfo, so sysctl supplies the value
 		struct timeval boottime;
-		size_t len = sizeof(boottime); // Buffer size
+		size_t len = sizeof(boottime);
 		int mib[2] = {CTL_KERN, KERN_BOOTTIME};
 		if (sysctl(mib, 2, &boottime, &len, nullptr, 0) == 0)
 		{
@@ -220,6 +223,9 @@ namespace sysinfo
 		return boot.isValid() ? boot.toString("dd.MM.yyyy HH:mm") : QString();
 	}
 
+	// The Elasticsearch date field fed by this value must be mapped with
+	// "format": "epoch_second" — the default epoch_millis reads the smaller
+	// number as a 1970 timestamp.
 	qint64 bootTimeSecs()
 	{
 		const QDateTime boot = bootTime();

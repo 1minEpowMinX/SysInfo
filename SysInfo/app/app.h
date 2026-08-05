@@ -26,10 +26,8 @@ namespace sysinfo { class InfoSource; }
  * of it lives on the stack of main(), with App declared last so it is
  * destroyed first.
  *
- * Every injected argument is one this class reads itself; nothing is held
- * merely to be handed on. Of the settings store it takes the one port whose
- * flags it clears, plus the file path as a value, so it can name the store
- * without being able to read it.
+ * Of the settings store it takes the one port whose flags it clears, plus the
+ * file path as a value.
  *
  * Every collaborator is reached through a port, so this class names no widget
  * type and blocks on no dialog of its own; which of them are modal is decided
@@ -54,8 +52,7 @@ public:
      * @param info    Session snapshot, shared with @p server. Not owned; must
      *                outlive App.
      * @param settingsFilePath Absolute path of the settings file, named in the
-     *                About dialog. Taken by value because it is fixed for the
-     *                life of the store.
+     *                About dialog.
      * @param parent  Standard Qt parent.
      */
     explicit App(OnboardingFlags& flags,
@@ -88,8 +85,9 @@ private slots:
     void onTrayGuideRequested();
 
 private:
-    /// Collects a fresh snapshot every 30 s, replacing m_cachedInfo and the
-    /// tray tooltip only when the rendered text differs from the cached one.
+    /// Starts the timer that re-collects the snapshot, replacing m_cachedInfo
+    /// and the tray tooltip only when the rendered text differs from the
+    /// cached one. Runs at kTrayUpdateIntervalMs, defined in the .cpp.
     void startTrayUpdateTimer();
 
     OnboardingFlags&     m_flags;    ///< Injected, not owned.

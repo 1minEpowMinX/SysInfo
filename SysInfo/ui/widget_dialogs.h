@@ -10,8 +10,7 @@
  * how they end. The About window is modal and runs its own event loop, so
  * showAbout() returns only once the user closes it. The tray guide is
  * self-disposing — it is created with Qt::WA_DeleteOnClose and showTrayGuide()
- * returns while it is still up, which is what lets the guide outlive the
- * notification click that asked for it.
+ * returns while it is still up.
  */
 class WidgetDialogs : public DialogPresenter
 {

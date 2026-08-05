@@ -12,24 +12,20 @@ namespace sysinfo {
 /**
  * @brief Owns the session snapshot and hands it to everyone who needs one.
  *
- * collect() enumerates every network interface — on Windows a
- * GetAdaptersAddresses call costing tens of milliseconds — and every caller in
- * SysInfo runs on the GUI thread. One instance shared between them means
- * callers arriving close together pay for a single collection, and means there
- * is one answer to "how old may the snapshot be" rather than one per caller.
+ * Holds one collected Info and collects again once the held snapshot is older
+ * than the window, so callers arriving within one window share a single
+ * collection and one answer to how old that snapshot may be.
  *
- * The window bounds staleness, not the polling rate: a caller that wants to
- * notice a change every 30 s asks that often and is served a fresh collection
- * each time, because 30 s exceeds any sensible window. A caller answering a
- * user action calls refresh() first.
+ * The window bounds staleness, not the polling rate: a caller polling on an
+ * interval longer than the window is served a fresh collection every time it
+ * asks. A caller answering a user action calls refresh() first.
  *
- * Not thread-safe, and not meant to be: it exists precisely because its
- * callers share one thread.
+ * Not thread-safe.
  */
 class InfoSource
 {
 public:
-    /// Produces a snapshot. Substituted in tests; sysinfo::collect elsewhere.
+    /// Produces a snapshot; sysinfo::collect() unless the caller names another.
     using Collector = std::function<Info()>;
 
     /// Window the application runs with.

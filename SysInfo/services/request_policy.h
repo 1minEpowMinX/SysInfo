@@ -8,10 +8,7 @@
  * @brief Decides which callers the integration endpoint serves.
  *
  * The whole access decision of IntegrationServer, expressed over the header
- * values alone. QHttpServerRequest carries no public way to set a header, so a
- * policy phrased in terms of it could only ever be exercised by standing up a
- * real socket; phrased over RequestContext it is a table of inputs and
- * expected verdicts.
+ * values alone and never over a live request.
  *
  * Security model
  * --------------
@@ -27,10 +24,9 @@
  *          edge-extension://.
  *        - Origin carrying one of those schemes but a malformed identifier
  *          (empty, over-long, or containing anything outside the permitted
- *          character set). The value is echoed back in the CORS header, so it
- *          is validated in full rather than by scheme alone.
+ *          character set).
  *        - Sec-Fetch-Mode == "navigate" — direct navigation in the address
- *          bar / bookmark / link click. Hides the JSON from browser history.
+ *          bar / bookmark / link click.
  *
  *      Accepted:
  *        - Origin is one of the three browser-extension URL schemes followed
@@ -45,9 +41,7 @@
  *      Checks the X-Sysinfo-Client claim against the effective whitelist.
  *
  *      Rejected:
- *        - Browser request without X-Sysinfo-Client — catches stale SysInfo
- *          extension builds that have not yet been updated to send the
- *          header, and sibling extensions that do not mimic it.
+ *        - Browser request without X-Sysinfo-Client.
  *        - X-Sysinfo-Client present but not on the whitelist.
  *
  *      Accepted:
@@ -56,17 +50,15 @@
  *
  * CORS preflight (OPTIONS) gates on layer 1 only — the X-Sysinfo-Client header
  * is by spec carried only on the actual GET, never on the preflight handshake.
- * The follow-up GET still passes through both layers, so this is not a bypass.
+ * The follow-up GET passes through both layers.
  *
  * The policy does NOT protect against:
- *   - local non-browser clients (curl, scripts, malware) — they bypass CORS
- *     entirely. Mitigated by IntegrationServer binding to loopback and by the
- *     data being low-sensitivity in this threat model;
+ *   - local non-browser clients (curl, scripts, malware), which bypass CORS
+ *     entirely;
  *   - sibling extensions installed in the same browser that know the public
- *     extension IDs and decide to mimic the X-Sysinfo-Client header. Extension
- *     IDs are public (visible in the Web Store / AMO listing), so the header is
- *     a claim, not a proof. Hardening to "proof" requires native messaging with
- *     a shared secret, which the portable distribution model does not carry.
+ *     extension IDs and mimic the X-Sysinfo-Client header. Extension IDs are
+ *     public (visible in the Web Store / AMO listing), so the header is a
+ *     claim, not a proof.
  */
 namespace integration {
 
@@ -112,12 +104,10 @@ QStringList effectiveAllowedExtensionIds(const QStringList &configured);
  *   edge-extension://<id>       (Edge — Chromium variant)
  *
  * A legitimate web page fetching this server cross-origin instead stamps
- * Origin as https://<host>, which never matches these prefixes, so this one
- * check filters out the entire class of cross-site JS attacks.
+ * Origin as https://<host>, which never matches these prefixes.
  *
- * The identifier after the scheme is validated too: corsAllowOrigin() echoes
- * this exact value back, so the character whitelist is what bounds the bytes
- * that can reach a response header.
+ * The identifier after the scheme is checked against a character whitelist and
+ * a length bound, not by scheme alone.
  *
  * @param origin Raw Origin header value.
  * @return true if the value names a browser extension.
@@ -164,11 +154,8 @@ bool isRequestAllowed(const RequestContext &request, const QStringList &allowedI
 /**
  * @brief Picks the value of the Access-Control-Allow-Origin response header.
  *
- * Reflecting the exact extension origin is the modern replacement for a bare
- * "*": it works with browsers that distinguish credentialed from
- * uncredentialed requests, and it makes intent explicit in the response. A
- * non-browser caller has no Origin to reflect, and "*" is harmless there
- * because nothing on a page side is reading.
+ * Reflects the exact extension origin back at a browser-extension caller, and
+ * answers "*" to everyone else.
  *
  * @param request Headers under consideration.
  * @return The origin to reflect, or "*".

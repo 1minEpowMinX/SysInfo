@@ -19,8 +19,7 @@ namespace sysinfo {
  * Plain value type with no invariants between fields — any combination of
  * empty/non-empty strings is valid.
  *
- * Empty fields signal "no value" rather than carrying a localised
- * placeholder — formatting is the presenter's job, not the model's.
+ * Empty fields signal "no value" rather than carrying a localised placeholder.
  *
  * These names are internal. What the /systeminfo endpoint puts on the wire is
  * fixed separately, in sysinfo::presenter::toJson(), which is where the public
@@ -30,7 +29,8 @@ struct Info {
     QString hostname;      ///< Network host name; empty if unobtainable.
     QString username;      ///< Login name; empty if neither USERNAME nor USER is set.
     QString ip;            ///< Best-guess active IPv4 address; empty if none found.
-    QString lastBootTime;  ///< "dd.MM.yyyy HH:mm"; empty if unsupported or syscall failed.
+    QString lastBootTime;  ///< As lastBootTime() renders it; empty if unsupported
+                           ///< or the syscall failed.
 };
 
 /// @return The OS-reported host name (QHostInfo::localHostName), or empty.
@@ -44,8 +44,7 @@ QString username();
  *
  * Walks all network interfaces, skips loopback/down ones and known virtual
  * bridges (Docker, VMware, Hyper-V, etc.). Prefers a VPN address (WireGuard,
- * Tailscale, OpenVPN…) over a plain LAN address — this is what the support
- * team actually wants to see on a developer's machine.
+ * Tailscale, OpenVPN…) over a plain LAN address.
  *
  * @return The IPv4 string, or empty QString if nothing usable was found.
  *         The presenter substitutes a localised fallback ("No IP") on empty.
@@ -54,10 +53,6 @@ QString activeIpAddress();
 
 /**
  * @brief Reports the build/revision of the running OS, below the granularity of a version.
- *
- * Complements QSysInfo::kernelVersion(), which stops short of the patch
- * level on some platforms — notably Windows, where it reports "10.0.26200"
- * and omits the update revision that changes with every cumulative update.
  *
  * Per platform:
  *   - Windows: "<CurrentBuildNumber>.<UBR>" ("26200.1234") — the pair winver
@@ -96,11 +91,8 @@ QString lastBootTime();
 /**
  * @brief Returns the last boot time as seconds since the Unix epoch.
  *
- * The machine-readable counterpart of lastBootTime(), meant for the
- * diagnostic log event, emitted as a JSON number rather than a formatted
- * string. Because the value is in seconds, the Elasticsearch date field it
- * feeds must be mapped with "format": "epoch_second" — the default
- * epoch_millis would read the smaller number as a 1970 timestamp.
+ * The machine-readable counterpart of lastBootTime(); the DeviceInventory
+ * payload carries this value as a JSON number.
  *
  * @return Epoch seconds on success, or 0 when bootTime() is invalid.
  */

@@ -3,15 +3,17 @@
 
 #include <QString>
 
+/*
+ * The interface App depends on for the two messages it raises itself, which
+ * keeps widget types out of the composition layer. MessageBoxPrompt in ui/ is
+ * the widget-backed implementation the application runs with.
+ */
+
 /**
  * @brief Puts a message in front of the user and, where the caller needs one,
  *        collects an answer.
  *
- * The interface App depends on for the two messages it raises itself, which
- * keeps widget types out of the composition layer. MessageBoxPrompt in ui/ is
- * the widget-backed implementation the application runs with.
- *
- * Both calls are synchronous and belong to the GUI thread.
+ * Calls are synchronous and belong to the GUI thread.
  */
 class UserPrompt
 {

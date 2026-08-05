@@ -16,8 +16,7 @@
  * builder's job (see device_inventory.h).
  *
  * Every field carries the model of a component and no per-unit identifier —
- * no serial numbers anywhere — so the data describes the machine's class
- * without fingerprinting the machine itself.
+ * no serial numbers anywhere.
  */
 namespace sysinfo {
 
@@ -53,8 +52,7 @@ struct Memory {
  * @brief Describes the drive the OS booted from.
  *
  * Covers the physical device, not the partitioning laid over it: volume sizes
- * and free space are absent, being properties of an install rather than of the
- * drive's specification.
+ * and free space are absent.
  */
 struct Storage {
     QString systemDiskType;        ///< "nvme", "ssd" or "hdd"; empty if undetermined.
