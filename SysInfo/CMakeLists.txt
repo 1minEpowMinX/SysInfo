@@ -16,6 +16,9 @@ add_compile_definitions(PROJECT_CXX_STANDARD="${CMAKE_CXX_STANDARD}")
 string(TIMESTAMP BUILD_DATE "%Y%m%d" UTC)
 add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
 
+# Year the platform resource containers stamp into their copyright strings.
+string(TIMESTAMP BUILD_YEAR "%Y" UTC)
+
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Widgets
@@ -168,11 +171,16 @@ if(ANDROID)
 endif()
 
 if(WIN32)
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/resources/resources.rc.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/resources.rc"
+        @ONLY
+    )
     target_sources(SysInfo PRIVATE
-        "${CMAKE_SOURCE_DIR}/resources/resources.rc"
+        "${CMAKE_CURRENT_BINARY_DIR}/resources.rc"
     )
     set_source_files_properties(
-        "${CMAKE_SOURCE_DIR}/resources/resources.rc"
+        "${CMAKE_CURRENT_BINARY_DIR}/resources.rc"
         PROPERTIES LANGUAGE RC
     )
     set_target_properties(SysInfo PROPERTIES
@@ -181,6 +189,19 @@ if(WIN32)
 endif()
 
 if(APPLE)
+    # configure_file substitutes variables and never target properties, so the
+    # bundle values are variables first and are read back into the properties
+    # below. A plist named by MACOSX_BUNDLE_INFO_PLIST is copied verbatim — CMake
+    # substitutes nothing into it — which is why they have to be resolved here.
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER      "com.pivdenny.SysInfo")
+    set(MACOSX_BUNDLE_BUNDLE_VERSION       "${PROJECT_VERSION}")
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}")
+
+    configure_file(
+        "${CMAKE_SOURCE_DIR}/resources/Info.plist.in"
+        "${CMAKE_BINARY_DIR}/Info.plist"
+        @ONLY
+    )
     target_sources(SysInfo PRIVATE
         "${CMAKE_SOURCE_DIR}/resources/icons/sysinfo_icon.icns"
     )
@@ -190,11 +211,11 @@ if(APPLE)
     )
     set_target_properties(SysInfo PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/resources/Info.plist"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "com.pivdenny.SysInfo"
-        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
-        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
-        MACOSX_BUNDLE_ICON_FILE "sysinfo_icon.icns"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_BINARY_DIR}/Info.plist"
+        MACOSX_BUNDLE_GUI_IDENTIFIER      "${MACOSX_BUNDLE_GUI_IDENTIFIER}"
+        MACOSX_BUNDLE_BUNDLE_VERSION       "${MACOSX_BUNDLE_BUNDLE_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${MACOSX_BUNDLE_SHORT_VERSION_STRING}"
+        MACOSX_BUNDLE_ICON_FILE "sysinfo_icon"
     )
 endif()
 

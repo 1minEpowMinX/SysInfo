@@ -8,11 +8,11 @@
     <key>CFBundleDisplayName</key>
 	<string>SysInfo</string>
     <key>CFBundleIdentifier</key>
-	<string>com.pivdenny.SysInfo</string>
+	<string>@MACOSX_BUNDLE_GUI_IDENTIFIER@</string>
     <key>CFBundleVersion</key>
-	<string>3.1.0</string>
+	<string>@MACOSX_BUNDLE_BUNDLE_VERSION@</string>
     <key>CFBundleShortVersionString</key>
-	<string>3.1.0</string>
+	<string>@MACOSX_BUNDLE_SHORT_VERSION_STRING@</string>
     <key>CFBundleExecutable</key>
 	<string>SysInfo</string>
     <key>CFBundleIconFile</key>
@@ -24,6 +24,6 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-	<string>© 2026 Kyrylo Bitskyi for Pivdenny | github.com/1minEpowMinX/SysInfo</string> 
+	<string>© @BUILD_YEAR@ Kyrylo Bitskyi for Pivdenny</string> 
 </dict>
 </plist>
