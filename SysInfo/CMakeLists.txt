@@ -34,7 +34,8 @@ set(TS_FILES
     resources/i18n/sysinfo_uk_UA.ts
 )
 
-# Hardware collectors divided by platform.
+# Hardware collectors divided by platform. APPLE is tested before UNIX because
+# macOS satisfies both.
 if(WIN32)
     set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_win.cpp)
 elseif(APPLE)
@@ -241,7 +242,9 @@ install(TARGETS SysInfo
 )
 
 # Desktop integration for freedesktop systems. sysinfo.desktop carries
-# "Icon=sysinfo", which is an icon-theme name.
+# "Icon=sysinfo", which is an icon-theme name rather than a path: the icon only
+# resolves once it is installed into the theme under exactly that basename —
+# hence the RENAME on the scalable entry.
 #
 # Placed after GNUInstallDirs, which defines CMAKE_INSTALL_DATAROOTDIR.
 if(UNIX AND NOT APPLE)
