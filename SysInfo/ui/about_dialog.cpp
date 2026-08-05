@@ -288,7 +288,7 @@ AboutDialog::AboutDialog(const sysinfo::AboutFacts& facts, QWidget* parent)
     root->addWidget(buildSeparator());
     root->addSpacing(kGapSeparatorToFootnote);
     root->addWidget(makeLabel(
-        tr("© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved."),
+        tr("© %1 Kyrylo Bitskyi for Pivdenny. All rights reserved.").arg(BUILD_YEAR),
         uiFont(kFootnotePx), QStringLiteral("footnote")));
     root->addSpacing(kGapFootnoteToPanel);
     root->addStretch(1);
