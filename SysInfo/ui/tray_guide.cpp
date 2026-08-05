@@ -44,7 +44,7 @@ void TrayGuide::setupTexts()
     m_textLabel = new QLabel(tr(
         "<p><b>To keep the app visible in the notification area:</b><br>"
         "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
-        "2️. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
+        "2. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
         ), this);
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
