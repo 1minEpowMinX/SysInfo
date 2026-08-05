@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../../ui/about_dialog.cpp" line="+217"/>
+        <location filename="../../ui/about_dialog.cpp" line="+272"/>
         <source>About SysInfo</source>
         <translation>Про застосунок SysInfo</translation>
     </message>
@@ -39,86 +39,86 @@
         <translation>Застосунок збирає інформацію про систему та допомагає у діагностиці:</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+38"/>
         <source>If the icon is not visible in the tray, drag it to the notification area.</source>
         <translation>Якщо значок не видно у треї, перетягніть його до області сповіщень.</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+21"/>
         <source>Version:</source>
-        <translation type="unfinished">Версія:</translation>
+        <translation>Версія:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Core:</source>
-        <translation type="unfinished">Ядро:</translation>
+        <translation>Ядро:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Developer:</source>
-        <translation type="unfinished">Розробник:</translation>
+        <translation>Розробник:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Source code:</source>
-        <translation type="unfinished">Вихідний код:</translation>
+        <translation>Вихідний код:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Company:</source>
-        <translation type="unfinished">Компанія:</translation>
+        <translation>Компанія:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>License:</source>
-        <translation type="unfinished">Ліцензія:</translation>
+        <translation>Ліцензія:</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+62"/>
         <source>OS:</source>
-        <translation type="unfinished">ОС:</translation>
+        <translation>ОС:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>User:</source>
-        <translation type="unfinished">Користувач:</translation>
+        <translation>Користувач:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Device:</source>
-        <translation type="unfinished">Пристрій:</translation>
+        <translation>Пристрій:</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Settings:</source>
-        <translation type="unfinished">Налаштування:</translation>
+        <translation>Налаштування:</translation>
     </message>
     <message>
-        <location line="-74"/>
+        <location line="-75"/>
         <source>%1 (build %2)</source>
         <translation>%1 (збірка %2)</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Qt %1, C++17</source>
-        <translation>Qt %1, C++17</translation>
+        <source>Qt %1, C++%2</source>
+        <translation>Qt %1, C++%2</translation>
     </message>
 </context>
 <context>
     <name>App</name>
     <message>
-        <location filename="../../app/app.cpp" line="+55"/>
-        <location line="+29"/>
+        <location filename="../../app/app.cpp" line="+56"/>
+        <location line="+31"/>
         <source>Error</source>
         <translation>Помилка</translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location line="-30"/>
         <source>The system tray is unavailable.</source>
         <translation>Системний трей недоступний.</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+31"/>
         <source>Failed to start the local server. Integration with Jira SM is unavailable.</source>
         <translation>Не вдалося запустити локальний сервер. Інтеграція з Jira SM недоступна.</translation>
     </message>
@@ -133,7 +133,7 @@
         <translation>Інформацію скопійовано в буфер обміну.</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+12"/>
         <source>The application collects system information and assists in diagnostics.&lt;p&gt;&lt;b&gt;Do you still want to close the application?&lt;/b&gt;&lt;/p&gt;</source>
         <translation>Застосунок збирає інформацію про систему та допомагає у діагностиці.&lt;p&gt;&lt;b&gt;Ви дійсно хочете закрити застосунок?&lt;/b&gt;&lt;/p&gt;</translation>
     </message>
@@ -146,17 +146,17 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="+22"/>
+        <location filename="../../core/sysinfo/system_info_presenter.cpp" line="+25"/>
         <source>No IP</source>
         <translation>Немає IP</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+4"/>
         <source>Unavailable</source>
         <translation>Недоступно</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+38"/>
         <source>Device name</source>
         <translation>Ім’я пристрою</translation>
     </message>
@@ -176,7 +176,7 @@
         <translation>Час вмикання</translation>
     </message>
     <message>
-        <location line="-25"/>
+        <location line="-34"/>
         <source>Device name: %1
 User: %2
 IP address: %3
@@ -187,7 +187,7 @@ IP‑адреса: %3
 Час вмикання: %4</translation>
     </message>
     <message>
-        <location filename="../../main.cpp" line="+114"/>
+        <location filename="../../main.cpp" line="+88"/>
         <source>Error</source>
         <translation>Помилка</translation>
     </message>
@@ -200,7 +200,7 @@ IP‑адреса: %3
 <context>
     <name>TrayController</name>
     <message>
-        <location filename="../../ui/tray_controller.cpp" line="+74"/>
+        <location filename="../../ui/tray_controller.cpp" line="+72"/>
         <source>Copy to clipboard</source>
         <translation>Копіювати в буфер обміну</translation>
     </message>
@@ -224,7 +224,7 @@ IP‑адреса: %3
     </message>
     <message>
         <location line="+22"/>
-        <source>&lt;p&gt;&lt;b&gt;To keep the app visible in the notification area:&lt;/b&gt;&lt;br&gt;1. Open hidden icons by clicking the up arrow next to the system tray.&lt;br&gt;2️. Find the SysInfo icon and drag it to the visible area of the panel.&lt;/p&gt;</source>
+        <source>&lt;p&gt;&lt;b&gt;To keep the app visible in the notification area:&lt;/b&gt;&lt;br&gt;1. Open hidden icons by clicking the up arrow next to the system tray.&lt;br&gt;2. Find the SysInfo icon and drag it to the visible area of the panel.&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;b&gt;Щоб застосунок залишався видимим в області сповіщень:&lt;/b&gt;&lt;br&gt;1. Відкрийте приховані значки, натиснувши стрілку вгору поруч із системним треєм.&lt;br&gt;2. Знайдіть значок SysInfo і перетягніть його в видиму частину панелі.&lt;/p&gt;</translation>
     </message>
     <message>
@@ -241,7 +241,7 @@ IP‑адреса: %3
 <context>
     <name>WelcomeNotifier</name>
     <message>
-        <location filename="../../app/welcome_notifier.cpp" line="+28"/>
+        <location filename="../../app/welcome_notifier.cpp" line="+29"/>
         <source>SysInfo runs in the background</source>
         <translation>SysInfo працює у фоновому режимі</translation>
     </message>
