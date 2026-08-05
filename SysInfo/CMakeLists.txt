@@ -18,6 +18,7 @@ add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
 
 # Year the platform resource containers stamp into their copyright strings.
 string(TIMESTAMP BUILD_YEAR "%Y" UTC)
+add_compile_definitions(BUILD_YEAR="${BUILD_YEAR}")
 
 find_package(Qt6 REQUIRED COMPONENTS
     Core
@@ -33,9 +34,7 @@ set(TS_FILES
     resources/i18n/sysinfo_uk_UA.ts
 )
 
-# Platform half of the hardware collectors: exactly one of these is compiled,
-# which is what lets each of them be written without preprocessor branches.
-# APPLE is tested before UNIX because macOS satisfies both.
+# Hardware collectors divided by platform.
 if(WIN32)
     set(HARDWARE_INFO_PLATFORM_SOURCE core/sysinfo/hardware_info_win.cpp)
 elseif(APPLE)
@@ -84,7 +83,6 @@ qt_add_library(sysinfo_core STATIC
     core/runtime/single_instance_guard.h
 )
 
-# PUBLIC: headers of sysinfo_core expose Qt types — consumers must see them.
 target_link_libraries(sysinfo_core PUBLIC
     Qt6::Core
     Qt6::Network
@@ -92,7 +90,7 @@ target_link_libraries(sysinfo_core PUBLIC
 
 # PUBLIC include directory lets every consumer write
 #   #include "core/sysinfo/system_info.h"
-# without the "../" relative-path dance.
+# without the "../" relative-paths.
 target_include_directories(sysinfo_core PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
@@ -243,9 +241,7 @@ install(TARGETS SysInfo
 )
 
 # Desktop integration for freedesktop systems. sysinfo.desktop carries
-# "Icon=sysinfo", which is an icon-theme name rather than a path, so the icon
-# only resolves once it is installed into the theme under exactly that
-# basename — hence the RENAME on the scalable entry.
+# "Icon=sysinfo", which is an icon-theme name.
 #
 # Placed after GNUInstallDirs, which defines CMAKE_INSTALL_DATAROOTDIR.
 if(UNIX AND NOT APPLE)
@@ -299,7 +295,7 @@ add_custom_command(TARGET SysInfo POST_BUILD
         "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
         "${CMAKE_SOURCE_DIR}/../docs/README.txt"
         "$<TARGET_FILE_DIR:SysInfo>"
-    COMMENT "Copying LICENSE.txt, LGPL-3.0.txt and README.txt to build root"
+    COMMENT "Copying GPL-3.0.txt, LGPL-3.0.txt and README.txt next to the executable"
     VERBATIM
 )
 
@@ -321,15 +317,13 @@ include(CTest)
 if(BUILD_TESTING)
     add_subdirectory(tests)
 
-    # Run the test suite as part of the default build.
+    # Run the test suite as part of the default build. The roster comes from
+    # tests/CMakeLists.txt.
     add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C $<CONFIG>
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS tst_system_info tst_system_info_presenter tst_hardware_info
-                tst_smbios_memory tst_info_source tst_device_inventory
-                tst_integration_server
-                tst_request_policy tst_single_instance_guard tst_welcome_notifier
         COMMENT "Running tests"
         USES_TERMINAL
     )
+    add_dependencies(run_tests ${SYSINFO_TEST_TARGETS})
 endif()

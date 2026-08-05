@@ -5,6 +5,9 @@ if(WIN32)
     get_filename_component(_qt_bin_dir "${_qt_core_location}" DIRECTORY)
 endif()
 
+# Registering a test also appends it to SYSINFO_TEST_TARGETS, which this
+# directory hands back to the top level at the end of the file. The run_tests
+# target there depends on that list rather than on a hand-kept copy of it.
 function(sysinfo_register_test name)
     add_test(NAME ${name} COMMAND ${name})
     if(WIN32 AND _qt_bin_dir)
@@ -12,6 +15,7 @@ function(sysinfo_register_test name)
             ENVIRONMENT "PATH=${_qt_bin_dir};$ENV{PATH}"
         )
     endif()
+    set(SYSINFO_TEST_TARGETS ${SYSINFO_TEST_TARGETS} ${name} PARENT_SCOPE)
 endfunction()
 
 qt_add_executable(tst_system_info tst_system_info.cpp)
@@ -100,3 +104,5 @@ target_link_libraries(tst_integration_server PRIVATE
     Qt6::Test
 )
 sysinfo_register_test(tst_integration_server)
+
+set(SYSINFO_TEST_TARGETS ${SYSINFO_TEST_TARGETS} PARENT_SCOPE)
