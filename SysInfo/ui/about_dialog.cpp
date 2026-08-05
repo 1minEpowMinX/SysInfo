@@ -18,35 +18,90 @@
 namespace
 {
 
-/// Fixed content width, in device-independent pixels.
+// Every figure below is in the pixels of the reference design, type sizes
+// included. The design fixes each gap on its own, so they are listed rather
+// than derived from a scale, and two figures that happen to be equal are not
+// necessarily the same figure.
+
+// --- The page.
+
+/// Fixed content width.
 constexpr int kDialogWidth = 650;
+
+/// Page margins. The horizontal pair is one figure — the content column is
+/// centred — while top and bottom differ.
+constexpr int kMarginH      = 36;
+constexpr int kMarginTop    = 34;
+constexpr int kMarginBottom = 30;
+
+// Vertical rhythm of the root column, in the order the blocks appear. The
+// metadata grid stands off the rule above it and the rule below it by the same
+// figure, which is the one relationship among these.
+constexpr int kGapHeaderToCapabilities = 26;
+constexpr int kGapCapabilitiesToNote   = 18;
+constexpr int kGapNoteToSeparator      = 22;
+constexpr int kGapMetadataToSeparator  = 18;
+constexpr int kGapSeparatorToFootnote  = 14;
+constexpr int kGapFootnoteToPanel      = 20;
+
+/// Height of one hairline separator.
+constexpr int kSeparatorThickness = 1;
+
+// --- The header: the application icon and the name beside it.
 
 /// Edge of the square the application icon is rendered into.
 constexpr int kIconSize = 72;
 
-constexpr int kMarginLeft   = 36;
-constexpr int kMarginTop    = 34;
-constexpr int kMarginRight  = 36;
-constexpr int kMarginBottom = 30;
+constexpr int kIconToTitleGap = 18;
 
-/// Corner radius shared by the tray note and the machine panel.
-constexpr int kPanelRadius = 7;
+/// Letter spacing of the title, as a percentage of the font's normal spacing:
+/// the design sets it a touch tighter than the font ships.
+constexpr qreal kTitleLetterSpacing = 98.5;
 
-/// Inset between the two key/value pairs of the metadata grid, on top of the
-/// grid's own horizontal spacing.
+// --- The capabilities block: a lead-in sentence over a bulleted list.
+
+constexpr int kGapIntroToBullets = 11;
+constexpr int kBulletToTextGap   = 10;
+constexpr int kBulletRowGap      = 7;
+
+// --- The metadata grid, between the two rules.
+
+constexpr int kMetadataKeyToValueGap = 10;
+constexpr int kMetadataRowGap        = 9;
+
+/// Inset between the two key/value pairs, on top of the grid's own horizontal
+/// spacing.
 constexpr int kMetadataPairGap = 22;
 
-// Font sizes, as multiples of the application font. The reference design was
-// drawn against Segoe UI 9 pt — 12 px at 96 dpi — and every size in it is a
-// near-exact multiple of that, so expressing them as ratios reproduces the
+// --- The two rounded panels: the tray note and the machine panel. Radius and
+// horizontal padding are shared; the vertical padding differs by a pixel
+// between them, as the design has it.
+
+constexpr int kPanelRadius          = 7;
+constexpr int kPanelPaddingH        = 14;
+constexpr int kTrayNotePaddingV     = 12;
+constexpr int kMachinePanelPaddingV = 13;
+
+constexpr int kMachineKeyToValueGap = 14;
+constexpr int kMachineRowGap        = 5;
+
+// --- The type scale.
+//
+// The reference design was drawn against Segoe UI 9 pt — 12 px at 96 dpi — and
+// carries these sizes in pixels. uiFont() and monoFont() rescale each by the
+// ratio of the application font to that base, so the window reproduces the
 // design while still tracking the system font-scaling setting.
-constexpr qreal kTitleRatio     = 2.5;
-constexpr qreal kIntroRatio     = 1.125;
-constexpr qreal kBodyRatio      = 1.1;
-constexpr qreal kNoteRatio      = 1.083;
-constexpr qreal kMetadataRatio  = 1.017;
-constexpr qreal kPanelRatio     = 0.958;
-constexpr qreal kFootnoteRatio  = 0.917;
+constexpr qreal kDesignBasePx = 12.0;
+
+constexpr qreal kTitlePx    = 30.0;
+constexpr qreal kIntroPx    = 13.5;
+constexpr qreal kBodyPx     = 13.2;
+constexpr qreal kNotePx     = 13.0;
+constexpr qreal kMetadataPx = 12.2;
+constexpr qreal kPanelPx    = 11.5;
+constexpr qreal kFootnotePx = 11.0;
+
+// --- The colours.
 
 // Weights the text colour is mixed into the surface at, giving the window its
 // three levels of emphasis and its hairlines.
@@ -104,8 +159,7 @@ AboutPalette paletteFrom(const QPalette& source, Qt::ColorScheme scheme)
     AboutPalette colours;
     colours.surface = surface;
 
-    // Base sits a step away from Window in both schemes — lighter under a dark
-    // theme, brighter under a light one — which is exactly the raised panel.
+    // Base sits a step away from Window in both schemes.
     colours.panel = source.color(QPalette::Base);
 
     colours.textPrimary = text;
@@ -131,18 +185,20 @@ qreal basePointSize()
     return points > 0 ? points : QFontInfo(base).pointSizeF();
 }
 
-/// Returns the application font at @p ratio of its normal size.
-QFont uiFont(qreal ratio, QFont::Weight weight = QFont::Normal)
+/// Returns the application font carrying @p designPx, the size the reference
+/// design gives the text, rescaled from kDesignBasePx to the application font.
+QFont uiFont(qreal designPx, QFont::Weight weight = QFont::Normal)
 {
     QFont font = QApplication::font();
-    font.setPointSizeF(basePointSize() * ratio);
+    font.setPointSizeF(basePointSize() * designPx / kDesignBasePx);
     font.setWeight(weight);
 
     return font;
 }
 
-/// Returns a fixed-pitch font at @p ratio of the application font's size.
-QFont monoFont(qreal ratio)
+/// Returns a fixed-pitch font carrying @p designPx, scaled the same way as
+/// uiFont().
+QFont monoFont(qreal designPx)
 {
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
@@ -151,7 +207,7 @@ QFont monoFont(qreal ratio)
     font.setFamilies({QStringLiteral("Cascadia Mono"),
                       QStringLiteral("Consolas"),
                       font.family()});
-    font.setPointSizeF(basePointSize() * ratio);
+    font.setPointSizeF(basePointSize() * designPx / kDesignBasePx);
 
     return font;
 }
@@ -216,25 +272,25 @@ AboutDialog::AboutDialog(const sysinfo::AboutFacts& facts, QWidget* parent)
     setWindowTitle(tr("About SysInfo"));
 
     auto* root = new QVBoxLayout(this);
-    root->setContentsMargins(kMarginLeft, kMarginTop, kMarginRight, kMarginBottom);
+    root->setContentsMargins(kMarginH, kMarginTop, kMarginH, kMarginBottom);
     root->setSpacing(0);
 
     root->addWidget(buildHeader());
-    root->addSpacing(26);
+    root->addSpacing(kGapHeaderToCapabilities);
     root->addWidget(buildCapabilities());
-    root->addSpacing(18);
+    root->addSpacing(kGapCapabilitiesToNote);
     root->addWidget(buildTrayNote());
-    root->addSpacing(22);
+    root->addSpacing(kGapNoteToSeparator);
     root->addWidget(buildSeparator());
-    root->addSpacing(18);
+    root->addSpacing(kGapMetadataToSeparator);
     root->addWidget(buildMetadata());
-    root->addSpacing(18);
+    root->addSpacing(kGapMetadataToSeparator);
     root->addWidget(buildSeparator());
-    root->addSpacing(14);
+    root->addSpacing(kGapSeparatorToFootnote);
     root->addWidget(makeLabel(
         tr("© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved."),
-        uiFont(kFootnoteRatio), QStringLiteral("footnote")));
-    root->addSpacing(20);
+        uiFont(kFootnotePx), QStringLiteral("footnote")));
+    root->addSpacing(kGapFootnoteToPanel);
     root->addStretch(1);
     root->addWidget(buildMachinePanel(facts));
 
@@ -260,15 +316,15 @@ QWidget* AboutDialog::buildHeader()
 
     auto* layout = new QHBoxLayout(header);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(18);
+    layout->setSpacing(kIconToTitleGap);
 
     auto* icon = new QLabel;
     icon->setFixedSize(kIconSize, kIconSize);
     icon->setPixmap(QIcon(QStringLiteral(":/resources/icons/sysinfo_app.svg"))
                         .pixmap(QSize(kIconSize, kIconSize), devicePixelRatioF()));
 
-    QFont titleFont = uiFont(kTitleRatio, QFont::Bold);
-    titleFont.setLetterSpacing(QFont::PercentageSpacing, 98.5);
+    QFont titleFont = uiFont(kTitlePx, QFont::Bold);
+    titleFont.setLetterSpacing(QFont::PercentageSpacing, kTitleLetterSpacing);
 
     layout->addWidget(icon);
     layout->addWidget(makeLabel(QStringLiteral("SysInfo"), titleFont,
@@ -295,24 +351,24 @@ QWidget* AboutDialog::buildCapabilities()
 
     auto* intro = makeLabel(
         tr("The application collects system information and assists in diagnostics:"),
-        uiFont(kIntroRatio, QFont::Bold), QStringLiteral("intro"));
+        uiFont(kIntroPx, QFont::Bold), QStringLiteral("intro"));
     intro->setWordWrap(true);
     layout->addWidget(intro);
-    layout->addSpacing(11);
+    layout->addSpacing(kGapIntroToBullets);
 
     auto* bullets = new QWidget;
     auto* grid = new QGridLayout(bullets);
     grid->setContentsMargins(0, 0, 0, 0);
-    grid->setHorizontalSpacing(10);
-    grid->setVerticalSpacing(7);
+    grid->setHorizontalSpacing(kBulletToTextGap);
+    grid->setVerticalSpacing(kBulletRowGap);
     grid->setColumnStretch(1, 1);
 
     for (int row = 0; row < capabilities.size(); ++row) {
-        grid->addWidget(makeLabel(QStringLiteral("•"), uiFont(kBodyRatio),
+        grid->addWidget(makeLabel(QStringLiteral("•"), uiFont(kBodyPx),
                                   QStringLiteral("bullet")),
                         row, 0, Qt::AlignTop);
 
-        auto* text = makeLabel(capabilities.at(row), uiFont(kBodyRatio),
+        auto* text = makeLabel(capabilities.at(row), uiFont(kBodyPx),
                                QStringLiteral("body"));
         text->setWordWrap(true);
         grid->addWidget(text, row, 1);
@@ -328,11 +384,12 @@ QFrame* AboutDialog::buildTrayNote()
     auto* note = tagged(new QFrame, QStringLiteral("panel"));
 
     auto* layout = new QVBoxLayout(note);
-    layout->setContentsMargins(14, 12, 14, 12);
+    layout->setContentsMargins(kPanelPaddingH, kTrayNotePaddingV,
+                               kPanelPaddingH, kTrayNotePaddingV);
 
     auto* text = makeLabel(
         tr("If the icon is not visible in the tray, drag it to the notification area."),
-        uiFont(kNoteRatio, QFont::DemiBold), QStringLiteral("note"));
+        uiFont(kNotePx, QFont::DemiBold), QStringLiteral("note"));
     text->setWordWrap(true);
     layout->addWidget(text);
 
@@ -353,7 +410,7 @@ QWidget* AboutDialog::buildMetadata()
 
     const QList<Entry> entries{
         {tr("Version:"), tr("%1 (build %2)").arg(PROJECT_VERSION, BUILD_DATE), {}},
-        {tr("Core:"), tr("Qt %1, C++17").arg(QT_VERSION_STR), {}},
+        {tr("Core:"), tr("Qt %1, C++%2").arg(QT_VERSION_STR, PROJECT_CXX_STANDARD), {}},
         {tr("Developer:"), QStringLiteral("Kyrylo Bitskyi"), {}},
         {tr("Source code:"), QStringLiteral("GitHub"), sourceUrl},
         {tr("Company:"), QStringLiteral("Pivdenny"), {}},
@@ -363,8 +420,8 @@ QWidget* AboutDialog::buildMetadata()
 
     auto* grid = new QGridLayout(block);
     grid->setContentsMargins(0, 0, 0, 0);
-    grid->setHorizontalSpacing(10);
-    grid->setVerticalSpacing(9);
+    grid->setHorizontalSpacing(kMetadataKeyToValueGap);
+    grid->setVerticalSpacing(kMetadataRowGap);
     grid->setColumnStretch(1, 1);
     grid->setColumnStretch(3, 1);
 
@@ -374,7 +431,7 @@ QWidget* AboutDialog::buildMetadata()
 
         const Entry& entry = entries.at(index);
 
-        auto* key = makeLabel(entry.key, uiFont(kMetadataRatio),
+        auto* key = makeLabel(entry.key, uiFont(kMetadataPx),
                               QStringLiteral("key"));
         if (column == 2) {
             // QGridLayout spaces every column alike, so the wider gap between
@@ -383,7 +440,7 @@ QWidget* AboutDialog::buildMetadata()
         }
         grid->addWidget(key, row, column);
 
-        auto* value = makeLabel(entry.value, uiFont(kMetadataRatio),
+        auto* value = makeLabel(entry.value, uiFont(kMetadataPx),
                                 QStringLiteral("value"));
         if (!entry.url.isEmpty()) {
             value->setTextFormat(Qt::RichText);
@@ -402,18 +459,19 @@ QFrame* AboutDialog::buildMachinePanel(const sysinfo::AboutFacts& facts)
     auto* panel = tagged(new QFrame, QStringLiteral("panel"));
 
     auto* grid = new QGridLayout(panel);
-    grid->setContentsMargins(14, 13, 14, 13);
-    grid->setHorizontalSpacing(14);
-    grid->setVerticalSpacing(5);
+    grid->setContentsMargins(kPanelPaddingH, kMachinePanelPaddingV,
+                             kPanelPaddingH, kMachinePanelPaddingV);
+    grid->setHorizontalSpacing(kMachineKeyToValueGap);
+    grid->setVerticalSpacing(kMachineRowGap);
     grid->setColumnStretch(1, 1);
     grid->setColumnStretch(3, 1);
 
     const auto addPair = [&](int row, int column, const QString& key,
                              QLabel* value, int valueSpan) {
-        grid->addWidget(makeLabel(key, uiFont(kPanelRatio),
+        grid->addWidget(makeLabel(key, uiFont(kPanelPx),
                                   QStringLiteral("panelKey")),
                         row, column);
-        value->setFont(monoFont(kPanelRatio));
+        value->setFont(monoFont(kPanelPx));
         grid->addWidget(tagged(value, QStringLiteral("panelValue")), row,
                         column + 1, 1, valueSpan);
     };
@@ -434,7 +492,7 @@ QFrame* AboutDialog::buildMachinePanel(const sysinfo::AboutFacts& facts)
 QFrame* AboutDialog::buildSeparator()
 {
     auto* line = tagged(new QFrame, QStringLiteral("separator"));
-    line->setFixedHeight(1);
+    line->setFixedHeight(kSeparatorThickness);
 
     return line;
 }
@@ -470,6 +528,9 @@ void AboutDialog::applyColours()
                            colours.footnote.name(), colours.separator.name())
                       .arg(kPanelRadius));
 
+    // The anchors are rewritten rather than styled: a style sheet does not
+    // reach the colour of an <a> element, which the rich-text engine takes
+    // from the markup instead.
     for (const Link& link : std::as_const(m_links)) {
         link.label->setText(QStringLiteral("<a href=\"%1\" style=\"color:%2;\">%3</a>")
                                 .arg(link.url, colours.link.name(), link.text));

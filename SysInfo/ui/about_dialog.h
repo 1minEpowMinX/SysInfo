@@ -22,8 +22,7 @@ class QWidget;
  * Colours follow QStyleHints::colorScheme() and are re-applied when the system
  * switches between light and dark. Font sizes are multiples of
  * QApplication::font(), so the window tracks the system font-scaling setting;
- * its width is fixed and its height follows the content, which keeps longer
- * translations from being clipped.
+ * its width is fixed and its height follows the content.
  *
  * Lifetime: created on the stack by WidgetDialogs::showAbout() and shown via
  * QDialog::exec(); destroyed when exec() returns.
@@ -76,9 +75,7 @@ private:
         QString text;   ///< Visible caption.
     };
 
-    /// Anchors are re-rendered on every colour change: a style sheet does not
-    /// reach the colour of an <a> element, which the rich-text engine takes
-    /// from the markup instead.
+    /// Anchors, re-rendered by applyColours() on every colour change.
     QList<Link> m_links;
 };
 

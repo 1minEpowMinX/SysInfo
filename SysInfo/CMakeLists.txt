@@ -2,16 +2,19 @@ cmake_minimum_required(VERSION 3.30)
 
 project(SysInfo VERSION 3.1.0 LANGUAGES CXX)
 
-add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
-string(TIMESTAMP BUILD_DATE "%Y%m%d" UTC)
-add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
-
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Build metadata the About window and the /version route report. Placed after
+# CMAKE_CXX_STANDARD, which one of them reads.
+add_compile_definitions(PROJECT_VERSION="${PROJECT_VERSION}")
+add_compile_definitions(PROJECT_CXX_STANDARD="${CMAKE_CXX_STANDARD}")
+string(TIMESTAMP BUILD_DATE "%Y%m%d" UTC)
+add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
 
 find_package(Qt6 REQUIRED COMPONENTS
     Core
