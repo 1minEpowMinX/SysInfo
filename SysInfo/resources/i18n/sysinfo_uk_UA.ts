@@ -10,8 +10,8 @@
     </message>
     <message>
         <location line="+19"/>
-        <source>© 2026 Kyrylo Bitskyi for Pivdenny. All rights reserved.</source>
-        <translation>© 2026 Kyrylo Bitskyi для Pivdenny. Усі права захищено.</translation>
+        <source>© %1 Kyrylo Bitskyi for Pivdenny. All rights reserved.</source>
+        <translation>© %1 Kyrylo Bitskyi для Pivdenny. Усі права захищено.</translation>
     </message>
     <message>
         <location line="+50"/>
