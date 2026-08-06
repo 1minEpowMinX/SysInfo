@@ -338,7 +338,7 @@ QWidget* AboutDialog::buildHeader()
 QWidget* AboutDialog::buildCapabilities()
 {
     const QStringList capabilities{
-        tr("Displays device information (device name, user, IP address, uptime)."),
+        tr("Displays device information (device name, user, IP address, last boot)."),
         tr("Runs in the background via the system tray."),
         tr("Right-click on the icon to open the action menu."),
         tr("The ”Copy to clipboard“ option copies the current information.")};

@@ -54,7 +54,7 @@ QJsonObject toJsonWithLabels(const Info &s);
  * @brief Collects the machine-describing values the About window shows.
  *
  * Reads the host name and the user name off @p s and asks QSysInfo for the OS
- * product name; the uptime and the IP address are not part of this block.
+ * product name; the boot time and the IP address are not part of this block.
  * Carries every value through verbatim, empty ones included.
  *
  * @param s                Session snapshot; only hostname and username are read.

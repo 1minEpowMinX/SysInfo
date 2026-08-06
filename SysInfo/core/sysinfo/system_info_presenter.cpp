@@ -33,7 +33,7 @@ QString bootTimeOrFallback(const Info &s)
 
 QString toText(const Info &s)
 {
-    return QObject::tr("Device name: %1\nUser: %2\nIP address: %3\nUptime: %4")
+    return QObject::tr("Device name: %1\nUser: %2\nIP address: %3\nLast boot: %4")
         .arg(s.hostname,
              s.username,
              ipOrFallback(s),
@@ -67,7 +67,7 @@ QJsonObject toJsonWithLabels(const Info &s)
     labels["hostname"] = QObject::tr("Device name");
     labels["username"] = QObject::tr("User");
     labels["ip"]       = QObject::tr("IP address");
-    labels["uptime"]   = QObject::tr("Uptime");
+    labels["uptime"]   = QObject::tr("Last boot");
     obj["labels"] = labels;
 
     return obj;

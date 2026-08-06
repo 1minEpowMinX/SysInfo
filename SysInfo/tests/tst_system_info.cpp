@@ -25,7 +25,7 @@ void TestSystemInfo::collect_basicSanity()
 
     // Hostname must always be available even on a minimal CI runner.
     QVERIFY(!s.hostname.isEmpty());
-    // Uptime is either a formatted date, or empty (unsupported / syscall
+    // The boot time is either a formatted date, or empty (unsupported / syscall
     // failure). Localised "Unavailable" fallback is the presenter's job
     // and must NOT leak into the data layer.
 }

@@ -117,11 +117,11 @@ void TestSystemInfoPresenter::toText_substitutesFallbacksForEmptyFields()
     const QString text = sysinfo::presenter::toText(s);
 
     // The plain-text rendering must not contain the sequence "IP address: \n"
-    // (= empty value followed by a newline) or "Uptime: " at end of string.
+    // (= empty value followed by a newline) or "Last boot: " at end of string.
     QVERIFY2(!text.contains("IP address: \n"),
              qPrintable("empty ip leaked into text: " + text));
-    QVERIFY2(!text.endsWith("Uptime: "),
-             qPrintable("empty uptime leaked into text: " + text));
+    QVERIFY2(!text.endsWith("Last boot: "),
+             qPrintable("empty boot time leaked into text: " + text));
 }
 
 void TestSystemInfoPresenter::toAboutFacts_carriesEachFieldToItsOwnMember()
@@ -144,7 +144,7 @@ void TestSystemInfoPresenter::toAboutFacts_carriesEachFieldToItsOwnMember()
     QVERIFY2(!facts.operatingSystem.contains(s.ip),
              "the IP address does not belong here");
     QVERIFY2(!facts.operatingSystem.contains(s.lastBootTime),
-             "the uptime does not belong here");
+             "the boot time does not belong here");
 }
 
 void TestSystemInfoPresenter::toAboutFacts_namesTheOperatingSystem()

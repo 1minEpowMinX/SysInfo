@@ -15,7 +15,7 @@
     </message>
     <message>
         <location line="+50"/>
-        <source>Displays device information (device name, user, IP address, uptime).</source>
+        <source>Displays device information (device name, user, IP address, last boot).</source>
         <translation>Отображает информацию об устройстве (имя устройства, пользователь, IP‑адрес, время включения).</translation>
     </message>
     <message>
@@ -172,7 +172,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>Uptime</source>
+        <source>Last boot</source>
         <translation>Время включения</translation>
     </message>
     <message>
@@ -180,7 +180,7 @@
         <source>Device name: %1
 User: %2
 IP address: %3
-Uptime: %4</source>
+Last boot: %4</source>
         <translation>Имя устройства: %1
 Пользователь: %2
 IP‑адрес: %3
