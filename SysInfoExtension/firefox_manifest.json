@@ -17,26 +17,10 @@
 	],
 	"action": {
 		"default_popup": "popup/popup.html",
-		"default_icon": {
-			"16": "assets/SysInfo_Ext_Icon_16.png",
-			"32": "assets/SysInfo_Ext_Icon_32.png",
-			"48": "assets/SysInfo_Ext_Icon_48.png",
-			"64": "assets/SysInfo_Ext_Icon_64.png",
-			"128": "assets/SysInfo_Ext_Icon_128.png",
-			"256": "assets/SysInfo_Ext_Icon_256.png",
-			"512": "assets/SysInfo_Ext_Icon_512.png",
-			"1024": "assets/SysInfo_Ext_Icon_1024.png"
-		}
+		"default_icon": "assets/sysinfo_ext.svg"
 	},
 	"icons": {
-		"16": "assets/SysInfo_Ext_Icon_16.png",
-		"32": "assets/SysInfo_Ext_Icon_32.png",
-		"48": "assets/SysInfo_Ext_Icon_48.png",
-		"64": "assets/SysInfo_Ext_Icon_64.png",
-		"128": "assets/SysInfo_Ext_Icon_128.png",
-		"256": "assets/SysInfo_Ext_Icon_256.png",
-		"512": "assets/SysInfo_Ext_Icon_512.png",
-		"1024": "assets/SysInfo_Ext_Icon_1024.png"
+		"48": "assets/sysinfo_ext.svg"
 	},
 	"content_scripts": [
 		{
