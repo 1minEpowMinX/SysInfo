@@ -11,7 +11,7 @@
 
 ## ✨ Features
 
-* Collects and displays system information (device name, user, IP address, uptime).
+* Collects and displays system information (device name, user, IP address, last boot time).
 * Operates silently in the background through the system tray.
 * Provides quick access via right-click menu on the tray icon.
 * Allows copying current system information to the clipboard.
