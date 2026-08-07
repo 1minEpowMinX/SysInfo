@@ -3,23 +3,23 @@
 import { t, slog, swarn } from "./compat.js";
 import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.js";
 
-/**
- * The function `buildSysInfoLines` takes system information data and formats it into pairs of lines
- * for display.
- * @param data - The `buildSysInfoLines` function takes an object `data` as a parameter, which should
- * have the following properties:
- * @returns The function `buildSysInfoLines(data)` returns an array of strings where each element
- * contains two lines of system information data joined by a comma and a space.
- */
 // The agent reports an unobtainable value as an empty string: it carries data,
 // and how a missing value is spelled belongs to the client that displays it.
-// Without this the line would read "IP address: " and stop there.
+// Without this the line would read "IP address: " and stop there. An absent key
+// lands here too, so a field a later agent stops sending cannot reach the ticket
+// as the text "undefined".
 const orFallback = (value, fallbackKey) => value || t(fallbackKey);
 
+/**
+ * The function `buildSysInfoLines` renders the fields of an agent payload as labelled lines and
+ * joins them in pairs.
+ * @param data - A `/systeminfo` payload, carrying `hostname`, `username`, `ip` and `uptime`.
+ * @returns An array of strings, each holding two labelled fields joined by ", ".
+ */
 export function buildSysInfoLines(data) {
 	const raw = [
-		`${t("sysinfoHostname")}: ${data.hostname}`,
-		`${t("sysinfoUsername")}: ${data.username}`,
+		`${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
+		`${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
 		`${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
 		`${t("sysinfoUptime")}: ${orFallback(data.uptime, "sysinfoUnavailable")}`
 	];
@@ -31,19 +31,12 @@ export function buildSysInfoLines(data) {
 }
 
 /**
- * The `makeDivider` function generates a divider line made of a specified character repeated a certain
- * percentage of the length of the longest line in a given array of lines.
- * @param lines - Lines is an array of strings that you want to create a divider for. Each string in
- * the array represents a line of text.
- * @param [char=─] - The `char` parameter in the `makeDivider` function is used to specify the
- * character that will be repeated to create the divider line. By default, it is set to "─" which is
- * the em dash character. You can change this parameter to any character you prefer when calling the
- * function.
- * @param [percent=0.45] - The `percent` parameter in the `makeDivider` function determines what
- * percentage of the maximum line length should be used to create the divider. It is set to a default
- * value of 0.45, meaning that by default, the divider will be 45% of the maximum line length. You
- * @returns The `makeDivider` function returns a string consisting of the character specified repeated
- * a number of times based on the maximum length of the lines provided and the percentage specified.
+ * The function `makeDivider` returns a run of `char` as wide as `percent` of the longest string
+ * in `lines`.
+ * @param lines - The lines the divider is drawn above.
+ * @param [char=─] - The character the run is built from.
+ * @param [percent=0.45] - The fraction of the longest line the run spans.
+ * @returns A string of `char` repeated, rounded down to a whole number of characters.
  */
 export function makeDivider(lines, char = "─", percent = 0.45) {
 	const maxLen = Math.max(...lines.map(l => l.length));
@@ -51,15 +44,11 @@ export function makeDivider(lines, char = "─", percent = 0.45) {
 }
 
 /**
- * The function `alreadyInserted` checks if a target element already contains a specific divider
- * string.
- * @param target - The `target` parameter is the element or object where you want to check if a
- * specific `divider` is already inserted. It could be an HTML element, a string, or any object that
- * has a `value` or `innerText` property.
- * @param divider - The `divider` parameter is the string that we are checking for in the `target`
- * element. It is the substring that we want to see if it is already present in the `target` element.
- * @returns The function `alreadyInserted` returns a boolean value indicating whether the `divider` is
- * present in the `target` element's value or inner text.
+ * The function `alreadyInserted` reports whether `target` already carries `divider`.
+ * @param target - The editor element, read through `value` when it has one and `innerText`
+ * otherwise.
+ * @param divider - The divider string to search for.
+ * @returns True when the divider is present.
  */
 export function alreadyInserted(target, divider) {
 	const haystack = ("value" in target ? target.value : target.innerText) || "";
@@ -67,14 +56,12 @@ export function alreadyInserted(target, divider) {
 }
 
 /**
- * The function `requestSysInfo` attempts to fetch system information with retries and provides
- * feedback in case of failure.
- * @param callback - The `callback` parameter is a function that will be called with the system
- * information data once it is successfully retrieved.
- * @param [retriesLeft] - The `retriesLeft` parameter in the `requestSysInfo` function represents the
- * number of retries left for fetching system information. It is used to keep track of how many more
- * times the function can attempt to retrieve the system information in case of failures. The default
- * value for `retriesLeft`
+ * The function `requestSysInfo` asks the background script for an agent payload, retrying on a
+ * messaging error, an unsuccessful response or a thrown exception.
+ *
+ * Attempts are spaced `SYSINFO_REQUEST_RETRY_MS` apart and every outcome is logged.
+ * @param callback - Receives the payload, or null once every attempt has failed.
+ * @param [retriesLeft] - The attempts still available; defaults to `SYSINFO_REQUEST_RETRIES`.
  */
 export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
 	const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;

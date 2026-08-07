@@ -8,20 +8,14 @@ import { showToast } from "./toast.js";
 import { markPendingInsertion } from "./history.js";
 
 /**
- * The function `insertSysInfoInto` inserts system information into a target element based on certain
- * conditions.
- * @param target - The `target` parameter in the `insertSysInfoInto` function refers to the element in
- * the DOM (Document Object Model) where the system information data will be inserted. This element can
- * be a textarea, input field, or any other element that can display text content. The function checks
- * if the
- * @param data - The `data` parameter in the `insertSysInfoInto` function likely contains information
- * related to system information that needs to be inserted into a target element. This data could
- * include details such as system specifications, user information, or any other relevant information
- * that needs to be displayed within the target element on a
- * @returns If the `insertSysInfoInto` function is called and the conditions in the code are met, the
- * function will insert system information into the specified target element on the webpage. If the
- * conditions are not met, the function will not perform any insertion and will return without making
- * any changes to the target element.
+ * The function `insertSysInfoInto` writes the sysinfo block into `target` and records the
+ * insertion in the history.
+ *
+ * Returns without touching `target` when the path is not a ticket form, when the portal or the
+ * ticket type is outside the whitelist, or when the block is already there.
+ * @param target - The editor element, written through `value` when it has one and `innerText`
+ * otherwise.
+ * @param data - A `/systeminfo` payload.
  */
 function insertSysInfoInto(target, data) {
 	const path = location.pathname;
@@ -30,7 +24,9 @@ function insertSysInfoInto(target, data) {
 
 	const lines = buildSysInfoLines(data);
 	const divider = makeDivider(lines);
-	const indents = "\n​\n​\n​\n";
+	// The Jira editor collapses a run of empty lines, so each one carries a
+	// zero-width space to survive as a blank line above the block.
+	const indents = "\n\u200B\n\u200B\n\u200B\n";
 	const text = `${indents}${divider}\n${lines.join("\n")}`;
 
 	if (alreadyInserted(target, divider)) return;
@@ -49,11 +45,9 @@ function insertSysInfoInto(target, data) {
 }
 
 /**
- * The `watchEditor` function continuously monitors for changes in the document body and inserts system
- * information into the editor element when it detects a change.
- * @param data - The `data` parameter in the `watchEditor` function is an object that contains
- * information to be inserted into the editor element. This data could include various properties or
- * values that are used by the `insertSysInfoInto` function when updating the editor element.
+ * The function `watchEditor` inserts `data` into the editor every time a new editor element
+ * appears, driven by a poll every `INSERTION_TICK_MS` and by a MutationObserver on the body.
+ * @param data - A `/systeminfo` payload, held in the closure so that a tick stays synchronous.
  */
 function watchEditor(data) {
 	let lastElement = null;
@@ -73,8 +67,8 @@ function watchEditor(data) {
 }
 
 /**
- * The function `startInsertion` requests system information and then watches the editor based on the
- * received data.
+ * The function `startInsertion` fetches an agent payload and arms the editor watcher with it.
+ * The watcher stays unarmed when the fetch fails.
  */
 export function startInsertion() {
 	requestSysInfo((data) => {

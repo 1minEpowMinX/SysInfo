@@ -190,8 +190,8 @@
   var orFallback = (value, fallbackKey) => value || t(fallbackKey);
   function buildSysInfoLines(data) {
     const raw = [
-      `${t("sysinfoHostname")}: ${data.hostname}`,
-      `${t("sysinfoUsername")}: ${data.username}`,
+      `${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
+      `${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
       `${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
       `${t("sysinfoUptime")}: ${orFallback(data.uptime, "sysinfoUnavailable")}`
     ];
