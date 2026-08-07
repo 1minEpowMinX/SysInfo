@@ -80,8 +80,8 @@
 	"sysinfoIP": {
 		"message": "IP address"
 	},
-	"sysinfoUptime": {
-		"message": "Uptime"
+	"sysinfoLastBootTime": {
+		"message": "Last boot"
 	},
 	"sysinfoNoIp": {
 		"message": "No IP"

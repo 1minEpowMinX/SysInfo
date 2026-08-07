@@ -15,7 +15,7 @@ import { markPendingInsertion } from "./history.js";
  * ticket type is outside the whitelist, or when the block is already there.
  * @param target - The editor element, written through `value` when it has one and `innerText`
  * otherwise.
- * @param data - A `/systeminfo` payload.
+ * @param data - A normalized `/systeminfo` payload.
  */
 function insertSysInfoInto(target, data) {
 	const path = location.pathname;
@@ -47,7 +47,8 @@ function insertSysInfoInto(target, data) {
 /**
  * The function `watchEditor` inserts `data` into the editor every time a new editor element
  * appears, driven by a poll every `INSERTION_TICK_MS` and by a MutationObserver on the body.
- * @param data - A `/systeminfo` payload, held in the closure so that a tick stays synchronous.
+ * @param data - A normalized `/systeminfo` payload, held in the closure so that a tick stays
+ * synchronous.
  */
 function watchEditor(data) {
 	let lastElement = null;

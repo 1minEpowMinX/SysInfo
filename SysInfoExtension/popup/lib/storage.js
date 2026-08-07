@@ -27,6 +27,21 @@ function asStringList(value) {
 }
 
 /**
+ * The function `migrateFields` renames the stored field-visibility flags written by a build that
+ * still called the last boot time "uptime", so that a user who hid the field keeps it hidden.
+ * @param stored - The `fields` object read from storage, or a nullish value when absent.
+ * @returns A copy carrying the current names alone.
+ */
+function migrateFields(stored) {
+	const fields = { ...(stored || {}) };
+	if (fields.uptime !== undefined && fields.lastBootTime === undefined) {
+		fields.lastBootTime = fields.uptime;
+	}
+	delete fields.uptime;
+	return fields;
+}
+
+/**
  * The function `loadSettings` reads settings and history from `browser.storage.local`, merges
  * them with defaults, and writes the result into `state.settings` and `state.history`. On any
  * storage error the state is left untouched so the popup renders with built-in defaults.
@@ -37,7 +52,7 @@ export async function loadSettings() {
 		const stored = r[STORAGE_KEY] || {};
 		state.settings = {
 			theme: stored.theme || DEFAULT_SETTINGS.theme,
-			fields: { ...DEFAULT_SETTINGS.fields, ...(stored.fields || {}) },
+			fields: { ...DEFAULT_SETTINGS.fields, ...migrateFields(stored.fields) },
 			portals: asStringList(stored.portals) || [...DEFAULT_SETTINGS.portals],
 			types: asStringList(stored.types) || [...DEFAULT_SETTINGS.types]
 		};

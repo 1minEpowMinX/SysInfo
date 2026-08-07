@@ -23,7 +23,7 @@ export function renderInfoTab() {
 		{ key: "hostname", label: t("sysinfoHostname"), icon: I.device, mono: true, value: sysinfo?.hostname || "—" },
 		{ key: "username", label: t("sysinfoUsername"), icon: I.user, mono: false, value: sysinfo?.username || "—" },
 		{ key: "ip", label: t("sysinfoIP"), icon: I.ip, mono: true, value: sysinfo?.ip || "—" },
-		{ key: "uptime", label: t("sysinfoUptime"), icon: I.uptime, mono: false, value: sysinfo?.uptime || "—" }
+		{ key: "lastBootTime", label: t("sysinfoLastBootTime"), icon: I.lastBootTime, mono: false, value: sysinfo?.lastBootTime || "—" }
 	].filter(r => fields[r.key]);
 
 	const head = el("div", { class: "info-head" }, [

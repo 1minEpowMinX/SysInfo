@@ -35,7 +35,7 @@ export function renderSettingsTab() {
 			["hostname", t("sysinfoHostname")],
 			["username", t("sysinfoUsername")],
 			["ip", t("sysinfoIP")],
-			["uptime", t("sysinfoUptime")]
+			["lastBootTime", t("sysinfoLastBootTime")]
 		].map(([k, lbl]) => toggleRow(lbl, s.fields[k], (v) => { s.fields[k] = v; saveSettings(); render(); }))
 	);
 

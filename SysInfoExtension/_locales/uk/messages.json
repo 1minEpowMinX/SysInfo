@@ -80,7 +80,7 @@
 	"sysinfoIP": {
 		"message": "IP-адреса"
 	},
-	"sysinfoUptime": {
+	"sysinfoLastBootTime": {
 		"message": "Час вмикання"
 	},
 	"sysinfoNoIp": {

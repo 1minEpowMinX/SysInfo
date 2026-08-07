@@ -186,6 +186,21 @@
     window.addEventListener("popstate", checkUrlChange);
   }
 
+  // shared/sysinfo_payload.js
+  var BOOT_TIME_KEY = "lastBootTime";
+  var LEGACY_BOOT_TIME_KEY = "uptime";
+  function normalizeSysInfo(data) {
+    const raw = data || {};
+    return {
+      hostname: raw.hostname,
+      username: raw.username,
+      ip: raw.ip,
+      // ?? and not ||: the legacy name stands in for an absent key alone, so an
+      // agent that sends the new key empty is not read as one predating it.
+      lastBootTime: raw[BOOT_TIME_KEY] ?? raw[LEGACY_BOOT_TIME_KEY]
+    };
+  }
+
   // content/lib/sysinfo.js
   var orFallback = (value, fallbackKey) => value || t(fallbackKey);
   function buildSysInfoLines(data) {
@@ -193,7 +208,7 @@
       `${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
       `${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
       `${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
-      `${t("sysinfoUptime")}: ${orFallback(data.uptime, "sysinfoUnavailable")}`
+      `${t("sysinfoLastBootTime")}: ${orFallback(data.lastBootTime, "sysinfoUnavailable")}`
     ];
     const result = [];
     for (let i = 0; i < raw.length; i += 2) {
@@ -240,7 +255,7 @@
           return;
         }
         slog("sysinfo received", "(elapsed=", Date.now() - tStart, "ms)", res.data);
-        callback(res.data);
+        callback(res.data ? normalizeSysInfo(res.data) : null);
       });
     } catch (e) {
       retry(e && e.message);

@@ -2,6 +2,7 @@
 
 import { t, slog, swarn } from "./compat.js";
 import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.js";
+import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
 
 // The agent reports an unobtainable value as an empty string: it carries data,
 // and how a missing value is spelled belongs to the client that displays it.
@@ -13,7 +14,7 @@ const orFallback = (value, fallbackKey) => value || t(fallbackKey);
 /**
  * The function `buildSysInfoLines` renders the fields of an agent payload as labelled lines and
  * joins them in pairs.
- * @param data - A `/systeminfo` payload, carrying `hostname`, `username`, `ip` and `uptime`.
+ * @param data - A normalized payload, carrying `hostname`, `username`, `ip` and `lastBootTime`.
  * @returns An array of strings, each holding two labelled fields joined by ", ".
  */
 export function buildSysInfoLines(data) {
@@ -21,7 +22,7 @@ export function buildSysInfoLines(data) {
 		`${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
 		`${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
 		`${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
-		`${t("sysinfoUptime")}: ${orFallback(data.uptime, "sysinfoUnavailable")}`
+		`${t("sysinfoLastBootTime")}: ${orFallback(data.lastBootTime, "sysinfoUnavailable")}`
 	];
 	const result = [];
 	for (let i = 0; i < raw.length; i += 2) {
@@ -60,7 +61,8 @@ export function alreadyInserted(target, divider) {
  * messaging error, an unsuccessful response or a thrown exception.
  *
  * Attempts are spaced `SYSINFO_REQUEST_RETRY_MS` apart and every outcome is logged.
- * @param callback - Receives the payload, or null once every attempt has failed.
+ * @param callback - Receives the payload normalized onto the internal field names, or null once
+ * every attempt has failed.
  * @param [retriesLeft] - The attempts still available; defaults to `SYSINFO_REQUEST_RETRIES`.
  */
 export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
@@ -91,7 +93,10 @@ export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) 
 				return;
 			}
 			slog("sysinfo received", "(elapsed=", Date.now() - tStart, "ms)", res.data);
-			callback(res.data);
+			// Normalizing here keeps the wire names off every path downstream.
+			// A success carrying no payload stays null so the caller's own guard
+			// against it still fires.
+			callback(res.data ? normalizeSysInfo(res.data) : null);
 		});
 	} catch (e) {
 		retry(e && e.message);

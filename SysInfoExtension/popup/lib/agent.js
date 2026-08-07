@@ -3,6 +3,7 @@
 
 import { state } from "./state.js";
 import { render } from "./render.js";
+import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
 
 /**
  * The function `sendBg` sends a message to the background service worker and returns a Promise
@@ -58,15 +59,15 @@ async function fetchVersion() {
 }
 
 /**
- * The function `fetchSysinfo` requests current system information from the background script and
- * stores the result in `state.sysinfo`, then re-renders. On failure the previous sysinfo value
- * is retained silently.
+ * The function `fetchSysinfo` requests current system information from the background script,
+ * normalizes it onto the internal field names and stores the result in `state.sysinfo`, then
+ * re-renders. On failure the previous sysinfo value is retained silently.
  */
 export async function fetchSysinfo() {
 	try {
 		const res = await sendBg("getSystemInfo");
 		if (res && res.success && res.data) {
-			state.sysinfo = res.data;
+			state.sysinfo = normalizeSysInfo(res.data);
 			render();
 		}
 	} catch (e) { /* keep previous sysinfo in state */ }
