@@ -44,7 +44,7 @@
         <translation>Если значок не виден в трее, перетащите его в область уведомлений.</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+24"/>
         <source>Version:</source>
         <translation>Версия:</translation>
     </message>
@@ -94,12 +94,7 @@
         <translation>Настройки:</translation>
     </message>
     <message>
-        <location line="-75"/>
-        <source>%1 (build %2)</source>
-        <translation>%1 (сборка %2)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
+        <location line="-74"/>
         <source>Qt %1, C++%2</source>
         <translation>Qt %1, C++%2</translation>
     </message>

@@ -409,7 +409,7 @@ QWidget* AboutDialog::buildMetadata()
     };
 
     const QList<Entry> entries{
-        {tr("Version:"), tr("%1 (build %2)").arg(PROJECT_VERSION, BUILD_DATE), {}},
+        {tr("Version:"), QStringLiteral("%1 (build %2)").arg(PROJECT_VERSION, BUILD_DATE), {}},
         {tr("Core:"), tr("Qt %1, C++%2").arg(QT_VERSION_STR, PROJECT_CXX_STANDARD), {}},
         {tr("Developer:"), QStringLiteral("Kyrylo Bitskyi"), {}},
         {tr("Source code:"), QStringLiteral("GitHub"), sourceUrl},
