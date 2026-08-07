@@ -1,7 +1,7 @@
 // Persistence layer — settings and history live in browser.storage.local
 // under the same keys the content script uses (see content/lib/constants.js).
 
-import { STORAGE_KEY, HISTORY_KEY, DEFAULT_SETTINGS } from "./constants.js";
+import { STORAGE_KEY, HISTORY_KEY, defaultSettings } from "./constants.js";
 import { state } from "./state.js";
 
 /**
@@ -50,11 +50,12 @@ export async function loadSettings() {
 	try {
 		const r = await browser.storage.local.get([STORAGE_KEY, HISTORY_KEY]);
 		const stored = r[STORAGE_KEY] || {};
+		const defaults = defaultSettings();
 		state.settings = {
-			theme: stored.theme || DEFAULT_SETTINGS.theme,
-			fields: { ...DEFAULT_SETTINGS.fields, ...migrateFields(stored.fields) },
-			portals: asStringList(stored.portals) || [...DEFAULT_SETTINGS.portals],
-			types: asStringList(stored.types) || [...DEFAULT_SETTINGS.types]
+			theme: stored.theme || defaults.theme,
+			fields: { ...defaults.fields, ...migrateFields(stored.fields) },
+			portals: asStringList(stored.portals) || defaults.portals,
+			types: asStringList(stored.types) || defaults.types
 		};
 		state.history = r[HISTORY_KEY] || [];
 	} catch (e) { }

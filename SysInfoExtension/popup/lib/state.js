@@ -3,11 +3,11 @@
 // agent.js / storage.js / dom event handlers and end with a `render()` call.
 
 import "./compat.js";
-import { DEFAULT_SETTINGS } from "./constants.js";
+import { defaultSettings } from "./constants.js";
 
 export let state = {
 	tab: "status",
-	settings: { ...DEFAULT_SETTINGS },
+	settings: defaultSettings(),
 	// loading | active | error | version-mismatch. Nothing sets version-mismatch —
 	// neither side of /version carries a compatibility rule yet, though render.js
 	// and tab_status.js already display the state.
