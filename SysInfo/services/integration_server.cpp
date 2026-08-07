@@ -87,8 +87,15 @@ IntegrationServer::IntegrationServer(ExtensionWhitelist& whitelist,
             return forbidden();
         }
 
-        // The extension reads this to warn the user when SysInfo is too old or
-        // too new for the build it has.
+        // Both fields are informational: the extension displays them and compares
+        // nothing. Neither side enforces a compatibility rule.
+        //
+        // TODO: warn the client when the agent is too old for it. PROJECT_VERSION
+        // is the wrong input for that check — it moves with every release,
+        // including the ones that leave the /systeminfo payload untouched, so a
+        // minimum-version constant on the client would churn without meaning. The
+        // check needs a separate field here, moving only when the keys or the
+        // semantics of toJson() change.
         QJsonObject body;
         body["version"] = QString::fromUtf8(PROJECT_VERSION);
         body["build"]   = QString::fromUtf8(BUILD_DATE);

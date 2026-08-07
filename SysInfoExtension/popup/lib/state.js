@@ -8,7 +8,10 @@ import { DEFAULT_SETTINGS } from "./constants.js";
 export let state = {
 	tab: "status",
 	settings: { ...DEFAULT_SETTINGS },
-	status: "loading", // loading | active | error | version-mismatch
+	// loading | active | error | version-mismatch. Nothing sets version-mismatch —
+	// neither side of /version carries a compatibility rule yet, though render.js
+	// and tab_status.js already display the state.
+	status: "loading",
 	agentVersion: null,
 	agentBuild: null,
 	extVersion: browser.runtime.getManifest().version,
