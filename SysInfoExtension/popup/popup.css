@@ -299,7 +299,9 @@ html, body {
 .chip-x {
 	background: transparent; border: none; cursor: pointer;
 	color: var(--text-sub); font-size: 13px; line-height: 1;
-	padding: 0 4px; border-radius: 999px; font-family: inherit;
+	/* Named rather than inherited: the enclosing chip is monospace, and this
+	 * button is interface furniture rather than part of the identifier. */
+	padding: 0 4px; border-radius: 999px; font-family: var(--sans);
 }
 .chip-x:hover { color: var(--err-fg); background: var(--err-bg); }
 .chip.add {
