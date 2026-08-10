@@ -152,8 +152,14 @@ html, body {
 .tab svg { width: 14px; height: 14px; }
 
 /* Body */
-.body { min-height: 280px; }
-.pad { padding: 14px 14px 12px; }
+/* The floor is the height of the tallest tab that does not scroll, so moving
+ * between tabs does not resize the window. Each tab body is a column, and the
+ * rules further down hand the leftover height to one element per tab rather
+ * than letting it pool at the bottom edge, where it reads as a cut-off panel.
+ * Re-measure the floor when a tab gains or loses a row. */
+.body { min-height: 308px; display: flex; flex-direction: column; }
+.body > * { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.pad { padding: 12px 14px 12px; }
 .pad-tight { padding: 12px 14px 12px; }
 
 /* Status card */
@@ -187,7 +193,7 @@ html, body {
 .version-chip .val.warn { color: var(--warn-fg); }
 .version-chip .build { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
-.action-row { display: flex; gap: 8px; margin-top: 12px; }
+.action-row { display: flex; gap: 8px; margin-top: auto; padding-top: 12px; }
 
 .btn {
 	display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -228,7 +234,7 @@ html, body {
 .copy-btn svg { width: 13px; height: 13px; }
 
 .divider { border-top: 1px solid var(--border-soft); margin-top: 6px; padding-top: 10px; }
-.info-actions { display: flex; gap: 8px; padding: 0 6px 4px; }
+.info-actions { display: flex; gap: 8px; margin-top: auto; padding: 6px 6px 4px; }
 
 /* History */
 .hist-list { display: flex; flex-direction: column; gap: 4px; }
@@ -248,6 +254,7 @@ html, body {
 .hist-title { font-size: 13px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-meta { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
 .hist-empty {
+	flex: 1; display: grid; place-items: center;
 	padding: 20px 10px; text-align: center; font-size: 12px;
 	color: var(--text-sub); border: 1px dashed var(--border); border-radius: 6px;
 }
