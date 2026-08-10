@@ -79,7 +79,7 @@ function renderHeader() {
 		]),
 		el("div", { class: "mini-pill" }, [
 			dotWrap,
-			el("span", { style: { fontWeight: "500" } }, sc.label.split(" ")[0])
+			el("span", {}, sc.label.split(" ")[0])
 		])
 	]);
 }

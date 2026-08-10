@@ -44,6 +44,9 @@
 
 * { box-sizing: border-box; }
 
+/* The system UI font ships no Medium face, so font-weight 500 resolves to the
+ * Semibold face and paints identically to 600. Only 400 and 600 are distinct
+ * steps here; a 500 anywhere below silently reads as bold. */
 html, body {
 	margin: 0;
 	padding: 0;
@@ -98,7 +101,7 @@ html, body {
 	flex: 1; display: flex; align-items: center; justify-content: center;
 	gap: 5px; padding: 8px 4px; border: none; cursor: pointer;
 	background: transparent; color: var(--text-sub);
-	font-weight: 500; font-size: 12px; border-radius: 6px;
+	font-weight: 400; font-size: 12px; border-radius: 6px;
 	font-family: inherit;
 }
 .tab.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -143,7 +146,7 @@ html, body {
 
 .btn {
 	display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-	border-radius: 6px; font-size: 13px; font-weight: 500; padding: 8px 12px;
+	border-radius: 6px; font-size: 13px; font-weight: 400; padding: 8px 12px;
 	cursor: pointer; font-family: inherit; border: 1px solid transparent;
 }
 .btn-primary { flex: 1; background: var(--accent); color: #fff; font-weight: 600; }
@@ -169,7 +172,7 @@ html, body {
 .info-icon svg { width: 14px; height: 14px; }
 .info-content { flex: 1; min-width: 0; }
 .info-label { font-size: 11px; color: var(--text-sub); }
-.info-value { font-size: 13px; font-weight: 500; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info-value { font-size: 13px; font-weight: 400; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .copy-btn {
 	background: transparent; border: none; cursor: pointer;
@@ -197,7 +200,7 @@ html, body {
 	background: var(--accent-bg); border-radius: 3px;
 }
 .hist-content { flex: 1; min-width: 0; }
-.hist-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-title { font-size: 13px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-meta { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
 .hist-empty {
 	padding: 20px 10px; text-align: center; font-size: 12px;
@@ -219,7 +222,7 @@ html, body {
 .seg button {
 	padding: 4px 10px; border-radius: 4px; border: none;
 	background: transparent; color: var(--text-sub);
-	font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit;
+	font-size: 12px; font-weight: 400; cursor: pointer; font-family: inherit;
 }
 .seg button.active { background: var(--bg); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
