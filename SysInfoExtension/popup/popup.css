@@ -145,16 +145,18 @@ html, body {
  * on the same column as the other tabs; only the row backgrounds run wider. */
 .pad-rows { padding: 12px 8px 8px; }
 
-/* Status card */
+/* Status card. It carries the tab's subject, so it is the block that grows
+ * into the height the rest of the column leaves rather than the version chips
+ * below it, which are reference material. */
 .status-card {
-	display: flex; gap: 12px; padding: 14px;
+	display: flex; flex: 1; align-items: center; gap: 12px; padding: 14px;
 	border-radius: 8px; border: 1px solid var(--border-soft);
 }
 .status-card.ok { background: var(--ok-bg); }
 .status-card.err { background: var(--err-bg); }
 .status-card.warn { background: var(--warn-bg); }
 
-.status-dot-wrap { position: relative; width: 12px; height: 12px; margin-top: 4px; flex-shrink: 0; }
+.status-dot-wrap { position: relative; width: 12px; height: 12px; flex-shrink: 0; }
 .status-dot { position: absolute; inset: 0; border-radius: 999px; }
 .status-pulse { position: absolute; inset: -4px; border-radius: 999px; border: 2px solid currentColor; opacity: 0.5; animation: pulse 1.6s ease-out infinite; }
 
@@ -175,9 +177,10 @@ html, body {
 /* Uppercase Cyrillic carries no ascenders or descenders to recognise a word
  * by, so this label needs more size than a Latin one at the same rank. */
 .version-chip .lbl { font-size: 11px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.4px; }
-.version-chip .val { font-size: 13px; font-weight: 600; margin-top: 2px; color: var(--text); }
+.version-chip .vals { margin-top: 2px; font-size: 13px; line-height: 1.2; }
+.version-chip .val { font-weight: 600; color: var(--text); }
 .version-chip .val.warn { color: var(--warn-fg); }
-.version-chip .build { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.version-chip .build { font-size: 11px; color: var(--text-sub); }
 
 .action-row { display: flex; gap: 8px; margin-top: auto; padding-top: 12px; }
 

@@ -35,17 +35,21 @@ export function renderStatusTab() {
 		: (state.agentVersion || "v?");
 	const agentVerCls = "val" + (state.status === "version-mismatch" ? " warn" : "");
 
+	// The build stamp shares the version's line so that both chips stand the
+	// same height whether or not the agent reported one.
 	const agentChip = el("div", { class: "version-chip" }, [
 		el("div", { class: "lbl" }, t("agentVersion")),
-		el("div", { class: agentVerCls }, agentVer),
-		state.status !== "error" && state.agentBuild
-			? el("div", { class: "build" }, "build " + state.agentBuild)
-			: null
+		el("div", { class: "vals" }, [
+			el("span", { class: agentVerCls }, agentVer),
+			state.status !== "error" && state.agentBuild
+				? el("span", { class: "build" }, " · build " + state.agentBuild)
+				: null
+		])
 	]);
 
 	const extChip = el("div", { class: "version-chip" }, [
 		el("div", { class: "lbl" }, t("extVersion")),
-		el("div", { class: "val" }, "v" + state.extVersion)
+		el("div", { class: "vals" }, [el("span", { class: "val" }, "v" + state.extVersion)])
 	]);
 
 	const retryBtn = el("button", {
