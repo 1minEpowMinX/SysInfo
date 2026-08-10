@@ -1,24 +1,5 @@
 /* Atlassian-like popup CSS */
 
-/* Bundled rather than named and hoped for: a monospace family that is merely
- * installed renders a layout no user sees. Subsets are produced by
- * tools/subset-fonts.py, and the SIL OFL notice travels inside the font's own
- * name table. Blocking display is safe because the files are local. */
-@font-face {
-	font-family: "JetBrains Mono";
-	src: url("../assets/fonts/JetBrainsMono-Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: block;
-}
-@font-face {
-	font-family: "JetBrains Mono";
-	src: url("../assets/fonts/JetBrainsMono-SemiBold.woff2") format("woff2");
-	font-weight: 600;
-	font-style: normal;
-	font-display: block;
-}
-
 :root {
 	--bg: #FFFFFF;
 	--surface: #F7F8F9;
@@ -41,9 +22,6 @@
 	/* The same list is spelled out in content/toast.css, which is injected
 	 * into a foreign document and so cannot reach these properties. */
 	--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-	/* The bundled face answers first; the rest cover the case where it fails
-	 * to load, which is why the elements below still pin their line box. */
-	--mono: "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
 .theme-dark {
@@ -79,18 +57,19 @@ html, body {
 	font-size: 14px;
 }
 
-/* Monospace elements. The line box is pinned rather than left to the font:
- * JetBrains Mono asks for 1.32em of its own, and the fallback families ask for
- * yet other amounts, so an unpinned box changes height with whichever face is
- * in use. Every selector below must also carry an explicit font-size: Firefox
- * resolves relative sizes against the user's monospace default rather than
- * against the parent. */
+/* Identifiers shown inside a chip or a badge. Their line box is pinned rather
+ * than left to the font, because --sans resolves to a different family on every
+ * platform and those families disagree on the default line box by a pixel or
+ * two, which would make the chips a different height per system. Tabular
+ * figures keep the digits of one value under the digits of the next: the
+ * interface faces ship proportional figures, in which a 1 is narrower than a 0
+ * and the columns drift apart. */
 .version-chip .val,
 .version-chip .build,
 .hist-id,
 .chip {
-	font-family: var(--mono);
 	line-height: 1.2;
+	font-variant-numeric: tabular-nums;
 }
 
 /* Sizes throughout this file are absolute on purpose. The popup is a fixed
