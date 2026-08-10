@@ -93,6 +93,10 @@ html, body {
 	line-height: 1.2;
 }
 
+/* Sizes throughout this file are absolute on purpose. The popup is a fixed
+ * box that the browser refuses to grow past its own maximum, so type that
+ * scaled with the user's default font size would overflow it rather than
+ * reflow. Page zoom remains the way to enlarge the popup. */
 #root {
 	width: 380px;
 	background: var(--bg);
