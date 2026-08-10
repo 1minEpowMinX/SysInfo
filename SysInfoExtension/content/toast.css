@@ -9,6 +9,9 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	/* Duplicated from the --sans property in popup/popup.css. This file is
+	 * injected into a foreign document, where the popup's custom properties do
+	 * not exist and the page's own font must not be inherited either. */
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	color-scheme: light;
 }

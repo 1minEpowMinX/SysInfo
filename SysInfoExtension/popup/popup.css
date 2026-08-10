@@ -38,6 +38,9 @@
 	--warn-bg: #FFF7D6;
 	--warn-fg: #7F5F01;
 	--warn-dot: #E2B203;
+	/* The same list is spelled out in content/toast.css, which is injected
+	 * into a foreign document and so cannot reach these properties. */
+	--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	/* The bundled face answers first; the rest cover the case where it fails
 	 * to load, which is why the elements below still pin their line box. */
 	--mono: "JetBrains Mono", Menlo, Consolas, monospace;
@@ -72,7 +75,7 @@
 html, body {
 	margin: 0;
 	padding: 0;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-family: var(--sans);
 	font-size: 14px;
 }
 
