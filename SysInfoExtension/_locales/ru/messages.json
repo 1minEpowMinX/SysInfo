@@ -75,6 +75,12 @@
 	"sectionSysinfoSub": {
 		"message": "Что будет добавлено в новый тикет"
 	},
+	"sectionStatus": {
+		"message": "Состояние агента"
+	},
+	"sectionStatusSub": {
+		"message": "Связь с локальным приложением"
+	},
 	"sysinfoHostname": {
 		"message": "Имя устройства"
 	},

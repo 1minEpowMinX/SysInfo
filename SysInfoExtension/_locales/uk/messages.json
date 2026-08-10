@@ -75,6 +75,12 @@
 	"sectionSysinfoSub": {
 		"message": "Що буде додано в новий тікет"
 	},
+	"sectionStatus": {
+		"message": "Стан агента"
+	},
+	"sectionStatusSub": {
+		"message": "Зв'язок з локальним застосунком"
+	},
 	"sysinfoHostname": {
 		"message": "Ім'я пристрою"
 	},

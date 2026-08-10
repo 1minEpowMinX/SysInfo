@@ -157,7 +157,7 @@ html, body {
  * rules further down hand the leftover height to one element per tab rather
  * than letting it pool at the bottom edge, where it reads as a cut-off panel.
  * Re-measure the floor when a tab gains or loses a row. */
-.body { min-height: 308px; display: flex; flex-direction: column; }
+.body { min-height: 314px; display: flex; flex-direction: column; }
 .body > * { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .pad { padding: 12px 14px 12px; }
 .pad-tight { padding: 12px 14px 12px; }
@@ -185,9 +185,12 @@ html, body {
 .status-label.warn { color: var(--warn-fg); }
 .status-sub { font-size: 12px; color: var(--text-sub); margin-top: 4px; line-height: 1.45; }
 
-.version-row { display: flex; gap: 8px; margin-top: 10px; }
+/* Stacked rather than side by side: two chips in a row leave the tab short of
+ * content and force the rest of the layout to stretch, and a column puts both
+ * values on one left edge, where their digits can be read against each other. */
+.version-row { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .version-chip {
-	flex: 1; padding: 8px 10px; border-radius: 6px;
+	padding: 8px 10px; border-radius: 6px;
 	background: var(--surface); border: 1px solid var(--border-soft);
 }
 /* Uppercase Cyrillic carries no ascenders or descenders to recognise a word
@@ -209,10 +212,18 @@ html, body {
 .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn svg { width: 13px; height: 13px; }
 
+/* Section headings. The side inset belongs to the tab wrapper, so these rules
+ * carry only the type and the vertical rhythm. */
+.section-head .h,
+.info-head .h,
+.set-section .h { font-size: 12px; font-weight: 600; color: var(--text); }
+.section-head .s,
+.info-head .s,
+.set-section .s { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.section-head { padding-bottom: 8px; }
+
 /* Info tab rows */
 .info-head { padding: 0 6px 8px; }
-.info-head .h { font-size: 12px; font-weight: 600; color: var(--text); }
-.info-head .s { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
 .info-row {
 	display: flex; align-items: center; gap: 10px;
@@ -270,8 +281,6 @@ html, body {
 }
 .set-row .lbl { font-size: 13px; }
 .set-section { margin-top: 14px; }
-.set-section .h { font-size: 12px; font-weight: 600; color: var(--text); }
-.set-section .s { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
 /* Segmented */
 .seg { display: inline-flex; padding: 2px; border-radius: 6px; background: var(--surface2); gap: 2px; }

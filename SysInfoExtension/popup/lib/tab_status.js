@@ -8,10 +8,11 @@ import { statusInfo } from "./render.js";
 import { checkStatus } from "./agent.js";
 
 /**
- * The function `renderStatusTab` builds the Status tab body, which displays the agent
- * connection state as an animated card, a pair of version chips for the agent and the extension,
- * and a manual retry button that re-triggers `checkStatus`.
- * @returns A `div.pad` element containing the status card, version row, and action row.
+ * The function `renderStatusTab` builds the Status tab body, which displays a section heading,
+ * the agent connection state as an animated card, stacked version chips for the agent and the
+ * extension, and a manual retry button that re-triggers `checkStatus`.
+ * @returns A `div.pad` element containing the section heading, status card, version column, and
+ * action row.
  */
 export function renderStatusTab() {
 	const sc = statusInfo();
@@ -55,7 +56,13 @@ export function renderStatusTab() {
 		el("span", {}, t("retry"))
 	]);
 
+	const head = el("div", { class: "section-head" }, [
+		el("div", { class: "h" }, t("sectionStatus")),
+		el("div", { class: "s" }, t("sectionStatusSub"))
+	]);
+
 	return el("div", { class: "pad" }, [
+		head,
 		card,
 		el("div", { class: "version-row" }, [agentChip, extChip]),
 		el("div", { class: "action-row" }, [retryBtn])
