@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import sharp from "sharp";
 
-const ASSETS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "assets");
-const MASTER = path.join(ASSETS, "sysinfo_ext.svg");
+const ICONS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "assets", "icons");
+const MASTER = path.join(ICONS, "sysinfo_ext.svg");
 
 /**
  * Edge lengths of the generated icons, in device-independent pixels.
@@ -48,7 +48,7 @@ async function main() {
 	const master = await readFile(MASTER);
 	for (const size of SIZES) {
 		const png = await renderIcon(master, size);
-		const target = path.join(ASSETS, `sysinfo_ext_${size}.png`);
+		const target = path.join(ICONS, `sysinfo_ext_${size}.png`);
 		await writeFile(target, png);
 		console.log(`${path.basename(target).padEnd(22)} ${String(png.length).padStart(6)} B`);
 	}

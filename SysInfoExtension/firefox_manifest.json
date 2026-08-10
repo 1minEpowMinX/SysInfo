@@ -17,10 +17,10 @@
 	],
 	"action": {
 		"default_popup": "popup/popup.html",
-		"default_icon": "assets/sysinfo_ext.svg"
+		"default_icon": "assets/icons/sysinfo_ext.svg"
 	},
 	"icons": {
-		"48": "assets/sysinfo_ext.svg"
+		"48": "assets/icons/sysinfo_ext.svg"
 	},
 	"content_scripts": [
 		{

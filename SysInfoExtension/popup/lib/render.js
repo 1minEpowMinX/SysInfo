@@ -70,7 +70,7 @@ function renderHeader() {
 	return el("div", { class: "hdr" }, [
 		el("img", {
 			class: "hdr-logo",
-			src: "../assets/sysinfo_ext.svg",
+			src: "../assets/icons/sysinfo_ext.svg",
 			alt: ""
 		}),
 		el("div", { class: "hdr-text" }, [
