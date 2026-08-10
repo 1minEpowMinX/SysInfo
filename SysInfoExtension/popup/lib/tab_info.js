@@ -20,10 +20,10 @@ export function renderInfoTab() {
 	const isError = state.status === "error" || !sysinfo;
 	const fields = state.settings.fields;
 	const rows = [
-		{ key: "hostname", label: t("sysinfoHostname"), icon: I.device, mono: true, value: sysinfo?.hostname || "—" },
-		{ key: "username", label: t("sysinfoUsername"), icon: I.user, mono: false, value: sysinfo?.username || "—" },
-		{ key: "ip", label: t("sysinfoIP"), icon: I.ip, mono: true, value: sysinfo?.ip || "—" },
-		{ key: "lastBootTime", label: t("sysinfoLastBootTime"), icon: I.lastBootTime, mono: false, value: sysinfo?.lastBootTime || "—" }
+		{ key: "hostname", label: t("sysinfoHostname"), icon: I.device, value: sysinfo?.hostname || "—" },
+		{ key: "username", label: t("sysinfoUsername"), icon: I.user, value: sysinfo?.username || "—" },
+		{ key: "ip", label: t("sysinfoIP"), icon: I.ip, value: sysinfo?.ip || "—" },
+		{ key: "lastBootTime", label: t("sysinfoLastBootTime"), icon: I.lastBootTime, value: sysinfo?.lastBootTime || "—" }
 	].filter(r => fields[r.key]);
 
 	const head = el("div", { class: "info-head" }, [
@@ -37,7 +37,7 @@ export function renderInfoTab() {
 			el("div", { class: "info-icon" }, svgIcon(r.icon)),
 			el("div", { class: "info-content" }, [
 				el("div", { class: "info-label" }, r.label),
-				el("div", { class: "info-value" + (r.mono ? " mono" : "") }, r.value)
+				el("div", { class: "info-value" }, r.value)
 			]),
 			el("button", {
 				class: "copy-btn" + (isCopied ? " copied" : ""),

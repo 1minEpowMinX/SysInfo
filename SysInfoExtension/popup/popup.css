@@ -170,7 +170,6 @@ html, body {
 .info-content { flex: 1; min-width: 0; }
 .info-label { font-size: 11px; color: var(--text-sub); }
 .info-value { font-size: 13px; font-weight: 500; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.info-value.mono { font-family: var(--mono); }
 
 .copy-btn {
 	background: transparent; border: none; cursor: pointer;
