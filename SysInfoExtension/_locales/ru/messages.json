@@ -1,4 +1,8 @@
 {
+	"uiLocale": {
+		"message": "ru",
+		"description": "BCP 47 tag of this catalogue, used as the popup's lang attribute. Must match the _locales folder holding this file."
+	},
 	"extName": {
 		"message": "SysInfo для Jira SM"
 	},
