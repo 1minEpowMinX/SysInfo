@@ -12,7 +12,7 @@ import { fetchSysinfo, copyValue } from "./agent.js";
  * filtered by `state.settings.fields`. Each row shows an icon, label, value, and a copy button
  * that briefly switches to a checkmark after a successful clipboard write. A refresh button
  * triggers a new `fetchSysinfo` call.
- * @returns A `div.pad-tight` element containing the section heading, field rows, and refresh
+ * @returns A `div.pad-rows` element containing the section heading, field rows, and refresh
  * action.
  */
 export function renderInfoTab() {
@@ -55,7 +55,7 @@ export function renderInfoTab() {
 		el("span", {}, t("refresh"))
 	]);
 
-	return el("div", { class: "pad-tight", style: { padding: "12px 8px 8px" } }, [
+	return el("div", { class: "pad-rows" }, [
 		head,
 		list,
 		el("div", { class: "divider info-actions" }, [refreshBtn])

@@ -161,6 +161,10 @@ html, body {
 .body > * { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .pad { padding: 12px 14px 12px; }
 .pad-tight { padding: 12px 14px 12px; }
+/* The data rows carry an inset background of their own, so this tab pulls its
+ * side padding in by the width of that inset. Every piece of text still lands
+ * on the same column as the other tabs; only the row backgrounds run wider. */
+.pad-rows { padding: 12px 8px 8px; }
 
 /* Status card */
 .status-card {
