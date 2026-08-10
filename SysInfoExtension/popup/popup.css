@@ -33,24 +33,27 @@
 	--text: #E6EDF3;
 	--text-sub: #9FADBC;
 	--accent: #579DFF;
-	--accent-bg: rgba(87,157,255,0.14);
-	--ok-bg: rgba(34,160,107,0.14);
+	--accent-bg: rgba(87, 157, 255, 0.14);
+	--ok-bg: rgba(34, 160, 107, 0.14);
 	--ok-fg: #7EE2B8;
 	--ok-dot: #22A06B;
-	--err-bg: rgba(226,72,61,0.14);
+	--err-bg: rgba(226, 72, 61, 0.14);
 	--err-fg: #FF8F8F;
 	--err-dot: #E2483D;
-	--warn-bg: rgba(234,179,8,0.14);
+	--warn-bg: rgba(234, 179, 8, 0.14);
 	--warn-fg: #F5CD47;
 	--warn-dot: #E2B203;
 }
 
-* { box-sizing: border-box; }
+* {
+	box-sizing: border-box;
+}
 
 /* The system UI font ships no Medium face, so font-weight 500 resolves to the
  * Semibold face and paints identically to 600. Only 400 and 600 are distinct
  * steps here; a 500 anywhere below silently reads as bold. */
-html, body {
+html,
+body {
 	margin: 0;
 	padding: 0;
 	font-family: var(--sans);
@@ -90,6 +93,7 @@ html, body {
 	padding: 12px 14px;
 	border-bottom: 1px solid var(--border-soft);
 }
+
 .hdr-logo {
 	width: 28px;
 	height: 28px;
@@ -98,37 +102,101 @@ html, body {
 	display: block;
 	flex-shrink: 0;
 }
-.hdr-title { font-weight: 600; font-size: 14px; }
-.hdr-sub { font-size: 11px; color: var(--text-sub); }
-.hdr-text { flex: 1; min-width: 0; }
+
+.hdr-title {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.hdr-sub {
+	font-size: 11px;
+	color: var(--text-sub);
+}
+
+.hdr-text {
+	flex: 1;
+	min-width: 0;
+}
 
 .mini-pill {
-	display: flex; align-items: center; gap: 6px;
-	padding: 4px 9px; border-radius: 999px;
-	background: var(--surface); border: 1px solid var(--border-soft);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 9px;
+	border-radius: 999px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
 	font-size: 11px;
 }
-.mini-pill .dot-wrap { position: relative; width: 7px; height: 7px; }
-.mini-pill .dot { position: absolute; inset: 0; border-radius: 999px; }
-.mini-pill .pulse { position: absolute; inset: -3px; border-radius: 999px; border: 1.5px solid currentColor; opacity: 0.5; animation: pulse 1.6s ease-out infinite; }
 
-@keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
+.mini-pill .dot-wrap {
+	position: relative;
+	width: 7px;
+	height: 7px;
+}
+
+.mini-pill .dot {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+}
+
+.mini-pill .pulse {
+	position: absolute;
+	inset: -3px;
+	border-radius: 999px;
+	border: 1.5px solid currentColor;
+	opacity: 0.5;
+	animation: pulse 1.6s ease-out infinite;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+		opacity: 0.5;
+	}
+
+	100% {
+		transform: scale(1.8);
+		opacity: 0;
+	}
+}
 
 /* Tabs */
 .tabs {
-	display: flex; gap: 2px; padding: 4px 8px;
+	display: flex;
+	gap: 2px;
+	padding: 4px 8px;
 	border-bottom: 1px solid var(--border-soft);
 }
+
 .tab {
-	flex: 1; display: flex; align-items: center; justify-content: center;
-	gap: 5px; padding: 8px 4px; border: none; cursor: pointer;
-	background: transparent; color: var(--text-sub);
-	font-weight: 400; font-size: 12px; border-radius: 6px;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	padding: 8px 4px;
+	border: none;
+	cursor: pointer;
+	background: transparent;
+	color: var(--text-sub);
+	font-weight: 400;
+	font-size: 12px;
+	border-radius: 6px;
 	font-family: inherit;
 }
-.tab.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
 
-.tab svg { width: 14px; height: 14px; }
+.tab.active {
+	background: var(--accent-bg);
+	color: var(--accent);
+	font-weight: 600;
+}
+
+.tab svg {
+	width: 14px;
+	height: 14px;
+}
 
 /* Body */
 /* The floor is the height of the tallest tab that does not scroll, so moving
@@ -136,191 +204,527 @@ html, body {
  * rules further down hand the leftover height to one element per tab rather
  * than letting it pool at the bottom edge, where it reads as a cut-off panel.
  * Re-measure the floor when a tab gains or loses a row. */
-.body { min-height: 314px; display: flex; flex-direction: column; }
-.body > * { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.pad { padding: 12px 14px 12px; }
-.pad-tight { padding: 12px 14px 12px; }
+.body {
+	min-height: 314px;
+	display: flex;
+	flex-direction: column;
+}
+
+.body>* {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.pad {
+	padding: 12px 14px 12px;
+}
+
+.pad-tight {
+	padding: 12px 14px 12px;
+}
+
 /* The data rows carry an inset background of their own, so this tab pulls its
  * side padding in by the width of that inset. Every piece of text still lands
  * on the same column as the other tabs; only the row backgrounds run wider. */
-.pad-rows { padding: 12px 8px 8px; }
+.pad-rows {
+	padding: 12px 8px 8px;
+}
 
 /* Status card. It carries the tab's subject, so it is the block that grows
  * into the height the rest of the column leaves rather than the version chips
  * below it, which are reference material. */
 .status-card {
-	display: flex; flex: 1; align-items: center; gap: 12px; padding: 14px;
-	border-radius: 8px; border: 1px solid var(--border-soft);
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 12px;
+	padding: 14px;
+	border-radius: 8px;
+	border: 1px solid var(--border-soft);
 }
-.status-card.ok { background: var(--ok-bg); }
-.status-card.err { background: var(--err-bg); }
-.status-card.warn { background: var(--warn-bg); }
 
-.status-dot-wrap { position: relative; width: 12px; height: 12px; flex-shrink: 0; }
-.status-dot { position: absolute; inset: 0; border-radius: 999px; }
-.status-pulse { position: absolute; inset: -4px; border-radius: 999px; border: 2px solid currentColor; opacity: 0.5; animation: pulse 1.6s ease-out infinite; }
+.status-card.ok {
+	background: var(--ok-bg);
+}
 
-.status-label { font-weight: 600; font-size: 14px; }
-.status-label.ok { color: var(--ok-fg); }
-.status-label.err { color: var(--err-fg); }
-.status-label.warn { color: var(--warn-fg); }
-.status-sub { font-size: 12px; color: var(--text-sub); margin-top: 4px; line-height: 1.45; }
+.status-card.err {
+	background: var(--err-bg);
+}
+
+.status-card.warn {
+	background: var(--warn-bg);
+}
+
+.status-dot-wrap {
+	position: relative;
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+}
+
+.status-dot {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+}
+
+.status-pulse {
+	position: absolute;
+	inset: -4px;
+	border-radius: 999px;
+	border: 2px solid currentColor;
+	opacity: 0.5;
+	animation: pulse 1.6s ease-out infinite;
+}
+
+.status-label {
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.status-label.ok {
+	color: var(--ok-fg);
+}
+
+.status-label.err {
+	color: var(--err-fg);
+}
+
+.status-label.warn {
+	color: var(--warn-fg);
+}
+
+.status-sub {
+	font-size: 12px;
+	color: var(--text-sub);
+	margin-top: 4px;
+	line-height: 1.45;
+}
 
 /* Stacked rather than side by side: two chips in a row leave the tab short of
  * content and force the rest of the layout to stretch, and a column puts both
  * values on one left edge, where their digits can be read against each other. */
-.version-row { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.version-chip {
-	padding: 8px 10px; border-radius: 6px;
-	background: var(--surface); border: 1px solid var(--border-soft);
+.version-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 10px;
 }
+
+.version-chip {
+	padding: 8px 10px;
+	border-radius: 6px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+}
+
 /* Uppercase Cyrillic carries no ascenders or descenders to recognise a word
  * by, so this label needs more size than a Latin one at the same rank. */
-.version-chip .lbl { font-size: 11px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.4px; }
-.version-chip .vals { margin-top: 2px; font-size: 13px; line-height: 1.2; }
-.version-chip .val { font-weight: 600; color: var(--text); }
-.version-chip .val.warn { color: var(--warn-fg); }
-.version-chip .build { font-size: 11px; color: var(--text-sub); }
+.version-chip .lbl {
+	font-size: 11px;
+	color: var(--text-sub);
+	text-transform: uppercase;
+	letter-spacing: 0.4px;
+}
 
-.action-row { display: flex; gap: 8px; margin-top: auto; padding-top: 12px; }
+.version-chip .vals {
+	margin-top: 2px;
+	font-size: 13px;
+	line-height: 1.2;
+}
+
+.version-chip .val {
+	font-weight: 600;
+	color: var(--text);
+}
+
+.version-chip .val.warn {
+	color: var(--warn-fg);
+}
+
+.version-chip .build {
+	font-size: 11px;
+	color: var(--text-sub);
+}
+
+.action-row {
+	display: flex;
+	gap: 8px;
+	margin-top: auto;
+	padding-top: 12px;
+}
 
 .btn {
-	display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-	border-radius: 6px; font-size: 13px; font-weight: 400; padding: 8px 12px;
-	cursor: pointer; font-family: inherit; border: 1px solid transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 400;
+	padding: 8px 12px;
+	cursor: pointer;
+	font-family: inherit;
+	border: 1px solid transparent;
 }
-.btn-primary { flex: 1; background: var(--accent); color: #fff; font-weight: 600; }
-.btn-primary:disabled { background: var(--surface2); color: var(--text-sub); cursor: not-allowed; }
-.btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
-.btn svg { width: 13px; height: 13px; }
+
+.btn-primary {
+	flex: 1;
+	background: var(--accent);
+	color: #fff;
+	font-weight: 600;
+}
+
+.btn-primary:disabled {
+	background: var(--surface2);
+	color: var(--text-sub);
+	cursor: not-allowed;
+}
+
+.btn-ghost {
+	background: transparent;
+	color: var(--text);
+	border-color: var(--border);
+}
+
+.btn svg {
+	width: 13px;
+	height: 13px;
+}
 
 /* Section headings. The side inset belongs to the tab wrapper, so these rules
  * carry only the type and the vertical rhythm. */
 .section-head .h,
 .info-head .h,
-.set-section .h { font-size: 12px; font-weight: 600; color: var(--text); }
+.set-section .h {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text);
+}
+
 .section-head .s,
 .info-head .s,
-.set-section .s { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
-.section-head { padding-bottom: 8px; }
+.set-section .s {
+	font-size: 11px;
+	color: var(--text-sub);
+	margin-top: 2px;
+}
+
+.section-head {
+	padding-bottom: 8px;
+}
 
 /* Info tab rows */
-.info-head { padding: 0 6px 8px; }
+.info-head {
+	padding: 0 6px 8px;
+}
 
 .info-row {
-	display: flex; align-items: center; gap: 10px;
-	padding: 8px 10px; border-radius: 6px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: 6px;
 }
-.info-row.disabled { opacity: 0.4; }
+
+.info-row.disabled {
+	opacity: 0.4;
+}
+
 .info-icon {
-	width: 26px; height: 26px; border-radius: 6px;
-	background: var(--surface2); color: var(--text-sub);
-	display: grid; place-items: center; flex-shrink: 0;
+	width: 26px;
+	height: 26px;
+	border-radius: 6px;
+	background: var(--surface2);
+	color: var(--text-sub);
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
 }
-.info-icon svg { width: 14px; height: 14px; }
-.info-content { flex: 1; min-width: 0; }
-.info-label { font-size: 11px; color: var(--text-sub); }
-.info-value { font-size: 13px; font-weight: 400; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.info-icon svg {
+	width: 14px;
+	height: 14px;
+}
+
+.info-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.info-label {
+	font-size: 11px;
+	color: var(--text-sub);
+}
+
+.info-value {
+	font-size: 13px;
+	font-weight: 400;
+	margin-top: 1px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
 
 .copy-btn {
-	background: transparent; border: none; cursor: pointer;
-	color: var(--text-sub); padding: 6px; border-radius: 4px;
-	display: grid; place-items: center;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--text-sub);
+	padding: 6px;
+	border-radius: 4px;
+	display: grid;
+	place-items: center;
 }
-.copy-btn.copied { color: var(--ok-dot); }
-.copy-btn svg { width: 13px; height: 13px; }
 
-.divider { border-top: 1px solid var(--border-soft); margin-top: 6px; padding-top: 10px; }
-.info-actions { display: flex; gap: 8px; margin-top: auto; padding: 6px 6px 4px; }
+.copy-btn.copied {
+	color: var(--ok-dot);
+}
+
+.copy-btn svg {
+	width: 13px;
+	height: 13px;
+}
+
+.divider {
+	border-top: 1px solid var(--border-soft);
+	margin-top: 6px;
+	padding-top: 10px;
+}
+
+.info-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: auto;
+	padding: 6px 6px 4px;
+}
 
 /* History */
-.hist-list { display: flex; flex-direction: column; gap: 4px; }
+.hist-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
 .hist-item {
-	display: flex; align-items: center; gap: 10px;
-	padding: 8px 10px; border-radius: 6px;
-	text-decoration: none; color: var(--text);
-	border: 1px solid var(--border-soft); background: var(--bg);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: 6px;
+	text-decoration: none;
+	color: var(--text);
+	border: 1px solid var(--border-soft);
+	background: var(--bg);
 }
-.hist-item:hover { background: var(--surface); }
+
+.hist-item:hover {
+	background: var(--surface);
+}
+
 .hist-id {
-	font-size: 11px; font-weight: 600;
-	color: var(--accent); padding: 2px 6px;
-	background: var(--accent-bg); border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--accent);
+	padding: 2px 6px;
+	background: var(--accent-bg);
+	border-radius: 3px;
 }
-.hist-content { flex: 1; min-width: 0; }
-.hist-title { font-size: 13px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.hist-meta { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+
+.hist-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.hist-title {
+	font-size: 13px;
+	font-weight: 400;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.hist-meta {
+	font-size: 11px;
+	color: var(--text-sub);
+	margin-top: 1px;
+}
+
 .hist-empty {
-	flex: 1; display: grid; place-items: center;
-	padding: 20px 10px; text-align: center; font-size: 12px;
-	color: var(--text-sub); border: 1px dashed var(--border); border-radius: 6px;
+	flex: 1;
+	display: grid;
+	place-items: center;
+	padding: 20px 10px;
+	text-align: center;
+	font-size: 12px;
+	color: var(--text-sub);
+	border: 1px dashed var(--border);
+	border-radius: 6px;
 }
 
 /* Settings */
 .set-row {
-	display: flex; align-items: center; justify-content: space-between;
-	gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border-soft);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 0;
+	border-bottom: 1px solid var(--border-soft);
 }
-.set-row .lbl { font-size: 13px; }
-.set-section { margin-top: 14px; }
+
+.set-row .lbl {
+	font-size: 13px;
+}
+
+.set-section {
+	margin-top: 14px;
+}
 
 /* Segmented */
-.seg { display: inline-flex; padding: 2px; border-radius: 6px; background: var(--surface2); gap: 2px; }
+.seg {
+	display: inline-flex;
+	padding: 2px;
+	border-radius: 6px;
+	background: var(--surface2);
+	gap: 2px;
+}
+
 .seg button {
-	padding: 4px 10px; border-radius: 4px; border: none;
-	background: transparent; color: var(--text-sub);
-	font-size: 12px; font-weight: 400; cursor: pointer; font-family: inherit;
-}
-.seg button.active { background: var(--bg); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-
-/* Toggle */
-.toggle-row {
-	display: flex; align-items: center; gap: 10px;
-	padding: 6px 0; cursor: pointer; user-select: none;
-}
-.toggle-row .lbl { flex: 1; font-size: 13px; }
-.toggle {
-	position: relative; width: 32px; height: 18px; border-radius: 999px;
-	background: var(--surface2); transition: background 120ms;
-	flex-shrink: 0;
-}
-.toggle.on { background: var(--accent); }
-.toggle::after {
-	content: ""; position: absolute; top: 2px; left: 2px;
-	width: 14px; height: 14px; border-radius: 999px; background: #fff;
-	box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: left 120ms;
-}
-.toggle.on::after { left: 16px; }
-
-/* Flat ID chip list — used for both portal IDs and ticket-type IDs. */
-.id-list {
-	display: flex; flex-wrap: wrap; gap: 4px;
-	margin-top: 8px;
-}
-.chip {
-	font-size: 11px; color: var(--text);
-	padding: 2px 8px; border-radius: 999px;
-	background: var(--bg); border: 1px solid var(--border);
-	display: inline-flex; align-items: center; gap: 4px;
-}
-.chip-removable { padding-right: 4px; }
-.chip-x {
-	background: transparent; border: none; cursor: pointer;
-	color: var(--text-sub); font-size: 13px; line-height: 1;
-	/* Named rather than inherited: the enclosing chip is monospace, and this
-	 * button is interface furniture rather than part of the identifier. */
-	padding: 0 4px; border-radius: 999px; font-family: var(--sans);
-}
-.chip-x:hover { color: var(--err-fg); background: var(--err-bg); }
-.chip.add {
-	color: var(--text-sub); background: transparent;
-	border: 1px dashed var(--border); cursor: pointer;
+	padding: 4px 10px;
+	border-radius: 4px;
+	border: none;
+	background: transparent;
+	color: var(--text-sub);
+	font-size: 12px;
+	font-weight: 400;
+	cursor: pointer;
 	font-family: inherit;
 }
 
-.scroll { max-height: 500px; overflow-y: auto; }
-.scroll::-webkit-scrollbar { width: 6px; }
-.scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.seg button.active {
+	background: var(--bg);
+	color: var(--text);
+	font-weight: 600;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
 
-.spin { animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* Toggle */
+.toggle-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 0;
+	cursor: pointer;
+	user-select: none;
+}
+
+.toggle-row .lbl {
+	flex: 1;
+	font-size: 13px;
+}
+
+.toggle {
+	position: relative;
+	width: 32px;
+	height: 18px;
+	border-radius: 999px;
+	background: var(--surface2);
+	transition: background 120ms;
+	flex-shrink: 0;
+}
+
+.toggle.on {
+	background: var(--accent);
+}
+
+.toggle::after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 14px;
+	height: 14px;
+	border-radius: 999px;
+	background: #fff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+	transition: left 120ms;
+}
+
+.toggle.on::after {
+	left: 16px;
+}
+
+/* Flat ID chip list — used for both portal IDs and ticket-type IDs. */
+.id-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 8px;
+}
+
+.chip {
+	font-size: 11px;
+	color: var(--text);
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--bg);
+	border: 1px solid var(--border);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.chip-removable {
+	padding-right: 4px;
+}
+
+.chip-x {
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--text-sub);
+	font-size: 13px;
+	line-height: 1;
+	padding: 0 4px;
+	border-radius: 999px;
+	font-family: var(--sans);
+}
+
+.chip-x:hover {
+	color: var(--err-fg);
+	background: var(--err-bg);
+}
+
+.chip.add {
+	color: var(--text-sub);
+	background: transparent;
+	border: 1px dashed var(--border);
+	cursor: pointer;
+	font-family: inherit;
+}
+
+.scroll {
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+.scroll::-webkit-scrollbar {
+	width: 6px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 999px;
+}
+
+.spin {
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
