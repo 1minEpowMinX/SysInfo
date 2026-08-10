@@ -176,10 +176,12 @@ html, body {
 	flex: 1; padding: 8px 10px; border-radius: 6px;
 	background: var(--surface); border: 1px solid var(--border-soft);
 }
-.version-chip .lbl { font-size: 10px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.4px; }
+/* Uppercase Cyrillic carries no ascenders or descenders to recognise a word
+ * by, so this label needs more size than a Latin one at the same rank. */
+.version-chip .lbl { font-size: 11px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.4px; }
 .version-chip .val { font-size: 13px; font-weight: 600; margin-top: 2px; color: var(--text); }
 .version-chip .val.warn { color: var(--warn-fg); }
-.version-chip .build { font-size: 10px; color: var(--text-sub); margin-top: 2px; }
+.version-chip .build { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
 .action-row { display: flex; gap: 8px; margin-top: 12px; }
 
