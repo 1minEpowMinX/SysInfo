@@ -25,11 +25,12 @@ const SIZES = [16, 24, 32, 48, 64, 96, 128, 256, 512];
 const PNG_OPTIONS = { compressionLevel: 9, adaptiveFiltering: true, palette: false };
 
 /**
- * The function `renderIcon` rasterizes the master SVG and scales the result to a square of
- * `size` edge length. The SVG is rasterized at its intrinsic 512 px and downsampled with a
- * Lanczos-3 kernel, which supersamples the small sizes instead of aliasing their thin strokes.
- * @param master Contents of the master SVG file.
- * @param size Edge length of the requested icon, in pixels.
+ * Rasterizes the master SVG and scales the result to a square of `size` edge length.
+ *
+ * The SVG is rasterized at its intrinsic 512 px and downsampled with a Lanczos-3 kernel, which
+ * supersamples the small sizes instead of aliasing their thin strokes.
+ * @param master - Contents of the master SVG file.
+ * @param size - Edge length of the requested icon, in pixels.
  * @returns A promise for the encoded PNG.
  */
 function renderIcon(master, size) {
@@ -40,8 +41,7 @@ function renderIcon(master, size) {
 }
 
 /**
- * The function `main` regenerates every icon in `SIZES` and reports the byte count of each
- * file it writes.
+ * Regenerates every icon in `SIZES` and reports the byte count of each file it writes.
  * @returns A promise that settles once the whole set has been written.
  */
 async function main() {

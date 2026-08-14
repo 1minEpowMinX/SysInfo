@@ -1,5 +1,5 @@
 // Inline-SVG icon dictionary used by every tab.
-// Each entry is a raw <svg> string injected via the `html` attribute of el().
+// Each entry is a raw <svg> string, parsed into an element by svgIcon() in dom.js.
 
 export const I = {
 	status: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',

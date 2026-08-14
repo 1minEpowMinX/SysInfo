@@ -9,9 +9,8 @@ export const BOOT_TIME_KEY = "lastBootTime";
 export const LEGACY_BOOT_TIME_KEY = "uptime";
 
 /**
- * The function `normalizeSysInfo` maps a raw `/systeminfo` payload onto the field names the
- * extension uses internally, resolving the last boot time from whichever of the two wire names
- * the agent sent.
+ * Maps a raw `/systeminfo` payload onto the field names the extension uses internally, resolving
+ * the last boot time from whichever of the two wire names the agent sent.
  *
  * A field the payload omits stays undefined rather than being filled in here: the agent reports
  * an unobtainable value as an empty string, and how either is spelled belongs to the caller that

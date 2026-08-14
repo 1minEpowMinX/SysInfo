@@ -8,11 +8,9 @@ import { statusInfo } from "./render.js";
 import { checkStatus } from "./agent.js";
 
 /**
- * The function `renderStatusTab` builds the Status tab body, which displays a section heading,
- * the agent connection state as an animated card, stacked version chips for the agent and the
- * extension, and a manual retry button that re-triggers `checkStatus`.
- * @returns A `div.pad` element containing the section heading, status card, version column, and
- * action row.
+ * Builds the Status tab: the agent's state as a card, a version chip for each side, and a
+ * button that pings the agent again.
+ * @returns The tab body.
  */
 export function renderStatusTab() {
 	const sc = statusInfo();

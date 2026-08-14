@@ -23,8 +23,8 @@ const DEFAULT_SETTINGS = {
 };
 
 /**
- * The function `defaultSettings` returns the built-in settings as an object no other holder
- * shares: the nested `fields` and the two arrays are copies of their own.
+ * Returns the built-in settings as an object no other holder shares: the nested `fields` and
+ * the two arrays are copies of their own.
  * @returns A settings object safe to edit in place.
  */
 export function defaultSettings() {

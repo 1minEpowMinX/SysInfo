@@ -12,8 +12,7 @@ import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
 const orFallback = (value, fallbackKey) => value || t(fallbackKey);
 
 /**
- * The function `buildSysInfoLines` renders the fields of an agent payload as labelled lines and
- * joins them in pairs.
+ * Renders the fields of an agent payload as labelled lines, joined in pairs.
  * @param data - A normalized payload, carrying `hostname`, `username`, `ip` and `lastBootTime`.
  * @returns An array of strings, each holding two labelled fields joined by ", ".
  */
@@ -32,12 +31,11 @@ export function buildSysInfoLines(data) {
 }
 
 /**
- * The function `makeDivider` returns a run of `char` as wide as `percent` of the longest string
- * in `lines`.
+ * Returns a run of `char` as wide as `percent` of the longest string in `lines`.
  * @param lines - The lines the divider is drawn above.
- * @param [char=─] - The character the run is built from.
- * @param [percent=0.45] - The fraction of the longest line the run spans.
- * @returns A string of `char` repeated, rounded down to a whole number of characters.
+ * @param char - The character the run is built from.
+ * @param percent - The fraction of the longest line the run spans.
+ * @returns The repeated character, rounded down to a whole number of characters.
  */
 export function makeDivider(lines, char = "─", percent = 0.45) {
 	const maxLen = Math.max(...lines.map(l => l.length));
@@ -45,11 +43,10 @@ export function makeDivider(lines, char = "─", percent = 0.45) {
 }
 
 /**
- * The function `alreadyInserted` reports whether `target` already carries `divider`.
+ * Reports whether `target` already carries `divider`.
  * @param target - The editor element, read through `value` when it has one and `innerText`
  * otherwise.
  * @param divider - The divider string to search for.
- * @returns True when the divider is present.
  */
 export function alreadyInserted(target, divider) {
 	const haystack = ("value" in target ? target.value : target.innerText) || "";
@@ -57,13 +54,13 @@ export function alreadyInserted(target, divider) {
 }
 
 /**
- * The function `requestSysInfo` asks the background script for an agent payload, retrying on a
- * messaging error, an unsuccessful response or a thrown exception.
+ * Asks the background script for an agent payload, retrying on a messaging error, an
+ * unsuccessful response or a thrown exception.
  *
- * Attempts are spaced `SYSINFO_REQUEST_RETRY_MS` apart and every outcome is logged.
+ * Attempts are spaced SYSINFO_REQUEST_RETRY_MS apart and every outcome is logged.
  * @param callback - Receives the payload normalized onto the internal field names, or null once
  * every attempt has failed.
- * @param [retriesLeft] - The attempts still available; defaults to `SYSINFO_REQUEST_RETRIES`.
+ * @param retriesLeft - The attempts still available.
  */
 export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
 	const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;

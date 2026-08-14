@@ -8,8 +8,7 @@ import { showToast } from "./toast.js";
 import { markPendingInsertion } from "./history.js";
 
 /**
- * The function `insertSysInfoInto` writes the sysinfo block into `target` and records the
- * insertion in the history.
+ * Writes the sysinfo block into `target` and records the insertion in the history.
  *
  * Returns without touching `target` when the path is not a ticket form, when the portal or the
  * ticket type is outside the whitelist, or when the block is already there.
@@ -45,8 +44,9 @@ function insertSysInfoInto(target, data) {
 }
 
 /**
- * The function `watchEditor` inserts `data` into the editor every time a new editor element
- * appears, driven by a poll every `INSERTION_TICK_MS` and by a MutationObserver on the body.
+ * Inserts `data` into the editor every time a new editor element appears.
+ *
+ * A poll every INSERTION_TICK_MS and a MutationObserver on the body both drive the check.
  * @param data - A normalized `/systeminfo` payload, held in the closure so that a tick stays
  * synchronous.
  */
@@ -68,7 +68,8 @@ function watchEditor(data) {
 }
 
 /**
- * The function `startInsertion` fetches an agent payload and arms the editor watcher with it.
+ * Fetches an agent payload and arms the editor watcher with it.
+ *
  * The watcher stays unarmed when the fetch fails.
  */
 export function startInsertion() {

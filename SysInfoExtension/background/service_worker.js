@@ -1,5 +1,5 @@
 // Background service worker — proxies HTTP requests to the local SysInfo
-// agent on localhost:8734 and reports its own diagnostic state.
+// agent at AGENT_BASE and reports its own diagnostic state.
 
 // Cross-browser alias
 if (typeof browser === "undefined") {
@@ -15,29 +15,25 @@ blog("service worker started", { runtimeId: browser.runtime.id });
 const AGENT_BASE = "http://localhost:8734";
 
 /**
- * The function fetchOptions returns an object with headers containing a key "X-Sysinfo-Client" with
- * the value of browser.runtime.id.
- * @returns An object with a `headers` property containing an object with a key-value pair of
- * `"X-Sysinfo-Client": browser.runtime.id`.
+ * Returns the fetch options every agent request carries, identifying this
+ * extension instance to the agent.
+ * @returns An options object holding the client header.
  */
 function fetchOptions() {
 	return { headers: { "X-Sysinfo-Client": browser.runtime.id } };
 }
 
 /**
- * The `proxyFetch` function sends a fetch request to a specified path, parses the response based on
- * the specified format, and sends the response or error message along with a label to the designated
- * function.
- * @param path - The `path` parameter in the `proxyFetch` function represents the URL path that you
- * want to fetch data from.
- * @param parseAs - The `parseAs` parameter in the `proxyFetch` function specifies how the response
- * data should be parsed. It can have two possible values:
- * @param sendResponse - The `sendResponse` parameter in the `proxyFetch` function is a function that
- * is used to send the response data back to the caller of the function. It is called with the response
- * data as an argument once the fetch operation is completed. The response data can either be the
- * parsed JSON data or
- * @param label - The `label` parameter is a string that is used to identify the specific fetch request
- * being made. It is used in logging messages to provide context for the request.
+ * Forwards a request to the agent and answers the caller with the parsed body.
+ *
+ * A failure answers with a `success: false` object carrying the message rather than rejecting,
+ * so a caller waiting on the reply always settles. Both outcomes are logged with their elapsed
+ * time.
+ * @param path - Path appended to AGENT_BASE.
+ * @param parseAs - Selects the parser and the reply shape: "text" parses text and answers
+ * through `text`, "json" parses JSON and answers through `data`.
+ * @param sendResponse - The onMessage reply callback.
+ * @param label - Names the request in the log lines.
  */
 function proxyFetch(path, parseAs, sendResponse, label) {
 	const tStart = Date.now();
@@ -53,11 +49,10 @@ function proxyFetch(path, parseAs, sendResponse, label) {
 		});
 }
 
-/* Setting up an event listener for messages sent to the background service
-worker. When a message is received, it checks the `msg.action` property to determine the type of
-action requested. */
 browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	if (!msg || !msg.action) return;
+	// Only this extension's own content scripts and popup are served; a message
+	// carrying another extension's ID is dropped without a reply.
 	if (sender.id && sender.id !== browser.runtime.id) return;
 
 	if (msg.action === "diagPing") {
@@ -85,26 +80,18 @@ browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	bwarn("unknown action", msg.action);
 });
 
-/* Setting up an event listener for the `onInstalled` event in the browser runtime API. */
 browser.runtime.onInstalled && browser.runtime.onInstalled.addListener((details) => {
 	blog("onInstalled", details);
 	checkHostPermissions();
 });
 
-/* Setting up an event listener for the `onStartup` event in the browser runtime API. */
 browser.runtime.onStartup && browser.runtime.onStartup.addListener(() => {
 	blog("onStartup");
 	checkHostPermissions();
 });
 
 /**
- * The function `checkHostPermissions` checks if the required host permissions are granted and logs the
- * status accordingly.
- * @returns The `checkHostPermissions` function returns either a log message indicating that no host
- * permissions are declared in the manifest, or a message indicating whether all required origins have
- * been granted permissions. If all required origins have been granted permissions, it logs a message
- * saying "permissions ✓ all required origins granted" along with the list of required origins. If some
- * origins are missing permissions, it logs a message saying "permissions.
+ * Reports through the log whether every origin the manifest requires has been granted.
  */
 async function checkHostPermissions() {
 	const required = browser.runtime.getManifest().host_permissions || [];
@@ -129,6 +116,6 @@ async function checkHostPermissions() {
 	}
 }
 
-// Also runs on every cold SW spin-up — gives a fresh report in the
-// console regardless of which lifecycle event woke us.
+// Also runs on every cold SW spin-up — gives a fresh report in the console
+// regardless of which lifecycle event woke the worker.
 checkHostPermissions();

@@ -8,12 +8,12 @@ import { I } from "./icons.js";
 import { fetchSysinfo, copyValue } from "./agent.js";
 
 /**
- * The function `renderInfoTab` builds the Data tab body, which lists the current sysinfo fields
- * filtered by `state.settings.fields`. Each row shows an icon, label, value, and a copy button
- * that briefly switches to a checkmark after a successful clipboard write. A refresh button
- * triggers a new `fetchSysinfo` call.
- * @returns A `div.pad-rows` element containing the section heading, field rows, and refresh
- * action.
+ * Builds the Data tab: one row per field the user has left visible, each with a copy button,
+ * and a button that reads the values again.
+ *
+ * An unreachable agent renders the rows disabled rather than dropping them, so the tab keeps
+ * its shape.
+ * @returns The tab body.
  */
 export function renderInfoTab() {
 	const sysinfo = state.sysinfo;

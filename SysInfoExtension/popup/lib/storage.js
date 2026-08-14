@@ -1,24 +1,19 @@
 // Persistence layer — settings and history live in browser.storage.local
-// under the same keys the content script uses (see content/lib/constants.js).
+// under the keys shared with the content script (see shared/constants.js).
 
 import { STORAGE_KEY, HISTORY_KEY, defaultSettings } from "./constants.js";
 import { state } from "./state.js";
 
-/**
- * The function `saveSettings` persists the current `state.settings` object to
- * `browser.storage.local` under `STORAGE_KEY`.
- */
+/** Writes the current settings to storage under STORAGE_KEY. */
 export function saveSettings() {
 	browser.storage.local.set({ [STORAGE_KEY]: state.settings });
 }
 
 /**
- * The function `asStringList` validates that `value` is an array containing only strings and
- * returns it as-is, including an empty array. Returns `null` when the value fails validation so
- * callers can fall back to a default.
- * @param value - The value to validate.
- * @returns The original array if it is a valid string array (including empty), or `null` if
- * validation fails.
+ * Accepts `value` as a list of IDs.
+ * @param value - The value read from storage.
+ * @returns The array itself when it holds strings alone, an empty array included, and null
+ * otherwise, which lets the caller tell an emptied list from an unusable one.
  */
 function asStringList(value) {
 	if (!Array.isArray(value)) return null;
@@ -27,8 +22,8 @@ function asStringList(value) {
 }
 
 /**
- * The function `migrateFields` renames the stored field-visibility flags written by a build that
- * still called the last boot time "uptime", so that a user who hid the field keeps it hidden.
+ * Renames the stored field-visibility flags written by a build that still called the last boot
+ * time "uptime", so that a user who hid the field keeps it hidden.
  * @param stored - The `fields` object read from storage, or a nullish value when absent.
  * @returns A copy carrying the current names alone.
  */
@@ -42,9 +37,10 @@ function migrateFields(stored) {
 }
 
 /**
- * The function `loadSettings` reads settings and history from `browser.storage.local`, merges
- * them with defaults, and writes the result into `state.settings` and `state.history`. On any
- * storage error the state is left untouched so the popup renders with built-in defaults.
+ * Reads the settings and the history from storage into the state, each setting merged over its
+ * default.
+ *
+ * Does not throw: a storage error leaves the built-in defaults in place.
  */
 export async function loadSettings() {
 	try {
@@ -58,5 +54,5 @@ export async function loadSettings() {
 			types: asStringList(stored.types) || defaults.types
 		};
 		state.history = r[HISTORY_KEY] || [];
-	} catch (e) { }
+	} catch (e) { /* defaults from state.js stay in place */ }
 }
