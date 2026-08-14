@@ -49,7 +49,7 @@
   ];
 
   // content/lib/constants.js
-  var PENDING_TTL_MS = 30 * 60 * 1e3;
+  var SUBMIT_TTL_MS = 2 * 60 * 1e3;
   var SYSINFO_REQUEST_RETRIES = 5;
   var SYSINFO_REQUEST_RETRY_MS = 2e3;
   var INSERTION_TICK_MS = 2e3;
@@ -57,6 +57,7 @@
   var FORM_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/create\/(\d+)/;
   var TICKET_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/([A-Z][A-Z0-9]+-\d+)(?:\/|$)/;
   var EDITOR_SELECTOR = "#ak-editor-textarea > p";
+  var SUBMIT_CONTROL_SELECTOR = 'button[type="submit"], input[type="submit"], form .buttons-container button.aui-button.aui-button-primary';
   var TITLE_SELECTOR = "#content > div > header > div > div > div.cv-global-level-title > div.aui-page-header-main.cv-page-title-main > h1 > span";
   var TITLE_WAIT_MS = 5e3;
 
@@ -103,7 +104,13 @@
   // content/lib/history.js
   var pendingInsertion = null;
   function markPendingInsertion(portalId, typeId) {
-    pendingInsertion = { portalId, typeId, formPath: location.pathname, at: Date.now() };
+    pendingInsertion = { portalId, typeId, formPath: location.pathname, submittedAt: null };
+  }
+  function markFormSubmitted() {
+    if (!pendingInsertion) return;
+    if (location.pathname !== pendingInsertion.formPath) return;
+    pendingInsertion.submittedAt = Date.now();
+    slog("history: form submitted", { formPath: pendingInsertion.formPath });
   }
   function detectCreatedTicket(pathname) {
     const m = pathname.match(TICKET_PATH_RE);
@@ -130,13 +137,13 @@
       observer.observe(document.body, { childList: true, subtree: true });
     });
   }
-  function finalizeHistoryIfCreated(fromPath) {
+  function finalizeHistoryIfCreated() {
     if (!pendingInsertion) return;
-    if (Date.now() - pendingInsertion.at > PENDING_TTL_MS) {
+    if (!pendingInsertion.submittedAt) {
       pendingInsertion = null;
       return;
     }
-    if (fromPath !== void 0 && fromPath !== pendingInsertion.formPath) {
+    if (Date.now() - pendingInsertion.submittedAt > SUBMIT_TTL_MS) {
       pendingInsertion = null;
       return;
     }
@@ -179,11 +186,30 @@
     const prev = lastPathname;
     lastPathname = location.pathname;
     slog("url change", { from: prev, to: lastPathname });
-    finalizeHistoryIfCreated(prev);
+    finalizeHistoryIfCreated();
   }
   function setupUrlWatcher() {
     setInterval(checkUrlChange, URL_TICK_MS);
     window.addEventListener("popstate", checkUrlChange);
+  }
+
+  // content/lib/submit_watcher.js
+  function isSubmitControl(node) {
+    return node instanceof Element && node.closest(SUBMIT_CONTROL_SELECTOR) !== null;
+  }
+  function checkSubmitEvent(event) {
+    if (event.submitter && !isSubmitControl(event.submitter)) return;
+    slog("form submit event");
+    markFormSubmitted();
+  }
+  function checkSubmitClick(event) {
+    if (!isSubmitControl(event.target)) return;
+    slog("submit control clicked");
+    markFormSubmitted();
+  }
+  function setupSubmitWatcher() {
+    document.addEventListener("submit", checkSubmitEvent, true);
+    document.addEventListener("click", checkSubmitClick, true);
   }
 
   // shared/sysinfo_payload.js
@@ -394,7 +420,7 @@ ${lines.join("\n")}`;
   // content/content_script.js
   slog("bootstrap", { pathname: location.pathname, readyState: document.readyState });
   loadPortals();
-  finalizeHistoryIfCreated();
   setupUrlWatcher();
+  setupSubmitWatcher();
   startInsertion();
 })();

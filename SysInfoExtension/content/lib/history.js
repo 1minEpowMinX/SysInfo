@@ -1,28 +1,42 @@
 // Deferred ticket history.
 
 import { slog } from "./compat.js";
-import { PENDING_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
+import { SUBMIT_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
 import { isTicketAllowed } from "./portals.js";
 
 let pendingInsertion = null;
 
 /**
- * The function `markPendingInsertion` records that sysinfo was just inserted into the form at the
- * current pathname. The record is later matched against a ticket-page URL by
- * `finalizeHistoryIfCreated` to confirm the ticket was actually created from this form.
- * @param portalId - The portal ID extracted from the form URL.
- * @param typeId - The ticket-type ID extracted from the form URL.
+ * Records that the sysinfo block was inserted into the form at the current pathname.
+ *
+ * The record reaches the history only once `markFormSubmitted` reports the form sent; until
+ * then the first navigation drops it.
+ * @param portalId - The portal ID from the form URL.
+ * @param typeId - The ticket-type ID from the form URL.
  */
 export function markPendingInsertion(portalId, typeId) {
-	pendingInsertion = { portalId, typeId, formPath: location.pathname, at: Date.now() };
+	pendingInsertion = { portalId, typeId, formPath: location.pathname, submittedAt: null };
 }
 
 /**
- * The function `detectCreatedTicket` extracts the portal ID and ticket key from a given pathname using
- * a regular expression.
- * @param pathname - The `pathname` parameter is a string that represents the URL path of a web page.
- * @returns An object with the properties `portalId` and `ticketKey` if the `pathname` matches the
- * `TICKET_PATH_RE` regular expression pattern, otherwise `null` is returned.
+ * Records that the form carrying the pending insertion was sent.
+ *
+ * Sending again restarts the window, which is what an attempt the portal rejected leads to.
+ */
+export function markFormSubmitted() {
+	if (!pendingInsertion) return;
+	// Read from location rather than from the URL watcher's last poll: a submission can land
+	// between two polls, and a stale pathname would reject a legitimate one.
+	if (location.pathname !== pendingInsertion.formPath) return;
+	pendingInsertion.submittedAt = Date.now();
+	slog("history: form submitted", { formPath: pendingInsertion.formPath });
+}
+
+/**
+ * Extracts the portal ID and the ticket key from a ticket-page pathname.
+ * @param pathname - The pathname to match against TICKET_PATH_RE.
+ * @returns An object carrying `portalId` and `ticketKey`, or null when the pathname is not a
+ * ticket page.
  */
 function detectCreatedTicket(pathname) {
 	const m = pathname.match(TICKET_PATH_RE);
@@ -30,13 +44,9 @@ function detectCreatedTicket(pathname) {
 }
 
 /**
- * The function `waitForHeading` uses a Promise to wait for a specific heading element to appear in the
- * document and resolves with the text content of the heading once it is available.
- * @returns The `waitForHeading` function returns a Promise that resolves to the text content of the
- * heading element selected by the `TITLE_SELECTOR` constant after it becomes available in the
- * document. If the heading element is already present, the Promise resolves immediately with the
- * trimmed text content of the existing heading. If the heading element is not found within the
- * specified time limit (`TITLE_WAIT_MS`), the Promise resolves with `
+ * Waits for the ticket heading to enter the document and reads its text.
+ * @returns A promise for the trimmed heading text, or null once TITLE_WAIT_MS has passed without
+ * the heading appearing.
  */
 function waitForHeading() {
 	return new Promise((resolve) => {
@@ -64,37 +74,29 @@ function waitForHeading() {
 }
 
 /**
- * The function `finalizeHistoryIfCreated` checks whether the current page is the ticket that was
- * created from the pending form insertion and, if so, saves an entry to history.
+ * Saves a history entry when the current page is the ticket the submitted form created.
  *
- * Two guards are applied before saving:
- *  1. **Form-path guard** — `fromPath` must equal the pathname recorded by `markPendingInsertion`.
- *     Any intermediate navigation (back/forward, external link) clears the pending state so stale
- *     records cannot match a later, unrelated ticket visit.
- *  2. **Whitelist re-check** — `isTicketAllowed` is called against the stored form path to confirm
- *     the portal/type pair is still in the user's whitelist at finalization time.
- *
- * All mismatching or ambiguous conditions clear `pendingInsertion` rather than leaving it alive for
- * a later URL change.
- *
- * @param fromPath - The `location.pathname` before the navigation that triggered this call, or
- * `undefined` when called at bootstrap (in which case the form-path guard is skipped).
+ * Every other outcome drops the pending record rather than leaving it alive for a later URL
+ * change, so a record survives at most one navigation.
  */
-export function finalizeHistoryIfCreated(fromPath) {
+export function finalizeHistoryIfCreated() {
 	if (!pendingInsertion) return;
 
-	if (Date.now() - pendingInsertion.at > PENDING_TTL_MS) {
+	// The block was inserted but the form was never sent — the user navigated away from it.
+	// This is what separates a ticket the form created from one merely opened afterwards, the
+	// two being indistinguishable by pathname alone.
+	if (!pendingInsertion.submittedAt) {
 		pendingInsertion = null;
 		return;
 	}
 
-	// Guard 1: navigation must originate directly from the form that recorded the insertion.
-	if (fromPath !== undefined && fromPath !== pendingInsertion.formPath) {
+	if (Date.now() - pendingInsertion.submittedAt > SUBMIT_TTL_MS) {
 		pendingInsertion = null;
 		return;
 	}
 
-	// Guard 2: re-verify the portal/type pair is still in the whitelist.
+	// Re-checked here and not only at insertion: the whitelist is editable while the form is
+	// open, and a pair dropped from it in the meantime must not reach the history.
 	if (!isTicketAllowed(pendingInsertion.formPath)) {
 		pendingInsertion = null;
 		return;
