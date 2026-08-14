@@ -8,7 +8,11 @@ import { startInsertion } from "./lib/insertion.js";
 
 slog("bootstrap", { pathname: location.pathname, readyState: document.readyState });
 
-loadPortals();
-setupUrlWatcher();
-setupSubmitWatcher();
-startInsertion();
+// Everything downstream asks isTicketAllowed whether it may act, and that function answers from
+// the default lists until the stored ones arrive. Arming the watchers before then lets a form the
+// user excluded pass on the first check.
+loadPortals().then(() => {
+	setupUrlWatcher();
+	setupSubmitWatcher();
+	startInsertion();
+});

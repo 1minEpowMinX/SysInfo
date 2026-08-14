@@ -28,6 +28,19 @@ function buildCheckIcon() {
 	return svg;
 }
 
+/** Returns the exclamation mark drawn in the leading badge of a failure toast. */
+function buildAlertIcon() {
+	const svg = svgEl("svg", {
+		width: "11", height: "11", viewBox: "0 0 24 24",
+		fill: "none", stroke: "currentColor",
+		"stroke-width": "3", "stroke-linecap": "round", "stroke-linejoin": "round"
+	});
+	svg.appendChild(svgEl("line", { x1: "12", y1: "6", x2: "12", y2: "13" }));
+	// A line of zero length painted with a round cap, which is the dot of the mark.
+	svg.appendChild(svgEl("line", { x1: "12", y1: "18", x2: "12", y2: "18" }));
+	return svg;
+}
+
 /** Returns the icon drawn in the toast's dismiss button. */
 function buildCloseIcon() {
 	const svg = svgEl("svg", {
@@ -53,29 +66,41 @@ function ensureToastContainer() {
 	return container;
 }
 
+// The kinds a toast comes in. Each one names its title and its glyph; the colour of the rail and
+// of the badge follows from the modifier class, which redefines a single custom property.
+const KINDS = {
+	success: { titleKey: "bannerTitle", buildIcon: buildCheckIcon },
+	error: { titleKey: "toastErrorTitle", buildIcon: buildAlertIcon }
+};
+
 /**
  * Shows a toast carrying `message` and dismisses it once `duration` has passed.
  *
  * The dismiss button removes it earlier.
- * @param message - Body text of the toast, shown under the fixed title.
- * @param duration - Milliseconds the toast stays up.
+ * @param message - Body text of the toast, shown under the title of its kind.
+ * @param duration - Milliseconds the toast stays up. A value of zero or less leaves it up until
+ * the dismiss button is pressed, which is what a failure the user has to act on needs.
+ * @param kind - A key of KINDS; an unknown one is shown as a success.
+ * @returns A function dismissing this toast, which does nothing once the toast is gone.
  */
-export function showToast(message, duration = 3000) {
+export function showToast(message, duration = 3000, kind = "success") {
 	const container = ensureToastContainer();
+	const kindName = KINDS[kind] ? kind : "success";
+	const spec = KINDS[kindName];
 
 	const toast = document.createElement("div");
-	toast.className = "sysinfo-toast";
+	toast.className = `sysinfo-toast sysinfo-toast--${kindName}`;
 
 	const iconWrap = document.createElement("div");
 	iconWrap.className = "sysinfo-toast__icon";
 	iconWrap.setAttribute("aria-hidden", "true");
-	iconWrap.appendChild(buildCheckIcon());
+	iconWrap.appendChild(spec.buildIcon());
 
 	const textWrap = document.createElement("div");
 	textWrap.className = "sysinfo-toast__text";
 	const title = document.createElement("div");
 	title.className = "sysinfo-toast__title";
-	title.textContent = t("bannerTitle");
+	title.textContent = t(spec.titleKey);
 	const body = document.createElement("div");
 	body.className = "sysinfo-toast__body";
 	body.textContent = message;
@@ -95,7 +120,9 @@ export function showToast(message, duration = 3000) {
 
 	container.appendChild(toast);
 	requestAnimationFrame(() => toast.classList.add("show"));
-	setTimeout(() => removeToast(toast), duration);
+	if (duration > 0) setTimeout(() => removeToast(toast), duration);
+
+	return () => removeToast(toast);
 }
 
 /**

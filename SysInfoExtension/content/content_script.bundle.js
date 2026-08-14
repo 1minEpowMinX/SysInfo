@@ -54,9 +54,12 @@
   var SYSINFO_REQUEST_RETRY_MS = 2e3;
   var INSERTION_TICK_MS = 2e3;
   var URL_TICK_MS = 500;
+  var EDITOR_WAIT_MS = 3e4;
+  var EDITOR_ROOT_GRACE_MS = 3e3;
   var FORM_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/create\/(\d+)/;
   var TICKET_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/([A-Z][A-Z0-9]+-\d+)(?:\/|$)/;
-  var EDITOR_SELECTOR = "#ak-editor-textarea > p";
+  var EDITOR_ROOT_SELECTOR = "#ak-editor-textarea";
+  var EDITOR_SELECTOR = `${EDITOR_ROOT_SELECTOR} > p`;
   var SUBMIT_CONTROL_SELECTOR = 'button[type="submit"], input[type="submit"], form .buttons-container button.aui-button.aui-button-primary';
   var TITLE_SELECTOR = "#content > div > header > div > div > div.cv-global-level-title > div.aui-page-header-main.cv-page-title-main > h1 > span";
   var TITLE_WAIT_MS = 5e3;
@@ -64,26 +67,40 @@
   // content/lib/portals.js
   var userPortals = null;
   var userTypes = null;
-  function loadPortals() {
+  var loaded = null;
+  function applyStored(stored) {
+    userPortals = isStringArray(stored && stored.portals) ? stored.portals : null;
+    userTypes = isStringArray(stored && stored.types) ? stored.types : null;
+    slog("portals: lists applied", {
+      portals: userPortals ? userPortals.length : "default",
+      types: userTypes ? userTypes.length : "default"
+    });
+  }
+  function watchStorage() {
     try {
-      browser.storage.local.get([STORAGE_KEY], (r) => {
-        const stored = r && r[STORAGE_KEY];
-        if (!stored) {
-          slog("portals: no user config");
-          return;
-        }
-        if (isStringArray(stored.portals)) {
-          userPortals = stored.portals;
-          slog("portals: loaded portal IDs", { count: userPortals.length });
-        }
-        if (isStringArray(stored.types)) {
-          userTypes = stored.types;
-          slog("portals: loaded type IDs", { count: userTypes.length });
-        }
+      browser.storage.onChanged.addListener((changes, area) => {
+        if (area !== "local" || !changes[STORAGE_KEY]) return;
+        applyStored(changes[STORAGE_KEY].newValue);
       });
     } catch (e) {
-      swarn("portals: storage exception", e && e.message);
+      swarn("portals: onChanged unavailable", e && e.message);
     }
+  }
+  function loadPortals() {
+    if (loaded) return loaded;
+    loaded = new Promise((resolve) => {
+      try {
+        browser.storage.local.get([STORAGE_KEY], (r) => {
+          applyStored(r && r[STORAGE_KEY]);
+          watchStorage();
+          resolve();
+        });
+      } catch (e) {
+        swarn("portals: storage exception", e && e.message);
+        resolve();
+      }
+    });
+    return loaded;
   }
   function isStringArray(value) {
     return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === "string");
@@ -309,6 +326,21 @@
     svg.appendChild(svgEl("polyline", { points: "20 6 9 17 4 12" }));
     return svg;
   }
+  function buildAlertIcon() {
+    const svg = svgEl("svg", {
+      width: "11",
+      height: "11",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "3",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round"
+    });
+    svg.appendChild(svgEl("line", { x1: "12", y1: "6", x2: "12", y2: "13" }));
+    svg.appendChild(svgEl("line", { x1: "12", y1: "18", x2: "12", y2: "18" }));
+    return svg;
+  }
   function buildCloseIcon() {
     const svg = svgEl("svg", {
       width: "14",
@@ -332,19 +364,25 @@
     document.documentElement.appendChild(container);
     return container;
   }
-  function showToast(message, duration = 3e3) {
+  var KINDS = {
+    success: { titleKey: "bannerTitle", buildIcon: buildCheckIcon },
+    error: { titleKey: "toastErrorTitle", buildIcon: buildAlertIcon }
+  };
+  function showToast(message, duration = 3e3, kind = "success") {
     const container = ensureToastContainer();
+    const kindName = KINDS[kind] ? kind : "success";
+    const spec = KINDS[kindName];
     const toast = document.createElement("div");
-    toast.className = "sysinfo-toast";
+    toast.className = `sysinfo-toast sysinfo-toast--${kindName}`;
     const iconWrap = document.createElement("div");
     iconWrap.className = "sysinfo-toast__icon";
     iconWrap.setAttribute("aria-hidden", "true");
-    iconWrap.appendChild(buildCheckIcon());
+    iconWrap.appendChild(spec.buildIcon());
     const textWrap = document.createElement("div");
     textWrap.className = "sysinfo-toast__text";
     const title = document.createElement("div");
     title.className = "sysinfo-toast__title";
-    title.textContent = t("bannerTitle");
+    title.textContent = t(spec.titleKey);
     const body = document.createElement("div");
     body.className = "sysinfo-toast__body";
     body.textContent = message;
@@ -361,7 +399,8 @@
     toast.appendChild(close);
     container.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add("show"));
-    setTimeout(() => removeToast(toast), duration);
+    if (duration > 0) setTimeout(() => removeToast(toast), duration);
+    return () => removeToast(toast);
   }
   function removeToast(toast) {
     if (!toast.isConnected) return;
@@ -393,14 +432,53 @@ ${lines.join("\n")}`;
     showToast(t("toastReceived"), 1e4);
     markPendingInsertion(formMatch[1], formMatch[2]);
   }
+  function whitelistedFormPath() {
+    const path = location.pathname;
+    return FORM_PATH_RE.test(path) && isTicketAllowed(path) ? path : null;
+  }
   function watchEditor(data) {
     let lastElement = null;
+    let armedForm = null;
+    let deadline = 0;
+    let rootSeenAt = 0;
+    let dismissWaitReport = null;
+    const reported = /* @__PURE__ */ new Set();
     const check = () => {
-      const el = document.querySelector(EDITOR_SELECTOR);
-      if (el && el !== lastElement) {
-        lastElement = el;
-        insertSysInfoInto(el, data);
+      const formPath = whitelistedFormPath();
+      if (formPath !== armedForm) {
+        armedForm = formPath;
+        deadline = Date.now() + EDITOR_WAIT_MS;
+        rootSeenAt = 0;
       }
+      const el = document.querySelector(EDITOR_SELECTOR);
+      if (el) {
+        if (el === lastElement) return;
+        lastElement = el;
+        if (dismissWaitReport) {
+          dismissWaitReport();
+          dismissWaitReport = null;
+        }
+        if (data) {
+          insertSysInfoInto(el, data);
+        } else if (formPath && !reported.has(formPath)) {
+          reported.add(formPath);
+          swarn("insertion: agent unreachable on a whitelisted form", { path: formPath });
+          showToast(t("toastAgentUnreachable"), 0, "error");
+        }
+        return;
+      }
+      if (!formPath || reported.has(formPath)) return;
+      const rootPresent = !!document.querySelector(EDITOR_ROOT_SELECTOR);
+      if (!rootPresent) rootSeenAt = 0;
+      else if (!rootSeenAt) rootSeenAt = Date.now();
+      const due = rootSeenAt ? Math.min(deadline, rootSeenAt + EDITOR_ROOT_GRACE_MS) : deadline;
+      if (Date.now() < due) return;
+      reported.add(formPath);
+      swarn(
+        "insertion: no editor on a whitelisted form",
+        { path: formPath, selector: EDITOR_SELECTOR, rootPresent, waitedMs: Date.now() - (deadline - EDITOR_WAIT_MS) }
+      );
+      dismissWaitReport = showToast(t("toastEditorMissing"), 0, "error");
     };
     slog("editor watcher armed", { selector: EDITOR_SELECTOR, intervalMs: INSERTION_TICK_MS });
     setInterval(check, INSERTION_TICK_MS);
@@ -409,18 +487,16 @@ ${lines.join("\n")}`;
   }
   function startInsertion() {
     requestSysInfo((data) => {
-      if (!data) {
-        swarn("insertion: no data \u2014 watcher not started");
-        return;
-      }
+      if (!data) swarn("insertion: no data \u2014 watcher reports instead of inserting");
       watchEditor(data);
     });
   }
 
   // content/content_script.js
   slog("bootstrap", { pathname: location.pathname, readyState: document.readyState });
-  loadPortals();
-  setupUrlWatcher();
-  setupSubmitWatcher();
-  startInsertion();
+  loadPortals().then(() => {
+    setupUrlWatcher();
+    setupSubmitWatcher();
+    startInsertion();
+  });
 })();

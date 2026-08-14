@@ -211,6 +211,15 @@
 	"bannerTitle": {
 		"message": "System info attached"
 	},
+	"toastErrorTitle": {
+		"message": "System info not attached"
+	},
+	"toastAgentUnreachable": {
+		"message": "The SysInfo agent is not responding. Start it and reload the page, otherwise the data will not reach the ticket."
+	},
+	"toastEditorMissing": {
+		"message": "The description field was not found. Fill in the ticket as usual and report this to your administrator."
+	},
 	"loading": {
 		"message": "Loading..."
 	},

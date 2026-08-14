@@ -24,12 +24,26 @@ export const SYSINFO_REQUEST_RETRY_MS = 2000;
 export const INSERTION_TICK_MS = 2000;
 export const URL_TICK_MS = 500;
 
+// How long a whitelisted form may go without producing an editor before the failure is reported.
+// Long enough for a cold portal load over a slow link, short enough that the user is still on the
+// form when the message arrives. A dead selector is caught whatever the value, so the value is
+// chosen against reporting a page that is merely slow.
+export const EDITOR_WAIT_MS = 30000;
+
+// The same wait once the editor root is in the document, counted from the moment it appears. The
+// root mounts before the paragraph it holds, so the grace period covers those few frames and
+// nothing longer.
+export const EDITOR_ROOT_GRACE_MS = 3000;
+
 // Jira SM URL patterns: form (before submit) and ticket page (after).
 export const FORM_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/create\/(\d+)/;
 export const TICKET_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/([A-Z][A-Z0-9]+-\d+)(?:\/|$)/;
 
-// AtlasKit editor paragraph inside the description field.
-export const EDITOR_SELECTOR = "#ak-editor-textarea > p";
+// AtlasKit editor root and the paragraph inside it that carries the description. The two are
+// probed separately: a root without its paragraph is a markup this extension no longer matches,
+// while neither of them is a page that has not finished rendering.
+export const EDITOR_ROOT_SELECTOR = "#ak-editor-textarea";
+export const EDITOR_SELECTOR = `${EDITOR_ROOT_SELECTOR} > p`;
 
 // Controls whose activation sends the request form. A real <form> reports itself
 // through the submit event; these cover a portal build that handles the click
