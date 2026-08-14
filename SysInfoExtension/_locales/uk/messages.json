@@ -117,6 +117,40 @@
 	"historyEmpty": {
 		"message": "Поки що нічого — створіть тікет у Jira SM, і вставка з’явиться тут."
 	},
+	"timeJustNow": {
+		"message": "щойно",
+		"description": "Age of a history entry younger than a minute."
+	},
+	"timeMinutesAgo": {
+		"message": "$COUNT$ хв тому",
+		"description": "Age of a history entry in minutes. The unit has to read the same for every count: chrome.i18n cannot select a plural form, so a language that inflects the noun needs an abbreviation that does not.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "5"
+			}
+		}
+	},
+	"timeHoursAgo": {
+		"message": "$COUNT$ год тому",
+		"description": "Age of a history entry in hours. The unit has to read the same for every count.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
+	"timeDaysAgo": {
+		"message": "$COUNT$ дн тому",
+		"description": "Age of a history entry in days. The unit has to read the same for every count.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
+	},
 	"sectionSettings": {
 		"message": "Налаштування"
 	},
