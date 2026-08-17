@@ -51,11 +51,11 @@ const cases = {
 		eq(makeDivider(["abc"], "-", 0.1).length, 0, "a run rounded down to nothing");
 	},
 
-	"alreadyInserted: reads value when there is one and innerText otherwise"() {
-		eq(alreadyInserted({ value: "text ─── more" }, "───"), true, "found in value");
-		eq(alreadyInserted({ value: "" }, "───"), false, "an empty value holds nothing");
-		eq(alreadyInserted({ innerText: "a ─── b" }, "───"), true, "found in innerText");
-		eq(alreadyInserted({}, "───"), false, "an editor with neither holds nothing");
+	"alreadyInserted: reads the text the editor carries"() {
+		eq(alreadyInserted({ innerText: "a ─── b" }, "───"), true, "the divider is found");
+		eq(alreadyInserted({ innerText: "nothing of the sort" }, "───"), false, "and its absence");
+		eq(alreadyInserted({ innerText: "" }, "───"), false, "an empty editor holds nothing");
+		eq(alreadyInserted({}, "───"), false, "and so does one carrying no text at all");
 	},
 
 	"fetch: a successful reply arrives normalized"() {

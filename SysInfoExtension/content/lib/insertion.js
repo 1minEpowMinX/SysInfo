@@ -19,8 +19,7 @@ import { markPendingInsertion } from "./history.js";
  *
  * Returns without touching `target` when the path is not a ticket form, when the portal or the
  * ticket type is outside the whitelist, or when the block is already there.
- * @param target - The editor element, written through `value` when it has one and `innerText`
- * otherwise.
+ * @param target - The editor element, written through `innerText`.
  * @param data - A normalized `/systeminfo` payload.
  */
 function insertSysInfoInto(target, data) {
@@ -39,12 +38,8 @@ function insertSysInfoInto(target, data) {
 
 	slog("inserting sysinfo block", { path, target: target.tagName });
 
-	if ("value" in target) {
-		target.value = text;
-		target.dispatchEvent(new Event("input", { bubbles: true }));
-	} else {
-		target.innerText = text;
-	}
+	// EDITOR_SELECTOR ends at a paragraph, so the editor is never a form control carrying a value.
+	target.innerText = text;
 
 	showToast(t("toastReceived"), 10000);
 	markPendingInsertion(formMatch[1], formMatch[2]);

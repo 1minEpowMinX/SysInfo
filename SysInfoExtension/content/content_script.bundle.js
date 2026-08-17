@@ -264,8 +264,7 @@
     return char.repeat(Math.floor(maxLen * percent));
   }
   function alreadyInserted(target, divider) {
-    const haystack = ("value" in target ? target.value : target.innerText) || "";
-    return haystack.includes(divider);
+    return (target.innerText || "").includes(divider);
   }
   function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
     const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;
@@ -423,12 +422,7 @@
 ${lines.join("\n")}`;
     if (alreadyInserted(target, divider)) return;
     slog("inserting sysinfo block", { path, target: target.tagName });
-    if ("value" in target) {
-      target.value = text;
-      target.dispatchEvent(new Event("input", { bubbles: true }));
-    } else {
-      target.innerText = text;
-    }
+    target.innerText = text;
     showToast(t("toastReceived"), 1e4);
     markPendingInsertion(formMatch[1], formMatch[2]);
   }

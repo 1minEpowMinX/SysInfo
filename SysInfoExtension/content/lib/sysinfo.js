@@ -44,13 +44,11 @@ export function makeDivider(lines, char = "─", percent = 0.45) {
 
 /**
  * Reports whether `target` already carries `divider`.
- * @param target - The editor element, read through `value` when it has one and `innerText`
- * otherwise.
+ * @param target - The editor element, read through `innerText`.
  * @param divider - The divider string to search for.
  */
 export function alreadyInserted(target, divider) {
-	const haystack = ("value" in target ? target.value : target.innerText) || "";
-	return haystack.includes(divider);
+	return (target.innerText || "").includes(divider);
 }
 
 /**
