@@ -16,6 +16,8 @@ export class FakeEl {
 		this.parent = null;
 		this.className = "";
 		this.textContent = "";
+		this.id = "";
+		this.style = {};
 		this.attrs = {};
 		this.listeners = {};
 		this.classList = {
@@ -25,6 +27,21 @@ export class FakeEl {
 		};
 	}
 	get isConnected() { return this.parent ? this.parent.isConnected : this._root === true; }
+	get firstElementChild() { return this.children[0] || null; }
+	get innerHTML() { return this._html || ""; }
+	/**
+	 * Empties the node, then gives it one empty child named by the first tag of `html`.
+	 *
+	 * Parses no attribute and no nesting. The child carries the string it was built from, which
+	 * is how a case tells one icon from another.
+	 */
+	set innerHTML(html) {
+		for (const c of this.children) c.parent = null;
+		this.children = [];
+		this._html = String(html);
+		const tag = /^\s*<([A-Za-z][\w-]*)/.exec(this._html);
+		if (tag) this.appendChild(new FakeEl(tag[1]))._html = this._html;
+	}
 	setAttribute(k, v) { this.attrs[k] = v; }
 	getAttribute(k) { return this.attrs[k]; }
 	appendChild(child) { child.parent = this; this.children.push(child); return child; }
@@ -66,8 +83,8 @@ export class Clock {
 	/**
 	 * Advances like `advance`, letting promises settle between one timer and the next.
 	 *
-	 * Code that hands a storage read to a callback from inside a `then` needs both to make
-	 * progress, which the synchronous form cannot give it.
+	 * A storage read handed to a callback from inside a `then` needs both to make progress; the
+	 * synchronous form moves only the timers.
 	 * @param ms - How far to move.
 	 */
 	async runFor(ms) {
@@ -89,7 +106,9 @@ export class Clock {
 /**
  * Installs the globals the extension reads and returns the handles a case drives them with.
  * @param opts - `pathname`, `storage` (initial contents), `agent` (a /systeminfo payload or null
- * for a refusing agent), `nodes` (selector to node), `title`.
+ * for a refusing agent), `nodes` (selector to node), `title`, `manifest`, `respond` (a reply
+ * builder standing in for the background script), `fetch`, `prefersDark` (what matchMedia
+ * answers about the colour scheme).
  * @returns The environment handles.
  */
 export function installEnv(opts = {}) {
@@ -102,6 +121,9 @@ export function installEnv(opts = {}) {
 	const winListeners = {};
 	const fetches = [];
 	const messages = [];
+	const alerts = [];
+	const promptAnswers = [];
+	const i18nCalls = [];
 
 	const docEl = new FakeEl("html");
 	docEl._root = true;
@@ -117,6 +139,7 @@ export function installEnv(opts = {}) {
 		querySelector: (sel) => nodes.get(sel) || null,
 		createElement: (tag) => new FakeEl(tag),
 		createElementNS: (_ns, tag) => new FakeEl(tag),
+		createTextNode: (data) => Object.assign(new FakeEl("#text"), { textContent: String(data) }),
 		addEventListener: (type, fn) => { (docListeners[type] ||= []).push(fn); }
 	};
 
@@ -143,7 +166,12 @@ export function installEnv(opts = {}) {
 	};
 
 	const browser = {
-		i18n: { getMessage: () => "" },   // falls through to the key, which assertions read
+		i18n: {
+			// Answering with nothing sends `t` to its fallback, which is the key itself, so an
+			// assertion reads the key. The call is kept so that a case can check what was
+			// substituted into it.
+			getMessage: (key, substitutions) => { i18nCalls.push({ key, substitutions }); return ""; }
+		},
 		runtime: {
 			id: "sysinfo@company.local",
 			lastError: null,
@@ -185,6 +213,9 @@ export function installEnv(opts = {}) {
 			disconnect() { mutationCallbacks.delete(this.cb); }
 		},
 		requestAnimationFrame: (fn) => clock.setTimeout(fn, 16),
+		matchMedia: (media) => ({ matches: !!opts.prefersDark, media }),
+		prompt: () => (promptAnswers.length ? promptAnswers.shift() : null),
+		alert: (message) => { alerts.push(String(message)); },
 		fetch: (url, init) => {
 			fetches.push({ url, init });
 			return (opts.fetch || (() => Promise.reject(new Error("no fetch configured"))))(url, init);
@@ -201,9 +232,11 @@ export function installEnv(opts = {}) {
 	console.warn = (...a) => logs.push("WARN " + a.map(String).join(" "));
 
 	return {
-		clock, logs, store, storageListeners, fetches, messages, document,
+		clock, logs, store, storageListeners, fetches, messages, document, alerts, i18nCalls,
 		/** Puts `el` behind `sel`, or takes it away when `el` is nullish. */
 		setNode(sel, el) { if (el) nodes.set(sel, el); else nodes.delete(sel); },
+		/** Queues `value` as the answer to the next `prompt`; an unanswered one returns null. */
+		answerPrompt(value) { promptAnswers.push(value); },
 		/** Moves the page to `pathname`, as an SPA router would. */
 		navigate(pathname) {
 			globalThis.location.pathname = pathname;

@@ -90,6 +90,24 @@ const cases = {
 		const got = fetchOnce();
 		eq(got?.hostname, "PC-01", "the attempt after the errors is used");
 		eq(env.messages.length - before, 3, "two failures then a success");
+	},
+
+	"fetch: a sendMessage that throws is retried like a refusal"() {
+		// A worker torn down mid-call throws out of sendMessage rather than answering, which is
+		// the one failure that reaches the caller outside the reply callback.
+		respond = () => ({ success: true, data: { hostname: "PC-01" } });
+		const real = browser.runtime.sendMessage;
+		let thrown = 0;
+		browser.runtime.sendMessage = (msg, cb) => {
+			if (thrown < 2) { thrown++; throw new Error("extension context invalidated"); }
+			return real(msg, cb);
+		};
+
+		const got = fetchOnce();
+		browser.runtime.sendMessage = real;
+
+		eq(thrown, 2, "both throwing attempts were made");
+		eq(got?.hostname, "PC-01", "the attempt after the throws is used");
 	}
 };
 

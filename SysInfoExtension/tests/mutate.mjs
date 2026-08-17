@@ -109,6 +109,114 @@ const MUTATIONS = [
 		to: "setTimeout(() => removeToast(toast), duration);",
 		test: "toast.test.mjs",
 		case: "error: no timer, so it stands until it is dismissed"
+	},
+	{
+		what: "the block is written to a form outside the whitelist",
+		file: "content/lib/insertion.js",
+		from: "if (!formMatch || !isTicketAllowed(path)) return;",
+		to: "if (!formMatch) return;",
+		test: "insertion.test.mjs",
+		case: "silent: a form outside the whitelist gets no block either"
+	},
+	{
+		what: "a storage that throws leaves the whitelist promise pending",
+		file: "content/lib/portals.js",
+		from: 'swarn("portals: storage exception", e && e.message);',
+		to: "return;",
+		test: "portals.test.mjs",
+		case: "failure: a storage that throws still settles on the defaults"
+	},
+	{
+		what: "a sendMessage that throws is not retried",
+		file: "content/lib/sysinfo.js",
+		from: "retry(e && e.message);",
+		to: "void 0;",
+		test: "sysinfo.test.mjs",
+		case: "fetch: a sendMessage that throws is retried like a refusal"
+	},
+	{
+		what: "only the poll reports a navigation",
+		file: "content/lib/url_watcher.js",
+		from: 'window.addEventListener("popstate", checkUrlChange);',
+		to: "void 0;",
+		test: "watchers.test.mjs",
+		case: "url watcher: popstate reports the move without waiting for the poll"
+	},
+
+	// The popup's view layer.
+	{
+		what: "a stored url reaches the href whatever its scheme",
+		file: "popup/lib/tab_history.js",
+		from: String.raw`const safeUrl = /^https?:\/\//i.test(it.url) ? it.url : "#";`,
+		to: "const safeUrl = it.url;",
+		test: "popup_ui.test.mjs",
+		case: "history: an entry becomes a link that cannot run script"
+	},
+	{
+		what: "the history tab lists every entry it holds",
+		file: "popup/lib/tab_history.js",
+		from: "items.slice(0, 10)",
+		to: "items.slice(0, 100)",
+		test: "popup_ui.test.mjs",
+		case: "history: at most ten entries are listed"
+	},
+	{
+		what: "an ID that no URL could match is accepted",
+		file: "popup/lib/tab_settings.js",
+		from: String.raw`if (!trimmed || !/^\d+$/.test(trimmed)) return;`,
+		to: "if (!trimmed) return;",
+		test: "popup_ui.test.mjs",
+		case: "settings: an ID that is not a number is dropped without a word"
+	},
+	{
+		what: "an ID already listed is added a second time",
+		file: "popup/lib/tab_settings.js",
+		from: "if (items.includes(trimmed)) {",
+		to: "if (false) {",
+		test: "popup_ui.test.mjs",
+		case: "settings: an ID already listed is announced and changes nothing"
+	},
+	{
+		what: "the chip removed is not the one clicked",
+		file: "popup/lib/tab_settings.js",
+		from: "items.splice(idx, 1);",
+		to: "items.splice(0, 1);",
+		test: "popup_ui.test.mjs",
+		case: "settings: the × chip takes its own ID out"
+	},
+	{
+		what: "the relative count is substituted as a number",
+		file: "popup/lib/dom.js",
+		from: 't("timeMinutesAgo", [String(Math.floor(diff / 60))])',
+		to: 't("timeMinutesAgo", [Math.floor(diff / 60)])',
+		test: "popup_ui.test.mjs",
+		case: "time: the count reaches the catalogue as a string"
+	},
+
+	// The packaging guards, whose subject is a data file rather than a statement.
+	{
+		what: "a source is changed without rebuilding the bundle",
+		file: "content/lib/compat.js",
+		from: 'const SYSINFO_LOG_TAG = "[SysInfo]";',
+		to: 'const SYSINFO_LOG_TAG = "[SysInfo!]";',
+		test: "packaging.test.mjs",
+		case: "bundle: the shipped file is what the sources build to"
+	},
+	{
+		what: "the two manifests drift apart",
+		file: "firefox_manifest.json",
+		from: '"default_locale": "en"',
+		to: '"default_locale": "ru"',
+		test: "packaging.test.mjs",
+		case: "manifests: the two agree on everything but how each browser loads them"
+	},
+	{
+		what: "a translation loses a key the default locale carries",
+		file: "_locales/ru/messages.json",
+		from: '"timeMinutesAgo"',
+		to: '"timeMinutesAgoRenamed"',
+		test: "i18n.test.mjs",
+		case: "locales: every catalogue carries the key set of the default one"
 	}
 ];
 

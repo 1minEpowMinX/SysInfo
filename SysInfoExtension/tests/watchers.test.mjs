@@ -20,7 +20,7 @@ const env = installEnv({
 const { setupSubmitWatcher } = await import("../content/lib/submit_watcher.js");
 const { setupUrlWatcher } = await import("../content/lib/url_watcher.js");
 const history = await import("../content/lib/history.js");
-const { SUBMIT_CONTROL_SELECTOR, URL_TICK_MS } = await import("../content/lib/constants.js");
+const { SUBMIT_CONTROL_SELECTOR, URL_TICK_MS, TITLE_SELECTOR } = await import("../content/lib/constants.js");
 const { loadPortals } = await import("../content/lib/portals.js");
 
 const ready = loadPortals();
@@ -37,6 +37,16 @@ function sendButton() {
 
 /** Returns the entries currently in storage. */
 const entries = () => env.store[HISTORY_KEY] || [];
+
+/**
+ * Puts the ticket heading into the page, so that finalizing needs no wait of its own and the
+ * clock can be held short enough to tell one hook apart from the other.
+ */
+function showHeading(text) {
+	const h = new FakeEl("span");
+	h.textContent = text;
+	env.setNode(TITLE_SELECTOR, h);
+}
 
 /**
  * Marks an insertion, lets the case raise whatever event it likes, then lands on the ticket and
@@ -107,10 +117,13 @@ const cases = {
 	"url watcher: popstate reports the move without waiting for the poll": async () => {
 		history.markPendingInsertion("3", "27");
 		env.dispatch("submit", { submitter: sendButton() });
+		showHeading("Printer");
 		env.navigate(TICKET);
 		env.dispatchWindow("popstate", {});
-		await env.clock.runFor(6000);
-		eq(entries().length, 1, "back and forward are reported at once");
+		// Held under one tick of the poll, which is the only way the entry can be credited to
+		// popstate rather than to the poll that would have followed it.
+		await env.clock.runFor(URL_TICK_MS - 1);
+		eq(entries().length, 1, "back and forward are reported before the next poll");
 	}
 };
 

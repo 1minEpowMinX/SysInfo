@@ -20,15 +20,26 @@ const setups = {
 	"edit: reaches an open page without a reload": { [STORAGE_KEY]: STORED },
 	"edit: another key or another area is ignored": { [STORAGE_KEY]: STORED },
 	"edit: removing the settings restores the defaults": { [STORAGE_KEY]: STORED },
-	"load: the read happens once": { [STORAGE_KEY]: STORED }
+	"load: the read happens once": { [STORAGE_KEY]: STORED },
+	"failure: a storage that throws still settles on the defaults": {}
 };
 
-const env = installEnv({ pathname: "/", storage: setups[process.argv[2]] || {} });
+const CASE = process.argv[2] || "";
+const env = installEnv({ pathname: "/", storage: setups[CASE] || {} });
+
+if (CASE.startsWith("failure:")) {
+	browser.storage.local.get = () => { throw new Error("storage unavailable"); };
+}
+
 const portals = await import("../content/lib/portals.js");
 
+// Awaited through a flag rather than directly: a loadPortals that never settles is the failure
+// the last case is about, and awaiting the promise here would hang the process instead.
+let settled = false;
 const ready = portals.loadPortals();
+ready.then(() => { settled = true; });
 env.clock.advance(10);
-await ready;
+await env.clock.flush();
 
 /** Writes settings the way the popup does, which is what fires storage.onChanged. */
 const write = (value) => browser.storage.local.set({ [STORAGE_KEY]: value });
@@ -90,6 +101,12 @@ const cases = {
 	"load: the read happens once"() {
 		eq(portals.loadPortals(), portals.loadPortals(), "the same promise is handed out");
 		eq(env.storageListeners.length, 1, "and the listener is registered once");
+	},
+
+	"failure: a storage that throws still settles on the defaults"() {
+		ok(settled, "the promise settles, so the watchers waiting on it are armed");
+		ok(portals.isTicketAllowed(DEFAULT_FORM), "the defaults are a working configuration");
+		ok(!portals.isTicketAllowed(STORED_FORM), "nothing was read, so nothing is in effect");
 	}
 };
 

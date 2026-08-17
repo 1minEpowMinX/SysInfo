@@ -144,6 +144,18 @@ const cases = {
 		eq(env.toasts().length, 0, "no report");
 	},
 
+	"silent: a form outside the whitelist gets no block either"() {
+		// The watcher hands every editor it finds to the insertion, whatever the path, so the
+		// whitelist check inside the insertion is the only thing keeping the block out of a form
+		// the user excluded.
+		const para = mountEditor();
+		para.innerText = "";
+		startInsertion();
+		env.clock.advance(600000);
+		eq(para.innerText, "", "the editor is left as it was");
+		eq(env.toasts().length, 0, "and nothing is announced");
+	},
+
 	"silent: a ticket page is never reported on"() {
 		startInsertion();
 		env.clock.advance(600000);
