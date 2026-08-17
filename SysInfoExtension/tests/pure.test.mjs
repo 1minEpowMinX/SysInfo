@@ -4,7 +4,9 @@
 import { run } from "./runner.mjs";
 import { ok, eq, deepEq } from "./assert.mjs";
 import { normalizeSysInfo, BOOT_TIME_KEY, LEGACY_BOOT_TIME_KEY } from "../shared/sysinfo_payload.js";
-import { FORM_PATH_RE, TICKET_PATH_RE, SUBMIT_CONTROL_SELECTOR } from "../content/lib/constants.js";
+import {
+	FORM_PATH_RE, TICKET_PATH_RE, SUBMIT_CONTROL_SELECTOR, TITLE_SELECTOR
+} from "../content/lib/constants.js";
 import { defaultSettings } from "../popup/lib/constants.js";
 import { DEFAULT_PORTAL_IDS } from "../shared/constants.js";
 
@@ -76,6 +78,16 @@ const cases = {
 		ok(!!portal, "the portal's own send button has a clause of its own");
 		ok(portal?.includes(".aui-button-primary"),
 			"told from the cancel button in the same container by the primary modifier");
+	},
+
+	"selector: the ticket heading is not matched by its position"() {
+		// Which node this finds in Jira's markup is out of reach here. Its shape is not: a chain
+		// of child combinators through markup the extension does not own breaks on any wrapper
+		// inserted into it, and the break costs TITLE_WAIT_MS on every ticket before the title
+		// falls back to the page's own.
+		const steps = TITLE_SELECTOR.split(">").length - 1;
+		ok(steps <= 1, `matched through ${steps} child combinators`);
+		ok(/\.[a-z][\w-]*/.test(TITLE_SELECTOR), "and anchored on a class, not on a position");
 	},
 
 	"settings: the template is handed out as copies"() {

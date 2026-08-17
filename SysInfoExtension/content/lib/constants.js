@@ -59,8 +59,12 @@ export const SUBMIT_CONTROL_SELECTOR =
 	'button[type="submit"], input[type="submit"], ' +
 	"form .buttons-container button.aui-button.aui-button-primary";
 
-// Ticket defer history selector: waits for the heading to appear, then grabs its text as the title.
-export const TITLE_SELECTOR =
-	"#content > div > header > div > div > div.cv-global-level-title > " +
-	"div.aui-page-header-main.cv-page-title-main > h1 > span";
+// The heading of a created ticket, whose text becomes the title of a history entry.
+//
+// Anchored on the page-title container's own class rather than on the path down from #content,
+// for the same reason the send control above is: the chain in between is markup this extension
+// does not own, and a wrapper inserted anywhere along it breaks a positional match. A break is
+// reported rather than silent, but it still costs TITLE_WAIT_MS per ticket and falls back to a
+// title cut out of document.title.
+export const TITLE_SELECTOR = ".cv-page-title-main h1 span";
 export const TITLE_WAIT_MS = 5000;

@@ -61,7 +61,7 @@
   var EDITOR_ROOT_SELECTOR = "#ak-editor-textarea";
   var EDITOR_SELECTOR = `${EDITOR_ROOT_SELECTOR} > p`;
   var SUBMIT_CONTROL_SELECTOR = 'button[type="submit"], input[type="submit"], form .buttons-container button.aui-button.aui-button-primary';
-  var TITLE_SELECTOR = "#content > div > header > div > div > div.cv-global-level-title > div.aui-page-header-main.cv-page-title-main > h1 > span";
+  var TITLE_SELECTOR = ".cv-page-title-main h1 span";
   var TITLE_WAIT_MS = 5e3;
 
   // content/lib/portals.js
@@ -142,6 +142,7 @@
       }
       const timer = setTimeout(() => {
         observer.disconnect();
+        swarn("history: no heading on a ticket page", { selector: TITLE_SELECTOR });
         resolve(null);
       }, TITLE_WAIT_MS);
       const observer = new MutationObserver(() => {

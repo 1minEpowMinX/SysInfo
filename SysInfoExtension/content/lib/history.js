@@ -1,6 +1,6 @@
 // Deferred ticket history.
 
-import { slog } from "./compat.js";
+import { slog, swarn } from "./compat.js";
 import { SUBMIT_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
 import { isTicketAllowed } from "./portals.js";
 
@@ -45,6 +45,8 @@ function detectCreatedTicket(pathname) {
 
 /**
  * Waits for the ticket heading to enter the document and reads its text.
+ *
+ * A wait that runs out is reported through the log.
  * @returns A promise for the trimmed heading text, or null once TITLE_WAIT_MS has passed without
  * the heading appearing.
  */
@@ -58,6 +60,9 @@ function waitForHeading() {
 
 		const timer = setTimeout(() => {
 			observer.disconnect();
+			// The entry is still saved, from document.title, which is close enough to a real
+			// title that a dead selector leaves no other trace.
+			swarn("history: no heading on a ticket page", { selector: TITLE_SELECTOR });
 			resolve(null);
 		}, TITLE_WAIT_MS);
 

@@ -76,6 +76,8 @@ const cases = {
 		await env.clock.runFor(TITLE_WAIT_MS + 100);
 		eq(entries()[0]?.title, "SD-1234 Broken printer",
 			"the Jira suffix is stripped from document.title");
+		ok(env.logs.some(l => l.includes("no heading on a ticket page")),
+			"and the selector that found nothing is reported");
 	},
 
 	"reads a heading already in the document without waiting": async () => {

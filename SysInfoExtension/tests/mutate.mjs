@@ -218,6 +218,14 @@ const MUTATIONS = [
 		case: "click: a click the portal stops is still recorded"
 	},
 	{
+		what: "the ticket heading is matched by its position again",
+		file: "content/lib/constants.js",
+		from: 'export const TITLE_SELECTOR = ".cv-page-title-main h1 span";',
+		to: 'export const TITLE_SELECTOR = "#content > div > header > h1 > span";',
+		test: "pure.test.mjs",
+		case: "selector: the ticket heading is not matched by its position"
+	},
+	{
 		what: "the portal send button is matched without its primary modifier",
 		file: "content/lib/constants.js",
 		from: 'button.aui-button.aui-button-primary";',
@@ -268,6 +276,14 @@ const MUTATIONS = [
 		to: "title: cleanTitle,",
 		test: "history.test.mjs",
 		case: "falls back to the ticket key when no title can be read"
+	},
+	{
+		what: "a heading that never appears is passed over in silence",
+		file: "content/lib/history.js",
+		from: 'swarn("history: no heading on a ticket page", { selector: TITLE_SELECTOR });',
+		to: "void 0;",
+		test: "history.test.mjs",
+		case: "falls back to the page title when no heading appears"
 	},
 	{
 		what: "a heading already in the document is waited for anyway",
