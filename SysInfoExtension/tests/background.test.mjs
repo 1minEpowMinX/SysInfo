@@ -12,15 +12,31 @@ const reply = (kind, value) => Promise.resolve({
 	text: () => Promise.resolve(value)
 });
 
+const CASE = process.argv[2] || "";
+const REQUIRED = ["http://localhost:8734/*", "https://jira.company.local/*"];
+const WITHHELD = "https://jira.company.local/*";
+
 let fetchImpl = () => reply("json", {});
 const env = installEnv({
 	pathname: "/",
-	manifest: { version: "2.1.0", host_permissions: ["http://localhost:8734/*"] },
+	manifest: {
+		version: "2.1.0",
+		host_permissions: CASE.startsWith("permissions: a manifest naming no origin") ? [] : REQUIRED
+	},
 	fetch: (...a) => fetchImpl(...a)
 });
 
+// The permission report runs as the worker is imported, so what the browser answers about each
+// origin is settled before that.
+if (CASE.startsWith("permissions: an origin the browser withholds")) {
+	browser.permissions.contains = async ({ origins }) => origins[0] !== WITHHELD;
+} else if (CASE.startsWith("permissions: a check the browser refuses")) {
+	browser.permissions.contains = async () => { throw new Error("permissions unavailable"); };
+}
+
 await import("../background/service_worker.js");
 const listen = env.messageListener();
+await env.clock.flush();
 
 const OWN = { id: "sysinfo@company.local" };
 
@@ -99,6 +115,35 @@ const cases = {
 	"guard: a message carrying no action is dropped": async () => {
 		const { returned } = await ask({});
 		eq(returned, undefined, "nothing to route");
+	},
+
+	"guard: a message carrying no sender id is served": async () => {
+		fetchImpl = () => reply("json", { hostname: "PC-01" });
+		const { answer } = await ask({ action: "getSystemInfo" }, {});
+		deepEq(answer, { success: true, data: { hostname: "PC-01" } },
+			"an id-less sender is this extension's own popup, not a stranger");
+	},
+
+	"permissions: every granted origin is reported"() {
+		ok(env.logs.some(l => l.includes("all required origins granted")),
+			"the worker reports the outcome of the check");
+	},
+
+	"permissions: an origin the browser withholds is named"() {
+		const line = env.logs.find(l => l.includes("NOT GRANTED"));
+		ok(!!line, "the shortfall is reported");
+		ok(line?.includes(WITHHELD), `the origin is named in ${JSON.stringify(line)}`);
+	},
+
+	"permissions: a manifest naming no origin says so"() {
+		ok(env.logs.some(l => l.includes("declares no host_permissions")),
+			"an empty list is reported rather than passed over in silence");
+		ok(!env.logs.some(l => l.includes("NOT GRANTED")), "and nothing is called a shortfall");
+	},
+
+	"permissions: a check the browser refuses is logged, not thrown"() {
+		ok(env.logs.some(l => l.includes("checkHostPermissions failed")), "the failure is reported");
+		ok(typeof listen === "function", "and the worker still routes messages");
 	}
 };
 

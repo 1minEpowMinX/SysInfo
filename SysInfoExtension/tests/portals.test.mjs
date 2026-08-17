@@ -110,4 +110,13 @@ const cases = {
 	}
 };
 
+// The environment a case runs in is picked out of `setups` by the case's own name, so a rename
+// that reaches one of the two lists alone would hand the case a fixture meant for another.
+for (const name of Object.keys(setups)) {
+	if (!(name in cases)) throw new Error(`the fixture "${name}" names no case`);
+}
+for (const name of Object.keys(cases)) {
+	if (!(name in setups)) throw new Error(`the case "${name}" has no fixture`);
+}
+
 await run(import.meta, cases, { isolate: true });

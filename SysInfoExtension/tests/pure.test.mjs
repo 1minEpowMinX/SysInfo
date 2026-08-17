@@ -4,7 +4,7 @@
 import { run } from "./runner.mjs";
 import { ok, eq, deepEq } from "./assert.mjs";
 import { normalizeSysInfo, BOOT_TIME_KEY, LEGACY_BOOT_TIME_KEY } from "../shared/sysinfo_payload.js";
-import { FORM_PATH_RE, TICKET_PATH_RE } from "../content/lib/constants.js";
+import { FORM_PATH_RE, TICKET_PATH_RE, SUBMIT_CONTROL_SELECTOR } from "../content/lib/constants.js";
 import { defaultSettings } from "../popup/lib/constants.js";
 import { DEFAULT_PORTAL_IDS } from "../shared/constants.js";
 
@@ -62,6 +62,20 @@ const cases = {
 		ok(!TICKET_PATH_RE.test("/servicedesk/customer/portal/41/sd-1234"), "lowercase key");
 		ok(!TICKET_PATH_RE.test("/servicedesk/customer/portal/41/SD1234"), "key without a dash");
 		ok(!TICKET_PATH_RE.test("/servicedesk/customer/portal/41/create/217"), "a create form is not a ticket");
+	},
+
+	"selector: the send control keeps the cancel button beside it out"() {
+		// A fake DOM matches by registration rather than by CSS, so whether this string finds
+		// anything in the portal's markup is out of reach here. What is pinned is the rule the
+		// clauses encode.
+		const clauses = SUBMIT_CONTROL_SELECTOR.split(",").map(c => c.trim());
+		ok(clauses.includes('button[type="submit"]'), "a declared submit button is a send control");
+		ok(clauses.includes('input[type="submit"]'), "and so is a submit input");
+
+		const portal = clauses.find(c => c.includes("buttons-container"));
+		ok(!!portal, "the portal's own send button has a clause of its own");
+		ok(portal?.includes(".aui-button-primary"),
+			"told from the cancel button in the same container by the primary modifier");
 	},
 
 	"settings: the template is handed out as copies"() {

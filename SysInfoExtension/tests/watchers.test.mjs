@@ -78,6 +78,12 @@ const cases = {
 		ok(await landed(), "a form sent from script names no submitter");
 	},
 
+	"submit event: a submission the portal stops is still recorded": async () => {
+		history.markPendingInsertion("3", "27");
+		env.dispatch("submit", { submitter: sendButton() }, { stopped: true });
+		ok(await landed(), "the capture phase sees an event the page never lets reach the document");
+	},
+
 	"click: a node inside the send control counts": async () => {
 		history.markPendingInsertion("3", "27");
 		const label = new FakeEl("span");
@@ -96,6 +102,14 @@ const cases = {
 		history.markPendingInsertion("3", "27");
 		env.dispatch("click", { target: { nodeType: 3 } });
 		ok(!(await landed()), "a text node carries no closest()");
+	},
+
+	"click: a click the portal stops is still recorded": async () => {
+		history.markPendingInsertion("3", "27");
+		const label = new FakeEl("span");
+		sendButton().appendChild(label);
+		env.dispatch("click", { target: label }, { stopped: true });
+		ok(await landed(), "the click hook is in the capture phase too");
 	},
 
 	"url watcher: the poll turns a navigation into an entry": async () => {

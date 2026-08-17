@@ -78,6 +78,29 @@ const cases = {
 			"the Jira suffix is stripped from document.title");
 	},
 
+	"reads a heading already in the document without waiting": async () => {
+		showHeading("Broken printer");
+		insertSubmitAndLand();
+		await env.clock.runFor(10);
+		eq(entries()[0]?.title, "Broken printer", "a heading already there needs no observer");
+	},
+
+	"cuts an over-long heading to the stored limit": async () => {
+		insertSubmitAndLand();
+		showHeading("x".repeat(200));
+		await env.clock.runFor(100);
+		eq(entries()[0]?.title.length, 120, "the title is capped");
+	},
+
+	"falls back to the ticket key when no title can be read": async () => {
+		// A page whose title carries the Jira suffix and nothing else leaves an empty title once
+		// the suffix is stripped.
+		env.document.title = " - Jira Service Management";
+		insertSubmitAndLand();
+		await env.clock.runFor(TITLE_WAIT_MS + 100);
+		eq(entries()[0]?.title, "SD-1234", "the ticket key stands in");
+	},
+
 	"drops the record when the form was never sent": async () => {
 		history.markPendingInsertion("3", "27");
 		env.navigate(TICKET);

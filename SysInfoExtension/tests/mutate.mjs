@@ -193,6 +193,125 @@ const MUTATIONS = [
 		case: "time: the count reaches the catalogue as a string"
 	},
 
+	{
+		what: "an editor appearing between two ticks is missed",
+		file: "content/lib/insertion.js",
+		from: "new MutationObserver(check).observe(document.body, { childList: true, subtree: true });",
+		to: "void 0;",
+		test: "insertion.test.mjs",
+		case: "insert: an editor appearing between two ticks is caught at once"
+	},
+	{
+		what: "the submit hook leaves the capture phase",
+		file: "content/lib/submit_watcher.js",
+		from: 'document.addEventListener("submit", checkSubmitEvent, true);',
+		to: 'document.addEventListener("submit", checkSubmitEvent, false);',
+		test: "watchers.test.mjs",
+		case: "submit event: a submission the portal stops is still recorded"
+	},
+	{
+		what: "the click hook leaves the capture phase",
+		file: "content/lib/submit_watcher.js",
+		from: 'document.addEventListener("click", checkSubmitClick, true);',
+		to: 'document.addEventListener("click", checkSubmitClick, false);',
+		test: "watchers.test.mjs",
+		case: "click: a click the portal stops is still recorded"
+	},
+	{
+		what: "the portal send button is matched without its primary modifier",
+		file: "content/lib/constants.js",
+		from: 'button.aui-button.aui-button-primary";',
+		to: 'button.aui-button";',
+		test: "pure.test.mjs",
+		case: "selector: the send control keeps the cancel button beside it out"
+	},
+
+	// The toast's two ways out of the document.
+	{
+		what: "a toast waits for the backstop instead of the transition",
+		file: "content/lib/toast.js",
+		from: 'toast.addEventListener("transitionend", cleanup, { once: true });',
+		to: "void 0;",
+		test: "toast.test.mjs",
+		case: "fade: the end of the transition detaches the toast before the backstop does"
+	},
+	{
+		what: "the fade listener outlives the transition it waited for",
+		file: "content/lib/toast.js",
+		from: 'toast.addEventListener("transitionend", cleanup, { once: true });',
+		to: 'toast.addEventListener("transitionend", cleanup);',
+		test: "toast.test.mjs",
+		case: "fade: the end of the transition detaches the toast before the backstop does"
+	},
+	{
+		what: "a transition that never runs strands the toast",
+		file: "content/lib/toast.js",
+		from: "setTimeout(cleanup, 600);",
+		to: "void 0;",
+		test: "toast.test.mjs",
+		case: "fade: a transition that never runs leaves the backstop to detach the toast"
+	},
+
+	// The title a history entry is saved under.
+	{
+		what: "the stored title is not truncated",
+		file: "content/lib/history.js",
+		from: ").slice(0, 120);",
+		to: ").slice(0, 1200);",
+		test: "history.test.mjs",
+		case: "cuts an over-long heading to the stored limit"
+	},
+	{
+		what: "an entry with no readable title is saved without one",
+		file: "content/lib/history.js",
+		from: "title: cleanTitle || created.ticketKey,",
+		to: "title: cleanTitle,",
+		test: "history.test.mjs",
+		case: "falls back to the ticket key when no title can be read"
+	},
+	{
+		what: "a heading already in the document is waited for anyway",
+		file: "content/lib/history.js",
+		from: "const existing = document.querySelector(TITLE_SELECTOR);",
+		to: "const existing = null;",
+		test: "history.test.mjs",
+		case: "reads a heading already in the document without waiting"
+	},
+
+	// The worker's report on the origins it was granted.
+	{
+		what: "this extension's own popup is turned away",
+		file: "background/service_worker.js",
+		from: "if (sender.id && sender.id !== browser.runtime.id) return;",
+		to: "if (sender.id !== browser.runtime.id) return;",
+		test: "background.test.mjs",
+		case: "guard: a message carrying no sender id is served"
+	},
+	{
+		what: "an origin the browser withholds is not collected",
+		file: "background/service_worker.js",
+		from: "if (!ok) missing.push(origin);",
+		to: "void 0;",
+		test: "background.test.mjs",
+		case: "permissions: an origin the browser withholds is named"
+	},
+	{
+		what: "a manifest declaring no origin is passed over in silence",
+		file: "background/service_worker.js",
+		from: "if (required.length === 0) {",
+		to: "if (false) {",
+		test: "background.test.mjs",
+		case: "permissions: a manifest naming no origin says so"
+	},
+	{
+		what: "a refused permission check is swallowed",
+		file: "background/service_worker.js",
+		from: 'bwarn("checkHostPermissions failed:", e && e.message);',
+		to: "void 0;",
+		test: "background.test.mjs",
+		case: "permissions: a check the browser refuses is logged, not thrown"
+	},
+
 	// The packaging guards, whose subject is a data file rather than a statement.
 	{
 		what: "a source is changed without rebuilding the bundle",

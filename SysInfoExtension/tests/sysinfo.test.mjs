@@ -1,4 +1,6 @@
 // Text building for the inserted block and the retry policy of the agent fetch.
+//
+// A retry chain outlives the call that started it, so each case gets a process of its own.
 
 import { run } from "./runner.mjs";
 import { installEnv } from "./harness.mjs";
@@ -111,4 +113,4 @@ const cases = {
 	}
 };
 
-await run(import.meta, cases);
+await run(import.meta, cases, { isolate: true });

@@ -28,7 +28,8 @@ const env = installEnv({
 });
 
 const { startInsertion } = await import("../content/lib/insertion.js");
-const { EDITOR_WAIT_MS, EDITOR_ROOT_GRACE_MS } = await import("../content/lib/constants.js");
+const { EDITOR_WAIT_MS, EDITOR_ROOT_GRACE_MS, INSERTION_TICK_MS } =
+	await import("../content/lib/constants.js");
 const { loadPortals } = await import("../content/lib/portals.js");
 
 const ready = loadPortals();
@@ -59,6 +60,17 @@ const cases = {
 		const t = env.toasts();
 		eq(t.length, 1, "one toast");
 		eq(t[0]?.kind, "success", "kind");
+	},
+
+	"insert: an editor appearing between two ticks is caught at once"() {
+		startInsertion();
+		// Far enough for the agent to answer, nowhere near the first tick of the poll, so the
+		// mutation hook is the only thing left that can notice the editor.
+		env.clock.advance(INSERTION_TICK_MS - 100);
+		const para = mountEditor();
+		para.innerText = "";
+		env.fireMutation();
+		matches(para.innerText, /sysinfoHostname: PC-01/, "the block is written without a tick");
 	},
 
 	"insert: an editor already carrying the block is left alone"() {

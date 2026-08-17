@@ -46,7 +46,19 @@ export class FakeEl {
 	getAttribute(k) { return this.attrs[k]; }
 	appendChild(child) { child.parent = this; this.children.push(child); return child; }
 	remove() { if (this.parent) this.parent.children = this.parent.children.filter(c => c !== this); this.parent = null; }
-	addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
+	/**
+	 * Registers `fn` for `type`.
+	 * @param type - Event type.
+	 * @param fn - The listener, reachable to a case through `listeners[type]`.
+	 * @param opts - An options object whose `once` drops the listener after its first call.
+	 */
+	addEventListener(type, fn, opts) {
+		const list = (this.listeners[type] ||= []);
+		const entry = opts && opts.once
+			? (...args) => { this.listeners[type] = list.filter(f => f !== entry); fn(...args); }
+			: fn;
+		list.push(entry);
+	}
 	matches(sel) { return this.sels.has(sel); }
 	/** Returns this node or its nearest ancestor registered under `sel`. */
 	closest(sel) {
@@ -140,7 +152,9 @@ export function installEnv(opts = {}) {
 		createElement: (tag) => new FakeEl(tag),
 		createElementNS: (_ns, tag) => new FakeEl(tag),
 		createTextNode: (data) => Object.assign(new FakeEl("#text"), { textContent: String(data) }),
-		addEventListener: (type, fn) => { (docListeners[type] ||= []).push(fn); }
+		addEventListener: (type, fn, capture) => {
+			(docListeners[type] ||= []).push({ fn, capture: capture === true });
+		}
 	};
 
 	/** Answers a storage read through a callback or a promise, whichever the caller asked for. */
@@ -244,8 +258,19 @@ export function installEnv(opts = {}) {
 		},
 		/** Runs the MutationObserver callbacks currently observing. */
 		fireMutation() { for (const cb of [...mutationCallbacks]) cb([], null); },
-		/** Delivers `event` to the document listeners of `type`. */
-		dispatch(type, event) { for (const fn of docListeners[type] || []) fn(event); },
+		/**
+		 * Delivers `event` to the document listeners of `type`.
+		 * @param type - Event type.
+		 * @param event - The object handed to each listener.
+		 * @param opts - `stopped` delivers to the capture-phase listeners alone, which is what a
+		 * page that stops the propagation below the document leaves.
+		 */
+		dispatch(type, event, opts = {}) {
+			for (const l of docListeners[type] || []) {
+				if (opts.stopped && !l.capture) continue;
+				l.fn(event);
+			}
+		},
 		/** Delivers an event to the window listeners of `type`. */
 		dispatchWindow(type, event) { for (const fn of winListeners[type] || []) fn(event); },
 		/** Returns the toasts currently attached, oldest first. */
