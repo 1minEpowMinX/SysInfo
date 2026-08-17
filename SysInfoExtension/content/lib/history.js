@@ -21,7 +21,7 @@ export function markPendingInsertion(portalId, typeId) {
 /**
  * Records that the form carrying the pending insertion was sent.
  *
- * Sending again restarts the window, which is what an attempt the portal rejected leads to.
+ * Sending again restarts the window.
  */
 export function markFormSubmitted() {
 	if (!pendingInsertion) return;

@@ -6,12 +6,11 @@ import { markFormSubmitted } from "./history.js";
 
 /**
  * Reports whether `node` is, or sits inside, a control that sends the form.
- *
- * Matched with closest() rather than directly: an event reaches the icon or the label inside
- * the button far more often than the button itself.
  * @param node - The node to test; anything other than an element is never a control.
  */
 function isSubmitControl(node) {
+	// closest() rather than a direct match: an event reaches the icon or the label inside the
+	// button far more often than the button itself.
 	return node instanceof Element && node.closest(SUBMIT_CONTROL_SELECTOR) !== null;
 }
 

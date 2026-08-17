@@ -40,7 +40,7 @@ export const FORM_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/create\/(\d
 export const TICKET_PATH_RE = /\/servicedesk\/customer\/portal\/(\d+)\/([A-Z][A-Z0-9]+-\d+)(?:\/|$)/;
 
 // AtlasKit editor root and the paragraph inside it that carries the description. The two are
-// probed separately: a root without its paragraph is a markup this extension no longer matches,
+// probed separately: a root without its paragraph is markup this extension does not match,
 // while neither of them is a page that has not finished rendering.
 export const EDITOR_ROOT_SELECTOR = "#ak-editor-textarea";
 export const EDITOR_SELECTOR = `${EDITOR_ROOT_SELECTOR} > p`;

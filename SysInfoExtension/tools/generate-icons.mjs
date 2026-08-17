@@ -18,10 +18,9 @@ const MASTER = path.join(ICONS, "sysinfo_ext.svg");
  */
 const SIZES = [16, 24, 32, 48, 64, 96, 128, 256, 512];
 
-/**
- * Encoder settings applied to every generated file. `palette` stays off because quantising the
- * background gradient to 256 entries bands it visibly at 256 px and above.
- */
+/** Encoder settings applied to every generated file. */
+// palette stays off: quantising the background gradient to 256 entries bands it visibly at
+// 256 px and above.
 const PNG_OPTIONS = { compressionLevel: 9, adaptiveFiltering: true, palette: false };
 
 /**

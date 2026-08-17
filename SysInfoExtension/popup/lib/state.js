@@ -8,9 +8,8 @@ import { defaultSettings } from "./constants.js";
 export let state = {
 	tab: "status",
 	settings: defaultSettings(),
-	// loading | active | error | version-mismatch. Nothing sets version-mismatch —
-	// neither side of /version carries a compatibility rule yet, though render.js
-	// and tab_status.js already display the state.
+	// loading | active | error | version-mismatch. Nothing sets version-mismatch: no
+	// compatibility rule is checked against the agent's version yet.
 	status: "loading",
 	agentVersion: null,
 	agentBuild: null,

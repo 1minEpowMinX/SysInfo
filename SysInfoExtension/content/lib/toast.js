@@ -79,7 +79,7 @@ const KINDS = {
  * The dismiss button removes it earlier.
  * @param message - Body text of the toast, shown under the title of its kind.
  * @param duration - Milliseconds the toast stays up. A value of zero or less leaves it up until
- * the dismiss button is pressed, which is what a failure the user has to act on needs.
+ * the dismiss button is pressed.
  * @param kind - A key of KINDS; an unknown one is shown as a success.
  * @returns A function dismissing this toast, which does nothing once the toast is gone.
  */
@@ -127,10 +127,10 @@ export function showToast(message, duration = 3000, kind = "success") {
 
 /**
  * Fades `toast` out and detaches it once the fade ends.
- * @param toast - The toast element; one already detached is left alone, so the timer and the
- * dismiss button may both reach it.
+ * @param toast - The toast element; one already detached is left alone.
  */
 function removeToast(toast) {
+	// The timer and the dismiss button may both reach the same toast.
 	if (!toast.isConnected) return;
 	toast.classList.remove("show");
 	toast.classList.add("sysinfo-toast--fading");

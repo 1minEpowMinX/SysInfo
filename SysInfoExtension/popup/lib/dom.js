@@ -5,8 +5,8 @@ import { t } from "./compat.js";
 /**
  * Parses an inline SVG string and returns its root element.
  *
- * The one place in the popup that parses markup, which is why `el()` accepts none. Callers pass
- * the static icons from icons.js and never user-controlled data.
+ * The one place in the popup that parses markup; callers pass the static icons from icons.js and
+ * never user-controlled data.
  * @param svgStr - An `<svg>…</svg>` string.
  * @returns The parsed `SVGSVGElement`.
  */

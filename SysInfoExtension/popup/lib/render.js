@@ -23,7 +23,7 @@ function applyTheme() {
 /**
  * Maps the current agent status onto how it is drawn.
  *
- * The header pill and the status card both read it, so the two never disagree about a state.
+ * The header pill and the status card both read it.
  * @returns A descriptor carrying `kind`, `label`, `sub`, `pulse` and `dot`.
  */
 export function statusInfo() {

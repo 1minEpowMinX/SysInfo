@@ -69,8 +69,6 @@ export function renderSettingsTab() {
 
 /**
  * Builds an editable list of ID chips, each removable, with a chip that prompts for another.
- *
- * Portals and types are both flat lists of numeric IDs, so one editor serves the two.
  * @param items - The array of IDs, edited in place.
  * @param addLabel - Label of the chip that adds an ID.
  * @param promptKey - Message key for the prompt shown when adding.

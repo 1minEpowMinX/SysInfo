@@ -11,8 +11,7 @@ let loaded = null;
  * Puts the lists carried by `stored` into module state.
  *
  * Each list is taken separately, and one that is absent or malformed leaves its default in
- * effect. Dropping a list in the popup therefore restores its default here instead of leaving
- * the last valid one behind.
+ * effect.
  * @param stored - The value held under STORAGE_KEY, or a falsy value when there is none.
  */
 function applyStored(stored) {
@@ -24,12 +23,7 @@ function applyStored(stored) {
 	});
 }
 
-/**
- * Applies every later write of the whitelist to module state.
- *
- * The popup writes the lists into the same storage while its page stays open, and without this
- * the content script would answer from the snapshot it read at load until the page is reloaded.
- */
+/** Applies every later write of the whitelist to module state. */
 function watchStorage() {
 	try {
 		browser.storage.onChanged.addListener((changes, area) => {
@@ -48,8 +42,7 @@ function watchStorage() {
  *
  * Calls after the first return the promise of the first.
  * @returns A promise settling once the lists are in module state, whether they were read or left
- * at their defaults. `isTicketAllowed` answers from the defaults until it settles, so every
- * caller of that function has to wait for it.
+ * at their defaults. `isTicketAllowed` answers from the defaults until it settles.
  */
 export function loadPortals() {
 	if (loaded) return loaded;
@@ -58,6 +51,8 @@ export function loadPortals() {
 		try {
 			browser.storage.local.get([STORAGE_KEY], (r) => {
 				applyStored(r && r[STORAGE_KEY]);
+				// The popup writes the lists while its own page is open, and this script would
+				// otherwise answer from its load-time snapshot until the page is reloaded.
 				// Registered after the read so that the snapshot cannot land on top of an edit
 				// that arrived while it was in flight.
 				watchStorage();

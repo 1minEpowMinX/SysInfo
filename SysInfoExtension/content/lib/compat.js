@@ -15,8 +15,8 @@ const SYSINFO_LOG_TAG = "[SysInfo]";
 export const slog = (...args) => console.log(SYSINFO_LOG_TAG, ...args);
 export const swarn = (...args) => console.warn(SYSINFO_LOG_TAG, ...args);
 
-// Visible-in-Inspector sentinel — confirms the script ran even with
-// console filters: document.documentElement.dataset.sysinfoLoaded
+// Sentinel for the Inspector: the script's arrival stays visible on the page itself, which is
+// the one place a console filter cannot hide it.
 const _sysinfoRoot = document.documentElement;
 _sysinfoRoot.dataset.sysinfoLoaded = String(Date.now());
 _sysinfoRoot.dataset.sysinfoVersion =

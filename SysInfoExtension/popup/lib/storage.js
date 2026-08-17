@@ -13,7 +13,7 @@ export function saveSettings() {
  * Accepts `value` as a list of IDs.
  * @param value - The value read from storage.
  * @returns The array itself when it holds strings alone, an empty array included, and null
- * otherwise, which lets the caller tell an emptied list from an unusable one.
+ * otherwise.
  */
 function asStringList(value) {
 	if (!Array.isArray(value)) return null;
@@ -22,8 +22,10 @@ function asStringList(value) {
 }
 
 /**
- * Renames the stored field-visibility flags written by a build that still called the last boot
- * time "uptime", so that a user who hid the field keeps it hidden.
+ * Maps the stored field-visibility flags onto the field names in use.
+ *
+ * The last boot time is stored under `uptime` by builds predating its rename; the current name
+ * wins when a stored object carries both.
  * @param stored - The `fields` object read from storage, or a nullish value when absent.
  * @returns A copy carrying the current names alone.
  */

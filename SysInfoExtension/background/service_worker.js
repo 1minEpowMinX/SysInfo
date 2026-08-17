@@ -26,9 +26,8 @@ function fetchOptions() {
 /**
  * Forwards a request to the agent and answers the caller with the parsed body.
  *
- * A failure answers with a `success: false` object carrying the message rather than rejecting,
- * so a caller waiting on the reply always settles. Both outcomes are logged with their elapsed
- * time.
+ * A failure answers with a `success: false` object carrying the message rather than rejecting.
+ * Both outcomes are logged with their elapsed time.
  * @param path - Path appended to AGENT_BASE.
  * @param parseAs - Selects the parser and the reply shape: "text" parses text and answers
  * through `text`, "json" parses JSON and answers through `data`.
@@ -44,6 +43,7 @@ function proxyFetch(path, parseAs, sendResponse, label) {
 			sendResponse(parseAs === "text" ? { success: true, text: data } : { success: true, data });
 		})
 		.catch(err => {
+			// Answered rather than left to reject, so that a caller waiting on the reply settles.
 			bwarn(`${label} ✗`, err && err.message, "(", Date.now() - tStart, "ms)");
 			sendResponse({ success: false, error: err.message });
 		});

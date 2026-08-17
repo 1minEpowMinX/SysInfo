@@ -50,13 +50,7 @@ function insertSysInfoInto(target, data) {
 	markPendingInsertion(formMatch[1], formMatch[2]);
 }
 
-/**
- * Returns the current pathname when it is a whitelisted ticket form, and null otherwise.
- *
- * The two failures are reported only on such a path: the content script runs on every page of the
- * host, so a report tied to the failure itself rather than to the form would reach pages where no
- * block was ever due.
- */
+/** Returns the current pathname when it is a whitelisted ticket form, and null otherwise. */
 function whitelistedFormPath() {
 	const path = location.pathname;
 	return FORM_PATH_RE.test(path) && isTicketAllowed(path) ? path : null;
@@ -69,8 +63,7 @@ function whitelistedFormPath() {
  * A poll every INSERTION_TICK_MS and a MutationObserver on the body both drive the check. Each
  * form path is reported at most once, whichever of the two failures it hits, and a report of a
  * missing editor is withdrawn if the editor turns up after all.
- * @param data - A normalized `/systeminfo` payload, held in the closure so that a tick stays
- * synchronous, or null when the agent could not be reached.
+ * @param data - A normalized `/systeminfo` payload, or null when the agent could not be reached.
  */
 function watchEditor(data) {
 	let lastElement = null;
@@ -81,6 +74,9 @@ function watchEditor(data) {
 	const reported = new Set();
 
 	const check = () => {
+		// Both failures are reported against a whitelisted form and nothing else: the content
+		// script runs on every page of the host, and a report tied to the failure rather than to
+		// the form would reach pages where no block was ever due.
 		const formPath = whitelistedFormPath();
 		// The deadline belongs to one form: an SPA navigation to another restarts the wait.
 		if (formPath !== armedForm) {
@@ -100,6 +96,7 @@ function watchEditor(data) {
 				dismissWaitReport = null;
 			}
 			if (data) {
+				// Read from the closure rather than fetched here, which keeps a tick synchronous.
 				insertSysInfoInto(el, data);
 			} else if (formPath && !reported.has(formPath)) {
 				reported.add(formPath);
@@ -135,11 +132,12 @@ function watchEditor(data) {
 /**
  * Fetches an agent payload and arms the editor watcher with it.
  *
- * A failed fetch arms the watcher all the same, with nothing to insert: the failure is worth
- * reporting only once the user reaches a form, which happens long after this call.
+ * A failed fetch arms the watcher all the same, with nothing to insert.
  */
 export function startInsertion() {
 	requestSysInfo((data) => {
+		// Armed even without a payload: the failure is worth reporting only once the user reaches
+		// a form, which happens long after this call.
 		if (!data) swarn("insertion: no data — watcher reports instead of inserting");
 		watchEditor(data);
 	});

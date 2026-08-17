@@ -12,9 +12,7 @@ export const LEGACY_BOOT_TIME_KEY = "uptime";
  * Maps a raw `/systeminfo` payload onto the field names the extension uses internally, resolving
  * the last boot time from whichever of the two wire names the agent sent.
  *
- * A field the payload omits stays undefined rather than being filled in here: the agent reports
- * an unobtainable value as an empty string, and how either is spelled belongs to the caller that
- * displays it.
+ * A field the payload omits stays undefined rather than being filled in here.
  * @param data - A raw `/systeminfo` payload; a nullish value yields an object of undefined fields.
  * @returns An object carrying `hostname`, `username`, `ip` and `lastBootTime`.
  */
