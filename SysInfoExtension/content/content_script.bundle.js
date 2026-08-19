@@ -304,12 +304,13 @@
     return (target.innerText || "").includes(divider);
   }
   function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
-    const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;
+    const attempts = SYSINFO_REQUEST_RETRIES + 1;
+    const attempt = attempts - retriesLeft;
     const tStart = Date.now();
     const retry = (reason) => {
       swarn(
         "sysinfo fetch failed",
-        `(attempt ${attempt}/${SYSINFO_REQUEST_RETRIES})`,
+        `(attempt ${attempt}/${attempts})`,
         "reason=",
         reason,
         "elapsed=",

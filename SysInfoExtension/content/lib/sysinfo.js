@@ -81,12 +81,14 @@ export function alreadyInserted(target, divider) {
  * @param retriesLeft - The attempts still available.
  */
 export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
-	const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;
+	// The first call is an attempt of its own, so the run is one longer than the retry budget.
+	const attempts = SYSINFO_REQUEST_RETRIES + 1;
+	const attempt = attempts - retriesLeft;
 	const tStart = Date.now();
 
 	const retry = (reason) => {
 		swarn("sysinfo fetch failed",
-			`(attempt ${attempt}/${SYSINFO_REQUEST_RETRIES})`,
+			`(attempt ${attempt}/${attempts})`,
 			"reason=", reason,
 			"elapsed=", Date.now() - tStart, "ms");
 		if (retriesLeft > 0) {
