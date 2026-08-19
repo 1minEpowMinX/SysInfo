@@ -65,6 +65,14 @@ export class FakeEl {
 		for (let n = this; n; n = n.parent) if (n.matches(sel)) return n;
 		return null;
 	}
+	/**
+	 * Returns whether `node` is this node or sits anywhere under it.
+	 * @param node - The node to look for; a nullish one is not contained.
+	 */
+	contains(node) {
+		for (let n = node; n; n = n.parent) if (n === this) return true;
+		return false;
+	}
 	/** Returns the text of this node and everything under it. */
 	text() { return [this.textContent, ...this.children.map(c => c.text())].filter(Boolean).join(" "); }
 }

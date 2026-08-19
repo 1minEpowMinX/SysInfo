@@ -81,10 +81,26 @@ const MUTATIONS = [
 	{
 		what: "a submit event naming no control is rejected",
 		file: "content/lib/submit_watcher.js",
-		from: "if (event.submitter && !isSubmitControl(event.submitter)) return;",
-		to: "if (!isSubmitControl(event.submitter)) return;",
+		from: "if (event.submitter && !sendControlFor(event.submitter)) return;",
+		to: "if (!sendControlFor(event.submitter)) return;",
 		test: "watchers.test.mjs",
 		case: "submit event: an event naming no control is accepted"
+	},
+	{
+		what: "a submission of any form of the page is taken for the request form's",
+		file: "content/lib/submit_watcher.js",
+		from: "if (event.target !== requestForm()) return;",
+		to: "void 0;",
+		test: "watchers.test.mjs",
+		case: "submit event: another form of the page is ignored"
+	},
+	{
+		what: "a send control is not required to sit in the request form",
+		file: "content/lib/submit_watcher.js",
+		from: "return form && form.contains(control) ? control : null;",
+		to: "return control;",
+		test: "watchers.test.mjs",
+		case: "click: a send control of another form does not"
 	},
 	{
 		what: "the sender of a message is not checked",
