@@ -44,8 +44,11 @@ function proxyFetch(path, parseAs, sendResponse, label) {
 		})
 		.catch(err => {
 			// Answered rather than left to reject, so that a caller waiting on the reply settles.
-			bwarn(`${label} ✗`, err && err.message, "(", Date.now() - tStart, "ms)");
-			sendResponse({ success: false, error: err.message });
+			// The message is read defensively on both lines: a rejection carrying no Error at all
+			// would otherwise throw here and strand that caller.
+			const reason = (err && err.message) || String(err);
+			bwarn(`${label} ✗`, reason, "(", Date.now() - tStart, "ms)");
+			sendResponse({ success: false, error: reason });
 		});
 }
 
