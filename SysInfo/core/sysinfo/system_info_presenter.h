@@ -20,9 +20,10 @@
  */
 namespace sysinfo::presenter {
 
-/// Renders localised plain text for the tray tooltip and clipboard. Empty
-/// fields are replaced with a localised placeholder — the only rendering
-/// that does so.
+/// Renders localised plain text for the tray tooltip and clipboard. The IP
+/// address and the boot time are replaced with a localised placeholder when
+/// empty — the only rendering that substitutes anything; the host and user
+/// names are carried through as they came.
 QString toText(const Info &s);
 
 /**
