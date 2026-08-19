@@ -22,9 +22,9 @@ const { setupUrlWatcher } = await import("../content/lib/url_watcher.js");
 const history = await import("../content/lib/history.js");
 const { SUBMIT_CONTROL_SELECTOR, EDITOR_SELECTOR, URL_TICK_MS, TITLE_SELECTOR } =
 	await import("../content/lib/constants.js");
-const { loadPortals } = await import("../content/lib/portals.js");
+const { loadSettings } = await import("../content/lib/settings.js");
 
-const ready = loadPortals();
+const ready = loadSettings();
 env.clock.advance(10);
 await ready;
 

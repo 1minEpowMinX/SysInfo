@@ -7,6 +7,7 @@ import {
 	DEFAULT_PORTAL_IDS,
 	DEFAULT_TYPE_IDS,
 } from "../../shared/constants.js";
+import { resolveFields } from "../../shared/fields.js";
 
 export { STORAGE_KEY, HISTORY_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS };
 
@@ -17,7 +18,8 @@ export { STORAGE_KEY, HISTORY_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS };
 // through it to the defaults, and past them into shared/constants.js.
 const DEFAULT_SETTINGS = {
 	theme: "auto",
-	fields: { hostname: true, username: true, ip: true, lastBootTime: true },
+	// Which fields exist, and that an unmentioned one is shown, is resolveFields()'s to say.
+	fields: resolveFields(),
 	portals: DEFAULT_PORTAL_IDS,
 	types: DEFAULT_TYPE_IDS
 };

@@ -69,16 +69,33 @@
     return Array.isArray(value) && value.every((v) => typeof v === "string");
   }
 
-  // content/lib/portals.js
+  // shared/fields.js
+  var FIELD_KEYS = ["hostname", "username", "ip", "lastBootTime"];
+  function resolveFields(stored) {
+    const raw = { ...stored || {} };
+    if (raw.uptime !== void 0 && raw.lastBootTime === void 0) {
+      raw.lastBootTime = raw.uptime;
+    }
+    const fields = {};
+    for (const key of FIELD_KEYS) {
+      fields[key] = raw[key] !== false;
+    }
+    return fields;
+  }
+
+  // content/lib/settings.js
   var userPortals = null;
   var userTypes = null;
+  var userFields = resolveFields();
   var loaded = null;
   function applyStored(stored) {
     userPortals = isIdList(stored && stored.portals) ? stored.portals : null;
     userTypes = isIdList(stored && stored.types) ? stored.types : null;
-    slog("portals: lists applied", {
+    userFields = resolveFields(stored && stored.fields);
+    slog("settings: applied", {
       portals: userPortals ? userPortals.length : "default",
-      types: userTypes ? userTypes.length : "default"
+      types: userTypes ? userTypes.length : "default",
+      fields: userFields
     });
   }
   function watchStorage() {
@@ -88,10 +105,10 @@
         applyStored(changes[STORAGE_KEY].newValue);
       });
     } catch (e) {
-      swarn("portals: onChanged unavailable", e && e.message);
+      swarn("settings: onChanged unavailable", e && e.message);
     }
   }
-  function loadPortals() {
+  function loadSettings() {
     if (loaded) return loaded;
     loaded = new Promise((resolve) => {
       try {
@@ -101,7 +118,7 @@
           resolve();
         });
       } catch (e) {
-        swarn("portals: storage exception", e && e.message);
+        swarn("settings: storage exception", e && e.message);
         resolve();
       }
     });
@@ -118,6 +135,9 @@
     if (!match) return false;
     const [, portalId, ticketId] = match;
     return getAllowedPortals().includes(portalId) && getAllowedTypes().includes(ticketId);
+  }
+  function visibleFields() {
+    return userFields;
   }
 
   // content/lib/history.js
@@ -260,13 +280,14 @@
 
   // content/lib/sysinfo.js
   var orFallback = (value, fallbackKey) => value || t(fallbackKey);
-  function buildSysInfoLines(data) {
-    const raw = [
-      `${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
-      `${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
-      `${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
-      `${t("sysinfoLastBootTime")}: ${orFallback(data.lastBootTime, "sysinfoUnavailable")}`
-    ];
+  var FIELD_TEXT = {
+    hostname: { label: "sysinfoHostname", fallback: "sysinfoUnavailable" },
+    username: { label: "sysinfoUsername", fallback: "sysinfoUnavailable" },
+    ip: { label: "sysinfoIP", fallback: "sysinfoNoIp" },
+    lastBootTime: { label: "sysinfoLastBootTime", fallback: "sysinfoUnavailable" }
+  };
+  function buildSysInfoLines(data, fields = resolveFields()) {
+    const raw = FIELD_KEYS.filter((key) => fields[key]).map((key) => `${t(FIELD_TEXT[key].label)}: ${orFallback(data[key], FIELD_TEXT[key].fallback)}`);
     const result = [];
     for (let i = 0; i < raw.length; i += 2) {
       result.push(raw.slice(i, i + 2).join(", "));
@@ -274,10 +295,12 @@
     return result;
   }
   function makeDivider(lines, char = "\u2500", percent = 0.45) {
+    if (lines.length === 0) return "";
     const maxLen = Math.max(...lines.map((l) => l.length));
     return char.repeat(Math.floor(maxLen * percent));
   }
   function alreadyInserted(target, divider) {
+    if (!divider) return false;
     return (target.innerText || "").includes(divider);
   }
   function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
@@ -429,7 +452,8 @@
     const path = location.pathname;
     const formMatch = path.match(FORM_PATH_RE);
     if (!formMatch || !isTicketAllowed(path)) return;
-    const lines = buildSysInfoLines(data);
+    const lines = buildSysInfoLines(data, visibleFields());
+    if (lines.length === 0) return;
     const divider = makeDivider(lines);
     const indents = "\n\u200B\n\u200B\n\u200B\n";
     const text = `${indents}${divider}
@@ -502,7 +526,7 @@ ${lines.join("\n")}`;
 
   // content/content_script.js
   slog("bootstrap", { pathname: location.pathname, readyState: document.readyState });
-  loadPortals().then(() => {
+  loadSettings().then(() => {
     setupUrlWatcher();
     setupSubmitWatcher();
     startInsertion();

@@ -14,8 +14,10 @@ const { buildSysInfoLines, makeDivider, alreadyInserted, requestSysInfo } =
 	await import("../content/lib/sysinfo.js");
 const { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } =
 	await import("../content/lib/constants.js");
+const { resolveFields } = await import("../shared/fields.js");
 
 const FULL = { hostname: "PC-01", username: "ivanov", ip: "10.0.0.5", lastBootTime: "2026-08-14 09:00" };
+const ALL_ON = resolveFields();
 
 /** Drives one requestSysInfo call to its end and returns what the callback received. */
 function fetchOnce(waitMs = 60000) {
@@ -44,6 +46,32 @@ const cases = {
 		ok(!lines.join(" ").includes("undefined"), `no undefined in ${JSON.stringify(lines)}`);
 	},
 
+	"lines: a field switched off is left out of the block"() {
+		const lines = buildSysInfoLines(FULL, { ...ALL_ON, username: false });
+		ok(!lines.join(" ").includes("sysinfoUsername"), `the label is gone from ${JSON.stringify(lines)}`);
+		ok(!lines.join(" ").includes("ivanov"), "and so is the value");
+		matches(lines[0], /sysinfoHostname: PC-01/, "the fields left keep their own lines");
+	},
+
+	"lines: the pairing closes over a field switched off"() {
+		const lines = buildSysInfoLines(FULL, { ...ALL_ON, hostname: false });
+		eq(lines.length, 2, "three fields still occupy two lines");
+		matches(lines[0], /sysinfoUsername: ivanov, sysinfoIP: 10\.0\.0\.5/,
+			"the pair is formed from what is left, not from the original positions");
+		matches(lines[1], /^sysinfoLastBootTime: /, "the odd one out stands alone");
+	},
+
+	"lines: every field switched off leaves no line at all"() {
+		const off = Object.fromEntries(Object.keys(ALL_ON).map(k => [k, false]));
+		deepEq(buildSysInfoLines(FULL, off), [], "nothing to render");
+		eq(makeDivider([]), "", "and no divider is drawn over it");
+	},
+
+	"lines: naming no fields renders every one of them"() {
+		deepEq(buildSysInfoLines(FULL), buildSysInfoLines(FULL, ALL_ON),
+			"the default is what the stored settings resolve to when nothing hides a field");
+	},
+
 	"divider: spans 45% of the longest line"() {
 		const lines = ["1234567890", "12345"];
 		eq(makeDivider(lines).length, 4, "floor(10 * 0.45)");
@@ -56,6 +84,8 @@ const cases = {
 		eq(alreadyInserted({ innerText: "nothing of the sort" }, "───"), false, "and its absence");
 		eq(alreadyInserted({ innerText: "" }, "───"), false, "an empty editor holds nothing");
 		eq(alreadyInserted({}, "───"), false, "and so does one carrying no text at all");
+		eq(alreadyInserted({ innerText: "whatever" }, ""), false,
+			"an empty divider is in every string there is, and answers 'not there' all the same");
 	},
 
 	"fetch: a successful reply arrives normalized"() {

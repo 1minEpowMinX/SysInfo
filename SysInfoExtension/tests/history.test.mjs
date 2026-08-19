@@ -29,9 +29,9 @@ const env = installEnv({
 
 const history = await import("../content/lib/history.js");
 const { SUBMIT_TTL_MS, TITLE_SELECTOR, TITLE_WAIT_MS } = await import("../content/lib/constants.js");
-const { loadPortals } = await import("../content/lib/portals.js");
+const { loadSettings } = await import("../content/lib/settings.js");
 
-const ready = loadPortals();
+const ready = loadSettings();
 env.clock.advance(10);
 await ready;
 

@@ -4,27 +4,11 @@
 import { STORAGE_KEY, HISTORY_KEY, defaultSettings } from "./constants.js";
 import { state } from "./state.js";
 import { isIdList } from "../../shared/id_list.js";
+import { resolveFields } from "../../shared/fields.js";
 
 /** Writes the current settings to storage under STORAGE_KEY. */
 export function saveSettings() {
 	browser.storage.local.set({ [STORAGE_KEY]: state.settings });
-}
-
-/**
- * Maps the stored field-visibility flags onto the field names in use.
- *
- * The last boot time is stored under `uptime` by builds predating its rename; the current name
- * wins when a stored object carries both.
- * @param stored - The `fields` object read from storage, or a nullish value when absent.
- * @returns A copy carrying the current names alone.
- */
-function migrateFields(stored) {
-	const fields = { ...(stored || {}) };
-	if (fields.uptime !== undefined && fields.lastBootTime === undefined) {
-		fields.lastBootTime = fields.uptime;
-	}
-	delete fields.uptime;
-	return fields;
 }
 
 /**
@@ -40,7 +24,7 @@ export async function loadSettings() {
 		const defaults = defaultSettings();
 		state.settings = {
 			theme: stored.theme || defaults.theme,
-			fields: { ...defaults.fields, ...migrateFields(stored.fields) },
+			fields: resolveFields(stored.fields),
 			portals: isIdList(stored.portals) ? stored.portals : defaults.portals,
 			types: isIdList(stored.types) ? stored.types : defaults.types
 		};

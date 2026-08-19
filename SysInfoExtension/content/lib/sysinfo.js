@@ -3,6 +3,7 @@
 import { t, slog, swarn } from "./compat.js";
 import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.js";
 import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
+import { FIELD_KEYS, resolveFields } from "../../shared/fields.js";
 
 // The agent reports an unobtainable value as an empty string: it carries data,
 // and how a missing value is spelled belongs to the client that displays it.
@@ -11,18 +12,31 @@ import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
 // as the text "undefined".
 const orFallback = (value, fallbackKey) => value || t(fallbackKey);
 
+// The label and the "no value" spelling of each field, keyed as FIELD_KEYS names them. Both are
+// catalogue keys rather than text: the block is written in the browser's UI language.
+const FIELD_TEXT = {
+	hostname: { label: "sysinfoHostname", fallback: "sysinfoUnavailable" },
+	username: { label: "sysinfoUsername", fallback: "sysinfoUnavailable" },
+	ip: { label: "sysinfoIP", fallback: "sysinfoNoIp" },
+	lastBootTime: { label: "sysinfoLastBootTime", fallback: "sysinfoUnavailable" }
+};
+
 /**
- * Renders the fields of an agent payload as labelled lines, joined in pairs.
+ * Renders the visible fields of an agent payload as labelled lines, joined in pairs.
+ *
+ * Pairing follows what is left after the hidden fields are dropped, so switching one off closes
+ * the gap rather than leaving a line half empty.
  * @param data - A normalized payload, carrying `hostname`, `username`, `ip` and `lastBootTime`.
- * @returns An array of strings, each holding two labelled fields joined by ", ".
+ * @param fields - A visibility flag per field, as `resolveFields` returns it; every field is
+ * rendered when the caller names none.
+ * @returns An array of strings, each holding up to two labelled fields joined by ", ". Empty
+ * when every field is switched off.
  */
-export function buildSysInfoLines(data) {
-	const raw = [
-		`${t("sysinfoHostname")}: ${orFallback(data.hostname, "sysinfoUnavailable")}`,
-		`${t("sysinfoUsername")}: ${orFallback(data.username, "sysinfoUnavailable")}`,
-		`${t("sysinfoIP")}: ${orFallback(data.ip, "sysinfoNoIp")}`,
-		`${t("sysinfoLastBootTime")}: ${orFallback(data.lastBootTime, "sysinfoUnavailable")}`
-	];
+export function buildSysInfoLines(data, fields = resolveFields()) {
+	const raw = FIELD_KEYS
+		.filter(key => fields[key])
+		.map(key => `${t(FIELD_TEXT[key].label)}: ${orFallback(data[key], FIELD_TEXT[key].fallback)}`);
+
 	const result = [];
 	for (let i = 0; i < raw.length; i += 2) {
 		result.push(raw.slice(i, i + 2).join(", "));
@@ -35,9 +49,13 @@ export function buildSysInfoLines(data) {
  * @param lines - The lines the divider is drawn above.
  * @param char - The character the run is built from.
  * @param percent - The fraction of the longest line the run spans.
- * @returns The repeated character, rounded down to a whole number of characters.
+ * @returns The repeated character, rounded down to a whole number of characters; empty when
+ * there is no line to measure against.
  */
 export function makeDivider(lines, char = "─", percent = 0.45) {
+	// Math.max of nothing is -Infinity, which repeat() answers with a RangeError rather than a
+	// short divider.
+	if (lines.length === 0) return "";
 	const maxLen = Math.max(...lines.map(l => l.length));
 	return char.repeat(Math.floor(maxLen * percent));
 }
@@ -45,9 +63,11 @@ export function makeDivider(lines, char = "─", percent = 0.45) {
 /**
  * Reports whether `target` already carries `divider`.
  * @param target - The editor element, read through `innerText`.
- * @param divider - The divider string to search for.
+ * @param divider - The divider string to search for; an empty one is carried by every editor
+ * there is, so it is answered as "not there" rather than as "already inserted".
  */
 export function alreadyInserted(target, divider) {
+	if (!divider) return false;
 	return (target.innerText || "").includes(divider);
 }
 

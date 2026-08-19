@@ -3,7 +3,7 @@
 import { slog } from "./compat.js";
 import { EDITOR_SELECTOR, SUBMIT_CONTROL_SELECTOR } from "./constants.js";
 import { markFormSubmitted } from "./history.js";
-import { isTicketAllowed } from "./portals.js";
+import { isTicketAllowed } from "./settings.js";
 
 /**
  * Returns the request form, identified as the one carrying the description editor.

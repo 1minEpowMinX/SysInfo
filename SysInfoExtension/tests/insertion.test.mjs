@@ -12,8 +12,12 @@ const FORM = "/servicedesk/customer/portal/3/create/27";
 const FORM_B = "/servicedesk/customer/portal/3/create/28";
 const OUTSIDE = "/servicedesk/customer/portal/3/create/99";
 const TICKET = "/servicedesk/customer/portal/3/SD-1234";
-const WHITELIST = { [STORAGE_KEY]: { portals: ["3"], types: ["27", "28"] } };
+const LISTS = { portals: ["3"], types: ["27", "28"] };
+const WHITELIST = { [STORAGE_KEY]: LISTS };
 const AGENT = { hostname: "PC-01", username: "ivanov", ip: "10.0.0.5", lastBootTime: "2026-08-14 09:00" };
+
+/** The whitelist plus the field flags a case needs, the rest of the fields left on. */
+const withFields = (fields) => ({ [STORAGE_KEY]: { ...LISTS, fields } });
 
 const ROOT = "#ak-editor-textarea";
 const PARA = "#ak-editor-textarea > p";
@@ -23,16 +27,20 @@ const env = installEnv({
 	pathname: CASE.startsWith("silent: a form outside") ? OUTSIDE
 		: CASE.startsWith("silent: a ticket") ? TICKET
 			: FORM,
-	storage: WHITELIST,
+	storage: CASE === "fields: one switched off does not reach the editor"
+		? withFields({ username: false })
+		: CASE === "fields: every one switched off leaves the editor untouched"
+			? withFields({ hostname: false, username: false, ip: false, lastBootTime: false })
+			: WHITELIST,
 	agent: CASE.startsWith("failure: the agent") ? null : AGENT
 });
 
 const { startInsertion } = await import("../content/lib/insertion.js");
 const { EDITOR_WAIT_MS, EDITOR_ROOT_GRACE_MS, INSERTION_TICK_MS } =
 	await import("../content/lib/constants.js");
-const { loadPortals } = await import("../content/lib/portals.js");
+const { loadSettings } = await import("../content/lib/settings.js");
 
-const ready = loadPortals();
+const ready = loadSettings();
 env.clock.advance(10);
 await ready;
 
@@ -172,6 +180,26 @@ const cases = {
 		startInsertion();
 		env.clock.advance(600000);
 		eq(env.toasts().length, 0, "no report");
+	},
+
+	"fields: one switched off does not reach the editor"() {
+		const para = mountEditor();
+		startInsertion();
+		env.clock.advance(5000);
+
+		matches(para.innerText, /sysinfoHostname: PC-01/, "a field left on is written");
+		ok(!para.innerText.includes("ivanov"),
+			`the hidden field is absent from ${JSON.stringify(para.innerText)}`);
+	},
+
+	"fields: every one switched off leaves the editor untouched"() {
+		const para = mountEditor();
+		para.innerText = "";
+		startInsertion();
+		env.clock.advance(600000);
+
+		eq(para.innerText, "", "no divider over an empty block");
+		eq(env.toasts().length, 0, "and nothing is announced");
 	}
 };
 

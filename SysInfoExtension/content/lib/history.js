@@ -2,7 +2,7 @@
 
 import { slog, swarn } from "./compat.js";
 import { SUBMIT_TTL_MS, TICKET_PATH_RE, TITLE_SELECTOR, TITLE_WAIT_MS, HISTORY_KEY } from "./constants.js";
-import { isTicketAllowed } from "./portals.js";
+import { isTicketAllowed } from "./settings.js";
 
 let pendingInsertion = null;
 

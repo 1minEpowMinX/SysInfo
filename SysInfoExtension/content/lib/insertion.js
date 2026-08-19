@@ -10,7 +10,7 @@ import {
 	EDITOR_ROOT_GRACE_MS
 } from "./constants.js";
 import { buildSysInfoLines, makeDivider, alreadyInserted, requestSysInfo } from "./sysinfo.js";
-import { isTicketAllowed } from "./portals.js";
+import { isTicketAllowed, visibleFields } from "./settings.js";
 import { showToast } from "./toast.js";
 import { markPendingInsertion } from "./history.js";
 
@@ -18,7 +18,8 @@ import { markPendingInsertion } from "./history.js";
  * Writes the sysinfo block into `target` and records the insertion in the history.
  *
  * Returns without touching `target` when the path is not a ticket form, when the portal or the
- * ticket type is outside the whitelist, or when the block is already there.
+ * ticket type is outside the whitelist, when every field is switched off, or when the block is
+ * already there.
  * @param target - The editor element, written through `innerText`.
  * @param data - A normalized `/systeminfo` payload.
  */
@@ -27,7 +28,11 @@ function insertSysInfoInto(target, data) {
 	const formMatch = path.match(FORM_PATH_RE);
 	if (!formMatch || !isTicketAllowed(path)) return;
 
-	const lines = buildSysInfoLines(data);
+	const lines = buildSysInfoLines(data, visibleFields());
+	// Every field switched off leaves no block to write, and a divider over nothing is a rule
+	// across an empty description.
+	if (lines.length === 0) return;
+
 	const divider = makeDivider(lines);
 	// The Jira editor collapses a run of empty lines, so each one carries a
 	// zero-width space to survive as a blank line above the block.

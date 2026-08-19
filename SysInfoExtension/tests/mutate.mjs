@@ -40,10 +40,10 @@ const MUTATIONS = [
 	},
 	{
 		what: "the whitelist is read without gating the watchers",
-		file: "content/lib/portals.js",
+		file: "content/lib/settings.js",
 		from: "watchStorage();",
 		to: "void 0;",
-		test: "portals.test.mjs",
+		test: "settings.test.mjs",
 		case: "edit: reaches an open page without a reload"
 	},
 	{
@@ -51,7 +51,7 @@ const MUTATIONS = [
 		file: "shared/id_list.js",
 		from: 'return Array.isArray(value) && value.every(v => typeof v === "string");',
 		to: 'return Array.isArray(value) && value.length > 0 && value.every(v => typeof v === "string");',
-		test: "portals.test.mjs",
+		test: "settings.test.mjs",
 		case: "stored: an emptied list admits nothing"
 	},
 	{
@@ -112,11 +112,35 @@ const MUTATIONS = [
 	},
 	{
 		what: "the renamed field flag overwrites the current one",
-		file: "popup/lib/storage.js",
-		from: "if (fields.uptime !== undefined && fields.lastBootTime === undefined) {",
-		to: "if (fields.uptime !== undefined) {",
+		file: "shared/fields.js",
+		from: "if (raw.uptime !== undefined && raw.lastBootTime === undefined) {",
+		to: "if (raw.uptime !== undefined) {",
 		test: "popup_settings.test.mjs",
 		case: "fields: the old name does not overwrite the current one"
+	},
+	{
+		what: "the field flags do not reach the block",
+		file: "content/lib/insertion.js",
+		from: "const lines = buildSysInfoLines(data, visibleFields());",
+		to: "const lines = buildSysInfoLines(data);",
+		test: "insertion.test.mjs",
+		case: "fields: one switched off does not reach the editor"
+	},
+	{
+		what: "a block with no field left is written anyway",
+		file: "content/lib/insertion.js",
+		from: "if (lines.length === 0) return;",
+		to: "void 0;",
+		test: "insertion.test.mjs",
+		case: "fields: every one switched off leaves the editor untouched"
+	},
+	{
+		what: "a field is hidden by anything but an explicit false",
+		file: "shared/fields.js",
+		from: "fields[key] = raw[key] !== false;",
+		to: "fields[key] = !!raw[key];",
+		test: "popup_settings.test.mjs",
+		case: "fields: a flag the stored object omits keeps its default"
 	},
 	{
 		what: "an error toast is given a timer",
@@ -136,10 +160,10 @@ const MUTATIONS = [
 	},
 	{
 		what: "a storage that throws leaves the whitelist promise pending",
-		file: "content/lib/portals.js",
-		from: 'swarn("portals: storage exception", e && e.message);',
+		file: "content/lib/settings.js",
+		from: 'swarn("settings: storage exception", e && e.message);',
 		to: "return;",
-		test: "portals.test.mjs",
+		test: "settings.test.mjs",
 		case: "failure: a storage that throws still settles on the defaults"
 	},
 	{

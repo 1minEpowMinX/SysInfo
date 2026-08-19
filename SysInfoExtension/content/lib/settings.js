@@ -1,30 +1,35 @@
-// Whitelist: two independent flat lists of IDs.
+// The stored settings the content script acts on: the two whitelist ID lists, and which fields
+// the block carries. Read once and kept in step with the popup's later writes.
 
 import { slog, swarn } from "./compat.js";
 import { STORAGE_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS, FORM_PATH_RE } from "./constants.js";
 import { isIdList } from "../../shared/id_list.js";
+import { resolveFields } from "../../shared/fields.js";
 
 let userPortals = null;
 let userTypes = null;
+let userFields = resolveFields();
 let loaded = null;
 
 /**
- * Puts the lists carried by `stored` into module state.
+ * Puts the settings carried by `stored` into module state.
  *
  * Each list is taken separately, and one that is absent or malformed leaves its default in
- * effect.
+ * effect. The field flags are resolved whole, so an absent group shows every field.
  * @param stored - The value held under STORAGE_KEY, or a falsy value when there is none.
  */
 function applyStored(stored) {
 	userPortals = isIdList(stored && stored.portals) ? stored.portals : null;
 	userTypes = isIdList(stored && stored.types) ? stored.types : null;
-	slog("portals: lists applied", {
+	userFields = resolveFields(stored && stored.fields);
+	slog("settings: applied", {
 		portals: userPortals ? userPortals.length : "default",
-		types: userTypes ? userTypes.length : "default"
+		types: userTypes ? userTypes.length : "default",
+		fields: userFields
 	});
 }
 
-/** Applies every later write of the whitelist to module state. */
+/** Applies every later write of the settings to module state. */
 function watchStorage() {
 	try {
 		browser.storage.onChanged.addListener((changes, area) => {
@@ -33,26 +38,25 @@ function watchStorage() {
 			applyStored(changes[STORAGE_KEY].newValue);
 		});
 	} catch (e) {
-		swarn("portals: onChanged unavailable", e && e.message);
+		swarn("settings: onChanged unavailable", e && e.message);
 	}
 }
 
 /**
- * Reads the user's portal and type ID lists from storage into module state and keeps them in
- * step with later edits.
+ * Reads the settings from storage into module state and keeps them in step with later edits.
  *
  * Calls after the first return the promise of the first.
- * @returns A promise settling once the lists are in module state, whether they were read or left
- * at their defaults. `isTicketAllowed` answers from the defaults until it settles.
+ * @returns A promise settling once the settings are in module state, whether they were read or
+ * left at their defaults. `isTicketAllowed` answers from the defaults until it settles.
  */
-export function loadPortals() {
+export function loadSettings() {
 	if (loaded) return loaded;
 
 	loaded = new Promise((resolve) => {
 		try {
 			browser.storage.local.get([STORAGE_KEY], (r) => {
 				applyStored(r && r[STORAGE_KEY]);
-				// The popup writes the lists while its own page is open, and this script would
+				// The popup writes the settings while its own page is open, and this script would
 				// otherwise answer from its load-time snapshot until the page is reloaded.
 				// Registered after the read so that the snapshot cannot land on top of an edit
 				// that arrived while it was in flight.
@@ -62,7 +66,7 @@ export function loadPortals() {
 		} catch (e) {
 			// Resolved rather than rejected: the defaults are a working configuration, and a
 			// storage that cannot be read must not keep the watchers unarmed.
-			swarn("portals: storage exception", e && e.message);
+			swarn("settings: storage exception", e && e.message);
 			resolve();
 		}
 	});
@@ -88,4 +92,15 @@ export function isTicketAllowed(pathname) {
 	const [, portalId, ticketId] = match;
 	return getAllowedPortals().includes(portalId)
 		&& getAllowedTypes().includes(ticketId);
+}
+
+/**
+ * Returns the visibility flag of every field the block can carry.
+ *
+ * Read at insertion time rather than captured with the payload, so a field switched off while
+ * the form is open is left out of the block that follows.
+ * @returns A flag per key of FIELD_KEYS.
+ */
+export function visibleFields() {
+	return userFields;
 }

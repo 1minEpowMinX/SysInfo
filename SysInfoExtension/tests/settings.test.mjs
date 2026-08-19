@@ -1,6 +1,6 @@
 // The whitelist: what it admits, what it falls back to, and how an edit reaches an open page.
 //
-// portals.js memoizes its read, so each case gets a process of its own.
+// settings.js memoizes its read, so each case gets a process of its own.
 
 import { run } from "./runner.mjs";
 import { installEnv } from "./harness.mjs";
@@ -31,12 +31,12 @@ if (CASE.startsWith("failure:")) {
 	browser.storage.local.get = () => { throw new Error("storage unavailable"); };
 }
 
-const portals = await import("../content/lib/portals.js");
+const portals = await import("../content/lib/settings.js");
 
-// Awaited through a flag rather than directly: a loadPortals that never settles is the failure
+// Awaited through a flag rather than directly: a loadSettings that never settles is the failure
 // the last case is about, and awaiting the promise here would hang the process instead.
 let settled = false;
-const ready = portals.loadPortals();
+const ready = portals.loadSettings();
 ready.then(() => { settled = true; });
 env.clock.advance(10);
 await env.clock.flush();
@@ -100,7 +100,7 @@ const cases = {
 	},
 
 	"load: the read happens once"() {
-		eq(portals.loadPortals(), portals.loadPortals(), "the same promise is handed out");
+		eq(portals.loadSettings(), portals.loadSettings(), "the same promise is handed out");
 		eq(env.storageListeners.length, 1, "and the listener is registered once");
 	},
 
