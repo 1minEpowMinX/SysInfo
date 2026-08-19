@@ -47,12 +47,12 @@ const MUTATIONS = [
 		case: "edit: reaches an open page without a reload"
 	},
 	{
-		what: "an emptied list is accepted as a list",
-		file: "content/lib/portals.js",
-		from: "return Array.isArray(value) && value.length > 0",
-		to: "return Array.isArray(value) && value.length >= 0",
+		what: "an emptied list is read as nothing stored",
+		file: "shared/id_list.js",
+		from: 'return Array.isArray(value) && value.every(v => typeof v === "string");',
+		to: 'return Array.isArray(value) && value.length > 0 && value.every(v => typeof v === "string");',
 		test: "portals.test.mjs",
-		case: "stored: an emptied list falls back to the default"
+		case: "stored: an emptied list admits nothing"
 	},
 	{
 		what: "the legacy boot-time key stands in for an empty one",

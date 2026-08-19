@@ -64,13 +64,18 @@
   var TITLE_SELECTOR = ".cv-page-title-main h1 span";
   var TITLE_WAIT_MS = 5e3;
 
+  // shared/id_list.js
+  function isIdList(value) {
+    return Array.isArray(value) && value.every((v) => typeof v === "string");
+  }
+
   // content/lib/portals.js
   var userPortals = null;
   var userTypes = null;
   var loaded = null;
   function applyStored(stored) {
-    userPortals = isStringArray(stored && stored.portals) ? stored.portals : null;
-    userTypes = isStringArray(stored && stored.types) ? stored.types : null;
+    userPortals = isIdList(stored && stored.portals) ? stored.portals : null;
+    userTypes = isIdList(stored && stored.types) ? stored.types : null;
     slog("portals: lists applied", {
       portals: userPortals ? userPortals.length : "default",
       types: userTypes ? userTypes.length : "default"
@@ -101,9 +106,6 @@
       }
     });
     return loaded;
-  }
-  function isStringArray(value) {
-    return Array.isArray(value) && value.length > 0 && value.every((v) => typeof v === "string");
   }
   function getAllowedPortals() {
     return userPortals || DEFAULT_PORTAL_IDS;

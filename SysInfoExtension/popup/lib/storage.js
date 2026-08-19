@@ -3,22 +3,11 @@
 
 import { STORAGE_KEY, HISTORY_KEY, defaultSettings } from "./constants.js";
 import { state } from "./state.js";
+import { isIdList } from "../../shared/id_list.js";
 
 /** Writes the current settings to storage under STORAGE_KEY. */
 export function saveSettings() {
 	browser.storage.local.set({ [STORAGE_KEY]: state.settings });
-}
-
-/**
- * Accepts `value` as a list of IDs.
- * @param value - The value read from storage.
- * @returns The array itself when it holds strings alone, an empty array included, and null
- * otherwise.
- */
-function asStringList(value) {
-	if (!Array.isArray(value)) return null;
-	if (value.length === 0) return [];
-	return value.every(v => typeof v === "string") ? value : null;
 }
 
 /**
@@ -52,8 +41,8 @@ export async function loadSettings() {
 		state.settings = {
 			theme: stored.theme || defaults.theme,
 			fields: { ...defaults.fields, ...migrateFields(stored.fields) },
-			portals: asStringList(stored.portals) || defaults.portals,
-			types: asStringList(stored.types) || defaults.types
+			portals: isIdList(stored.portals) ? stored.portals : defaults.portals,
+			types: isIdList(stored.types) ? stored.types : defaults.types
 		};
 		state.history = r[HISTORY_KEY] || [];
 	} catch (e) { /* defaults from state.js stay in place */ }

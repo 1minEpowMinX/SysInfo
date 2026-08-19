@@ -65,8 +65,8 @@ const cases = {
 	},
 
 	"stored: an emptied list is kept as an emptied list"() {
-		// The content script reads an emptied list as "nothing stored" and answers from the
-		// defaults; the popup keeps it. The two sides do not agree on what emptying means.
+		// Both sides read an emptied list the same way, through shared/id_list.js: it is a list
+		// of its own that admits nothing, not an absent one that the defaults stand in for.
 		deepEq(state.settings.portals, [], "the popup keeps the empty list");
 	},
 

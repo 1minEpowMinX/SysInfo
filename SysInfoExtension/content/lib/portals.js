@@ -2,6 +2,7 @@
 
 import { slog, swarn } from "./compat.js";
 import { STORAGE_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS, FORM_PATH_RE } from "./constants.js";
+import { isIdList } from "../../shared/id_list.js";
 
 let userPortals = null;
 let userTypes = null;
@@ -15,8 +16,8 @@ let loaded = null;
  * @param stored - The value held under STORAGE_KEY, or a falsy value when there is none.
  */
 function applyStored(stored) {
-	userPortals = isStringArray(stored && stored.portals) ? stored.portals : null;
-	userTypes = isStringArray(stored && stored.types) ? stored.types : null;
+	userPortals = isIdList(stored && stored.portals) ? stored.portals : null;
+	userTypes = isIdList(stored && stored.types) ? stored.types : null;
 	slog("portals: lists applied", {
 		portals: userPortals ? userPortals.length : "default",
 		types: userTypes ? userTypes.length : "default"
@@ -69,17 +70,9 @@ export function loadPortals() {
 	return loaded;
 }
 
-/**
- * Reports whether `value` is a non-empty array holding strings alone.
- * @param value - The value to test.
- */
-function isStringArray(value) {
-	return Array.isArray(value) && value.length > 0 && value.every(v => typeof v === "string");
-}
-
-/** Returns the whitelisted portal IDs, falling back to the defaults while none are loaded. */
+/** Returns the whitelisted portal IDs, falling back to the defaults while none is stored. */
 function getAllowedPortals() { return userPortals || DEFAULT_PORTAL_IDS; }
-/** Returns the whitelisted ticket-type IDs, falling back to the defaults while none are loaded. */
+/** Returns the whitelisted ticket-type IDs, falling back to the defaults while none is stored. */
 function getAllowedTypes() { return userTypes || DEFAULT_TYPE_IDS; }
 
 /**

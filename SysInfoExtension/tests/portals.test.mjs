@@ -15,7 +15,7 @@ const setups = {
 	"defaults: apply while nothing is stored": {},
 	"stored: both lists take effect": { [STORAGE_KEY]: STORED },
 	"stored: a malformed list falls back on its own": { [STORAGE_KEY]: { portals: ["3"], types: [7, 8] } },
-	"stored: an emptied list falls back to the default": { [STORAGE_KEY]: { portals: [], types: ["27"] } },
+	"stored: an emptied list admits nothing": { [STORAGE_KEY]: { portals: [], types: ["27"] } },
 	"paths: a pathname that is not a form is never allowed": { [STORAGE_KEY]: STORED },
 	"edit: reaches an open page without a reload": { [STORAGE_KEY]: STORED },
 	"edit: another key or another area is ignored": { [STORAGE_KEY]: STORED },
@@ -63,12 +63,13 @@ const cases = {
 		ok(!portals.isTicketAllowed(DEFAULT_FORM), "the usable portal list still applies");
 	},
 
-	"stored: an emptied list falls back to the default"() {
-		// The popup keeps an emptied list as a value of its own; here it reads as "nothing
-		// stored". Emptying the portals in the popup therefore widens this list rather than
-		// closing it.
-		ok(portals.isTicketAllowed(`/servicedesk/customer/portal/${DEFAULT_PORTAL_IDS[0]}/create/27`),
-			"an emptied portal list is answered from the defaults");
+	"stored: an emptied list admits nothing"() {
+		// The one state the two sides used to read differently: the popup keeps an emptied list
+		// as a value of its own, so reading it as "nothing stored" would answer from the
+		// defaults and widen the whitelist at the moment the user closed it.
+		ok(!portals.isTicketAllowed(`/servicedesk/customer/portal/${DEFAULT_PORTAL_IDS[0]}/create/27`),
+			"the defaults do not stand in for a list the user emptied");
+		ok(!portals.isTicketAllowed(STORED_FORM), "and no portal is admitted by an empty list");
 	},
 
 	"paths: a pathname that is not a form is never allowed"() {
