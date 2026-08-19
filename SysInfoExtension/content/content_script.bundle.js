@@ -212,16 +212,27 @@
   }
 
   // content/lib/submit_watcher.js
-  function isSubmitControl(node) {
-    return node instanceof Element && node.closest(SUBMIT_CONTROL_SELECTOR) !== null;
+  function requestForm() {
+    const editor = document.querySelector(EDITOR_SELECTOR);
+    return editor ? editor.closest("form") : null;
+  }
+  function sendControlFor(node) {
+    if (!(node instanceof Element)) return null;
+    const control = node.closest(SUBMIT_CONTROL_SELECTOR);
+    if (!control) return null;
+    const form = requestForm();
+    return form && form.contains(control) ? control : null;
   }
   function checkSubmitEvent(event) {
-    if (event.submitter && !isSubmitControl(event.submitter)) return;
+    if (!isTicketAllowed(location.pathname)) return;
+    if (event.target !== requestForm()) return;
+    if (event.submitter && !sendControlFor(event.submitter)) return;
     slog("form submit event");
     markFormSubmitted();
   }
   function checkSubmitClick(event) {
-    if (!isSubmitControl(event.target)) return;
+    if (!isTicketAllowed(location.pathname)) return;
+    if (!sendControlFor(event.target)) return;
     slog("submit control clicked");
     markFormSubmitted();
   }
