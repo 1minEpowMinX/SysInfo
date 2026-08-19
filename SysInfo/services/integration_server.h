@@ -89,6 +89,11 @@ private:
 
     ExtensionWhitelist&  m_whitelist; ///< Injected, not owned.
     sysinfo::InfoSource& m_info;      ///< Injected, not owned.
+
+    // Declaration order is load-bearing. QAbstractHttpServer::bind() parents the socket to the
+    // HTTP server, and members are destroyed in reverse: tcpServer goes first and unparents
+    // itself. Swapping the two would leave httpServer deleting a member that was never on the
+    // heap.
     QHttpServer httpServer;           ///< Route table; bound to tcpServer by start().
     QTcpServer  tcpServer;            ///< Listening socket, and the only one bound.
 };
