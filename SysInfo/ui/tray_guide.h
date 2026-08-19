@@ -26,12 +26,13 @@ public:
     explicit TrayGuide(QWidget* parent = nullptr);
 
 signals:
-    /// Fires on close when the user ticked "Don't show again".
+    /// Fires when the dialog closes with "Don't show again" ticked, whichever of the Close
+    /// button, the Esc key and the window's close box retired it.
     void dismissedForGood();
 
 private slots:
-    /// Handles the Close button — reports a ticked checkbox, then closes.
-    void onCloseClicked();
+    /// Reports a ticked checkbox as the dialog closes.
+    void onFinished();
 
 private:
     /// Configures window-level flags (title, modality, stays-on-top).
@@ -44,8 +45,8 @@ private:
     /// Builds the explanatory text label.
     void setupTexts();
 
-    /// Builds the "Don't show again" checkbox and the Close button, plus the
-    /// signal/slot connection that makes the button work.
+    /// Builds the "Don't show again" checkbox and the Close button, plus the connections that
+    /// close the dialog and read the checkbox as it goes.
     void setupControls();
 
     /// Lays out all four widgets vertically in this dialog.

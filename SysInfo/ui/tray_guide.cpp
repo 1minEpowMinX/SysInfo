@@ -55,7 +55,12 @@ void TrayGuide::setupControls()
     m_dontShowAgain = new QCheckBox(tr("Don't show again"), this);
     m_closeButton   = new QPushButton(tr("Close"), this);
 
-    connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
+    connect(m_closeButton, &QPushButton::clicked, this, &QDialog::close);
+
+    // The tick is read from finished() and not from the button: Esc reaches reject() and the
+    // window's close box reaches closeEvent(), and both retire the dialog through done() without
+    // the button ever being pressed. finished() is the one point all three exits pass through.
+    connect(this, &QDialog::finished, this, &TrayGuide::onFinished);
 }
 
 void TrayGuide::buildLayout()
@@ -68,11 +73,9 @@ void TrayGuide::buildLayout()
     setLayout(layout);
 }
 
-void TrayGuide::onCloseClicked()
+void TrayGuide::onFinished()
 {
     if (m_dontShowAgain->isChecked()) {
         emit dismissedForGood();
     }
-
-    close();
 }
