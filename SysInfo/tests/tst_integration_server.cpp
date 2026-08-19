@@ -127,6 +127,7 @@ class TestIntegrationServer : public QObject
 private slots:
     // Lifecycle
     void startStop_togglesListening();
+    void restart_afterStop_servesAgain();
     void start_withZeroPort_bindsEphemeral();
 
     // Happy paths via plain GET (non-browser context — no Origin)
@@ -177,6 +178,28 @@ void TestIntegrationServer::startStop_togglesListening()
 
     server.stop();
     QVERIFY(!server.isListening());
+}
+
+// stop() closes the socket while the route table and the bind survive it, so the second start()
+// serves from the same routes rather than needing them rebuilt.
+void TestIntegrationServer::restart_afterStop_servesAgain()
+{
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
+    QNetworkAccessManager nam;
+
+    QVERIFY(server.start(0));
+    QCOMPARE(httpGet(nam, statusUrl(server)).body, QByteArray("OK"));
+
+    server.stop();
+    QVERIFY(server.start(0));
+    QVERIFY(server.isListening());
+
+    const HttpResult r = httpGet(nam, statusUrl(server));
+    QCOMPARE(r.error, QNetworkReply::NoError);
+    QCOMPARE(r.statusCode, 200);
+    QCOMPARE(r.body, QByteArray("OK"));
 }
 
 void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
