@@ -409,7 +409,7 @@ const MUTATIONS = [
 		from: "Object.values(manifest.icons || {}).forEach(push);",
 		to: "void 0;",
 		test: "packaging.test.mjs",
-		case: "delivery: each target takes only the icons its manifest names"
+		case: "delivery: each target takes the icon sizes its manifest names and no others"
 	},
 	{
 		what: "a translation loses a key the default locale carries",

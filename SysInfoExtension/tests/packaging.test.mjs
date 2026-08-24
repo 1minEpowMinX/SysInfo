@@ -166,18 +166,28 @@ const cases = {
 		}
 	},
 
-	"delivery: each target takes only the icons its manifest names"() {
+	"delivery: each target takes the icon sizes its manifest names and no others"() {
+		// Collected off the manifest rather than listed here, so the case holds no copy of the
+		// templates. `referencedPaths` is deliberately not reused: the delivery is built with it,
+		// and a case built with it too would agree with whatever it gets wrong.
+		const namesIn = (m) => [...new Set([
+			...Object.values(m.action.default_icon),
+			...Object.values(m.icons)
+		])];
 		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
 		try {
-			const chromiumFiles = listFiles(packageTarget({ target: "chromium", config, version, outRoot }));
-			const firefoxFiles = listFiles(packageTarget({ target: "firefox", config, version, outRoot }));
+			for (const [target, manifest] of [["chromium", chromium], ["firefox", firefox]]) {
+				const named = namesIn(manifest);
+				ok(!named.some(p => /_(?:96|256|512)\.png$/.test(p)),
+					`${target} names store listing artwork among the icons the browser loads`);
 
-			ok(chromiumFiles.includes("assets/icons/sysinfo_ext_128.png"), "chromium takes its PNG set");
-			ok(!chromiumFiles.includes("assets/icons/sysinfo_ext_512.png"),
-				"the store listing artwork is not part of the extension");
-			ok(firefoxFiles.includes("assets/icons/sysinfo_ext.svg"), "firefox takes the vector icon");
-			ok(!firefoxFiles.some(f => f.endsWith("sysinfo_ext_128.png")),
-				"and none of the raster set it never names");
+				const files = listFiles(packageTarget({ target, config, version, outRoot }));
+				const shipped = files.filter(f => f.startsWith("assets/icons/") && f.endsWith(".png"));
+				deepEq(shipped.sort(), named.sort(),
+					`${target} ships the sizes its manifest names, no more and no fewer`);
+				ok(files.includes("assets/icons/sysinfo_ext.svg"),
+					`${target} takes the master, which the popup loads as its header logo`);
+			}
 		} finally {
 			rmSync(outRoot, { recursive: true, force: true });
 		}

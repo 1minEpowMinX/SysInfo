@@ -1,10 +1,4 @@
 {
-	"action": {
-		"default_icon": "assets/icons/sysinfo_ext.svg"
-	},
-	"icons": {
-		"48": "assets/icons/sysinfo_ext.svg"
-	},
 	"background": {
 		"scripts": [
 			"background/service_worker.js"

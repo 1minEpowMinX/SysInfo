@@ -1,18 +1,4 @@
 {
-	"action": {
-		"default_icon": {
-			"16": "assets/icons/sysinfo_ext_16.png",
-			"24": "assets/icons/sysinfo_ext_24.png",
-			"32": "assets/icons/sysinfo_ext_32.png",
-			"48": "assets/icons/sysinfo_ext_48.png"
-		}
-	},
-	"icons": {
-		"16": "assets/icons/sysinfo_ext_16.png",
-		"32": "assets/icons/sysinfo_ext_32.png",
-		"48": "assets/icons/sysinfo_ext_48.png",
-		"128": "assets/icons/sysinfo_ext_128.png"
-	},
 	"background": {
 		"service_worker": "background/service_worker.js"
 	}

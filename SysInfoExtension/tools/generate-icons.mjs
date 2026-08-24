@@ -12,9 +12,8 @@ const MASTER = path.join(ICONS, "sysinfo_ext.svg");
 /**
  * Edge lengths of the generated icons, in device-independent pixels.
  *
- * 16, 24, 32 and 48 back `action.default_icon` at 100 %, 150 %, 200 % and 300 % display scaling;
- * 16, 32, 48 and 128 back `icons`; 64, 96, 256 and 512 are listing artwork and are not declared
- * in either manifest.
+ * manifest/base.json names the subset the browsers load and is the source of truth for which size
+ * serves which key. The sizes it leaves out are listing artwork for the Chrome Web Store and AMO.
  */
 const SIZES = [16, 24, 32, 48, 64, 96, 128, 256, 512];
 
