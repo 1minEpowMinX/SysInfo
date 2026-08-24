@@ -1,91 +1,80 @@
-// The packaging artefacts: the bundle the manifests ship and the two manifests themselves.
+// The packaging artefacts: the manifests the templates render to, and the bundle they ship.
 //
-// Nothing here is reachable through a module import — the browser loads these files, not the
-// tests — so the checks read them off disk.
+// Nothing here is reachable through the extension's own imports — the browser loads these files,
+// not the tests — so the checks read them off disk or render them in memory.
 
 import { run } from "./runner.mjs";
-import { ok, deepEq } from "./assert.mjs";
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { ok, eq, deepEq } from "./assert.mjs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const EXT = fileURLToPath(new URL("..", import.meta.url));
-const ESBUILD = join(EXT, "node_modules/esbuild/bin/esbuild");
+import { EXT, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
+import { TEMPLATE_DIR, referencedPaths, renderManifest } from "../tools/manifest.mjs";
 
-/** Returns the text of a file named relative to the extension root. */
-const read = (p) => readFileSync(join(EXT, p), "utf8");
-/** Returns the parsed contents of a JSON file named relative to the extension root. */
-const readJson = (p) => JSON.parse(read(p));
+const version = packageVersion();
+const values = substitutions(loadConfig([]).config, version);
+const chromium = renderManifest("chromium", values);
+const firefox = renderManifest("firefox", values);
 
-const chromium = readJson("chromium_manifest.json");
-const firefox = readJson("firefox_manifest.json");
+/** Reports whether `v` is an object a leaf search can walk into. */
+function isPlainObject(v) {
+	return v !== null && typeof v === "object" && !Array.isArray(v);
+}
 
-// What the extension is and what it may touch. The two manifests part company on how the
-// background script is declared and on the icon formats each browser takes, and on nothing else.
-const SHARED_FIELDS = [
-	"manifest_version", "name", "description", "version", "default_locale",
-	"permissions", "host_permissions", "content_scripts"
-];
+/** Reports whether `a` and `b` serialize alike, regardless of key order. */
+function sameValue(a, b) {
+	if (a === b) return true;
+	if (!isPlainObject(a) || !isPlainObject(b)) return JSON.stringify(a) === JSON.stringify(b);
+	const keys = Object.keys(a);
+	return keys.length === Object.keys(b).length && keys.every(k => sameValue(a[k], b[k]));
+}
 
 /**
- * Collects every path inside the extension that `manifest` points at.
- * @param manifest - A parsed manifest.
- * @returns The paths, relative to the extension root.
+ * Returns the path of every leaf in `overlay` that carries the value `base` already carries at
+ * that same path.
+ * @param base - The template the overlay is applied to.
+ * @param overlay - The template taking precedence.
+ * @param prefix - The path of `base`/`overlay` themselves, empty at the top.
+ * @returns Dotted paths, one per repeated leaf.
  */
-function referencedPaths(manifest) {
-	const paths = [];
-	const push = (v) => { if (typeof v === "string") paths.push(v); };
-
-	push(manifest.action?.default_popup);
-	const icon = manifest.action?.default_icon;
-	if (typeof icon === "string") push(icon);
-	else Object.values(icon || {}).forEach(push);
-	Object.values(manifest.icons || {}).forEach(push);
-
-	for (const cs of manifest.content_scripts || []) {
-		(cs.js || []).forEach(push);
-		(cs.css || []).forEach(push);
+function duplicatedPaths(base, overlay, prefix = "") {
+	const dups = [];
+	for (const [key, value] of Object.entries(overlay)) {
+		const path = prefix ? `${prefix}.${key}` : key;
+		const baseValue = isPlainObject(base) ? base[key] : undefined;
+		if (isPlainObject(value) && isPlainObject(baseValue)) dups.push(...duplicatedPaths(baseValue, value, path));
+		else if (baseValue !== undefined && sameValue(value, baseValue)) dups.push(path);
 	}
-	push(manifest.background?.service_worker);
-	(manifest.background?.scripts || []).forEach(push);
-
-	return paths;
+	return dups;
 }
 
 const cases = {
-	"bundle: the shipped file is what the sources build to"() {
-		if (!existsSync(ESBUILD)) {
-			ok(false, "esbuild is not installed — run npm install before the suite");
-			return;
-		}
-
-		// The flags are taken from the build script rather than repeated here, so the check
-		// cannot drift away from the command that produces the artefact.
-		const argv = readJson("package.json").scripts.build.split(/\s+/);
-		const shipped = argv.find(a => a.startsWith("--outfile="))?.slice("--outfile=".length);
-		if (!shipped) {
-			ok(false, "the build script names no --outfile");
-			return;
-		}
-
-		const dir = mkdtempSync(join(tmpdir(), "sysinfo-bundle-"));
-		const fresh = join(dir, "bundle.js");
-		try {
-			const args = argv.slice(1).map(a => a.startsWith("--outfile=") ? "--outfile=" + fresh : a);
-			// esbuild reports the size it wrote on stderr, which would otherwise land in the
-			// runner's output next to the case names.
-			execFileSync(process.execPath, [ESBUILD, ...args], { cwd: EXT, stdio: "ignore" });
-			ok(readFileSync(fresh, "utf8") === read(shipped),
-				`${shipped} is not what the sources build to — run npm run build`);
-		} finally {
-			rmSync(dir, { recursive: true, force: true });
+	"manifests: nothing is left unsubstituted"() {
+		for (const [name, manifest] of [["chromium", chromium], ["firefox", firefox]]) {
+			const text = JSON.stringify(manifest);
+			ok(!text.includes("${"), `the ${name} manifest still carries a placeholder`);
 		}
 	},
 
-	"manifests: the two agree on everything but how each browser loads them"() {
-		for (const field of SHARED_FIELDS) deepEq(firefox[field], chromium[field], field);
+	"manifests: both carry the version the package declares"() {
+		eq(chromium.version, version, "chromium");
+		eq(firefox.version, version, "firefox");
+	},
+
+	"manifests: the granted origins cover everything the content script matches"() {
+		for (const [name, manifest] of [["chromium", chromium], ["firefox", firefox]]) {
+			ok(Array.isArray(manifest.host_permissions),
+				`${name} host_permissions is not a list — .includes would test substrings, not membership`);
+			let matchCount = 0;
+			for (const cs of manifest.content_scripts) {
+				for (const match of cs.matches) {
+					matchCount++;
+					ok(Array.isArray(manifest.host_permissions) && manifest.host_permissions.includes(match),
+						`${name} injects into ${match} without asking for it`);
+				}
+			}
+			ok(matchCount > 0, `${name} content script matches nothing, so this case would check nothing`);
+		}
 	},
 
 	"manifests: every file either one names is in the tree"() {
@@ -100,9 +89,27 @@ const cases = {
 		ok(typeof chromium.background?.service_worker === "string",
 			"chromium takes a service worker");
 		ok(Array.isArray(firefox.background?.scripts) && firefox.background.scripts.length > 0,
-			"firefox takes a script list");
+			"firefox takes a script list — it does not support service_worker at all");
 		deepEq(firefox.background.scripts, [chromium.background.service_worker],
 			"and both name the same file");
+	},
+
+	"manifests: the background is a module in both, so it can import the configuration"() {
+		eq(chromium.background?.type, "module", "chromium");
+		eq(firefox.background?.type, "module", "firefox");
+	},
+
+	"manifests: the shared part exists once"() {
+		// Read the templates themselves, unmerged and unsubstituted: the merged manifests can
+		// carry the right value at a key whether the overlay names it or inherits it from the
+		// base, so only the source templates can tell the two cases apart.
+		const read = (name) => JSON.parse(readFileSync(join(TEMPLATE_DIR, name), "utf8"));
+		const base = read("base.json");
+		for (const file of ["chromium.json", "firefox.json"]) {
+			for (const path of duplicatedPaths(base, read(file))) {
+				ok(false, `${file} repeats ${path} from base.json — a copy waiting to drift`);
+			}
+		}
 	}
 };
 

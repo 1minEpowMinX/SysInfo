@@ -370,20 +370,20 @@ const MUTATIONS = [
 
 	// The packaging guards, whose subject is a data file rather than a statement.
 	{
-		what: "a source is changed without rebuilding the bundle",
-		file: "content/lib/compat.js",
-		from: 'const SYSINFO_LOG_TAG = "[SysInfo]";',
-		to: 'const SYSINFO_LOG_TAG = "[SysInfo!]";',
+		what: "the manifest carries a version the package does not declare",
+		file: "manifest/base.json",
+		from: '"version": "${version}",',
+		to: '"version": "0.0.0",',
 		test: "packaging.test.mjs",
-		case: "bundle: the shipped file is what the sources build to"
+		case: "manifests: both carry the version the package declares"
 	},
 	{
-		what: "the two manifests drift apart",
-		file: "firefox_manifest.json",
-		from: '"default_locale": "en"',
-		to: '"default_locale": "ru"',
+		what: "the chromium background points at a service worker file that does not exist",
+		file: "manifest/chromium.json",
+		from: '"service_worker": "background/service_worker.js"',
+		to: '"service_worker": "background/does_not_exist.js"',
 		test: "packaging.test.mjs",
-		case: "manifests: the two agree on everything but how each browser loads them"
+		case: "manifests: every file either one names is in the tree"
 	},
 	{
 		what: "a translation loses a key the default locale carries",

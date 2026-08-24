@@ -17,11 +17,11 @@ import { fileURLToPath } from "node:url";
 const EXT = fileURLToPath(new URL("..", import.meta.url));
 const LOCALES = join(EXT, "_locales");
 
-// The directories a message key may be named in. The bundle is left out: it is the build's copy
-// of content/, and a key missing from it is a stale bundle, which packaging.test.mjs reports.
+// The directories a message key may be named in. The bundle is left out: it is a generated copy
+// of content/, rebuilt before every run.
 const SOURCE_DIRS = ["background", "content", "popup", "shared"];
 
-const DEFAULT_LOCALE = JSON.parse(readFileSync(join(EXT, "chromium_manifest.json"), "utf8")).default_locale;
+const DEFAULT_LOCALE = JSON.parse(readFileSync(join(EXT, "manifest", "base.json"), "utf8")).default_locale;
 
 const locales = readdirSync(LOCALES, { withFileTypes: true })
 	.filter(e => e.isDirectory())
@@ -111,9 +111,11 @@ const cases = {
 
 	"keys: every key a manifest names is in the catalogue"() {
 		const catalogue = catalogues[DEFAULT_LOCALE];
-		for (const file of ["chromium_manifest.json", "firefox_manifest.json"]) {
-			for (const key of keysNamedInManifest(readFileSync(join(EXT, file), "utf8"))) {
-				ok(key in catalogue, `${file} names ${key}, which is missing from ${DEFAULT_LOCALE}`);
+		// The templates are scanned unrendered: a __MSG_ key is written into them literally, and
+		// substitution neither adds one nor takes one away.
+		for (const file of ["base.json", "chromium.json", "firefox.json"]) {
+			for (const key of keysNamedInManifest(readFileSync(join(EXT, "manifest", file), "utf8"))) {
+				ok(key in catalogue, `manifest/${file} names ${key}, which is missing from ${DEFAULT_LOCALE}`);
 			}
 		}
 	}

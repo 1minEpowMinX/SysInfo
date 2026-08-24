@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { REQUIRED_KEYS, buildConfigModule, configPath, loadConfig, packageVersion, substitutions, writeBuildConfig } from "../tools/config.mjs";
+import { merge, substitute } from "../tools/manifest.mjs";
 
 /** Directories `tempConfig()` has created, removed once every case has run. */
 const tempDirs = [];
@@ -98,6 +99,49 @@ const cases = {
 		const mod = await import(pathToFileURL(path).href);
 		eq(mod.AGENT_ORIGIN, EXAMPLE.agentOrigin, "the written module parses and exports");
 		deepEq(mod.DEFAULT_PORTAL_IDS, EXAMPLE.defaultPortalIds, "and carries the seeds");
+	},
+
+	"merge: an overlay object joins the base one instead of replacing it"() {
+		const merged = merge(
+			{ action: { default_popup: "popup/popup.html" }, name: "base" },
+			{ action: { default_icon: "icon.svg" } });
+		deepEq(merged.action, { default_popup: "popup/popup.html", default_icon: "icon.svg" },
+			"the popup survives an overlay that only names an icon");
+		eq(merged.name, "base", "a key the overlay omits is left alone");
+	},
+
+	"merge: an overlay array replaces the base one"() {
+		const merged = merge({ permissions: ["a", "b"] }, { permissions: ["c"] });
+		deepEq(merged.permissions, ["c"], "a list is taken whole, never appended to");
+	},
+
+	"substitute: a whole placeholder takes the value's own type"() {
+		const out = substitute({ hosts: "${hostPermissions}" }, { hostPermissions: ["a/*", "b/*"] });
+		deepEq(out.hosts, ["a/*", "b/*"], "a string in the template is a list in the result");
+	},
+
+	"substitute: a placeholder inside a longer string is inserted as text"() {
+		const out = substitute({ id: "sysinfo-${version}" }, { version: "2.1.0" });
+		eq(out.id, "sysinfo-2.1.0", "the surrounding text is kept");
+	},
+
+	"substitute: an unknown placeholder is an error"() {
+		const e = threw(() => substitute({ v: "${nope}" }, { version: "1.0.0" }));
+		ok(e !== null, "an unresolved name fails the build");
+		ok(String(e && e.message).includes("nope"), "and the message names it");
+	},
+
+	"substitute: nested values are reached"() {
+		const out = substitute(
+			{ a: [{ matches: "${contentMatches}" }] },
+			{ contentMatches: ["x/*"] });
+		deepEq(out.a[0].matches, ["x/*"], "arrays and objects are walked through");
+	},
+
+	"substitute: a placeholder name outside the identifier charset is still an error, not literal text"() {
+		const e = threw(() => substitute({ id: "${gecko-id}" }, {}));
+		ok(e !== null, "a hyphenated name fails the build rather than surviving into the manifest");
+		ok(String(e && e.message).includes("gecko-id"), "and the message names it");
 	}
 };
 
