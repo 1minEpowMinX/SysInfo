@@ -29,6 +29,11 @@ export function drain() {
 	return failures.splice(0, failures.length);
 }
 
+/** Returns the error `fn` throws, or null when it returns instead. */
+export function threw(fn) {
+	try { fn(); return null; } catch (e) { return e; }
+}
+
 /** Returns a short readable form of `v`. */
 function fmt(v) {
 	if (typeof v === "string") return JSON.stringify(v);
