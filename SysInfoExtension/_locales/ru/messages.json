@@ -31,7 +31,8 @@
 		"message": "Агент активен"
 	},
 	"statusActiveSub": {
-		"message": "Подключение к localhost:8734"
+		"message": "Подключение к $HOST$",
+		"placeholders": { "host": { "content": "$1" } }
 	},
 	"statusLoading": {
 		"message": "Проверка соединения…"

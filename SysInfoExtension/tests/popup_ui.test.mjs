@@ -19,6 +19,8 @@ const { state } = await import("../popup/lib/state.js");
 const { formatWhen } = await import("../popup/lib/dom.js");
 const { renderHistoryTab } = await import("../popup/lib/tab_history.js");
 const { renderSettingsTab } = await import("../popup/lib/tab_settings.js");
+const { statusInfo } = await import("../popup/lib/render.js");
+const { AGENT_ORIGIN } = await import("../shared/build_config.js");
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
@@ -134,6 +136,14 @@ const cases = {
 		const chips = addChips();
 		eq(chips.length, 2, "one add chip per list");
 		ok(byClass(renderSettingsTab(), "id-list").length === 2, "and one list editor per list");
+	},
+
+	"status: the active line names the agent by host"() {
+		state.status = "active";
+		statusInfo();
+		const call = env.i18nCalls.find(c => c.key === "statusActiveSub");
+		deepEq(call?.substitutions, [new URL(AGENT_ORIGIN).host],
+			"the host reaches the catalogue as a substitution, not as translated text");
 	}
 };
 

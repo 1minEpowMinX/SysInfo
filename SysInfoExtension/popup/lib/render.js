@@ -3,6 +3,7 @@
 
 import { state, root } from "./state.js";
 import { t } from "./compat.js";
+import { AGENT_ORIGIN } from "../../shared/build_config.js";
 import { el, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 import { renderStatusTab } from "./tab_status.js";
@@ -20,6 +21,10 @@ function applyTheme() {
 	root.className = dark ? "theme-dark" : "theme-light";
 }
 
+// The status line names the agent by host: the scheme is fixed and reads as noise in a chip
+// that is two words wide.
+const AGENT_HOST = new URL(AGENT_ORIGIN).host;
+
 /**
  * Maps the current agent status onto how it is drawn.
  *
@@ -28,7 +33,7 @@ function applyTheme() {
  */
 export function statusInfo() {
 	switch (state.status) {
-		case "active": return { kind: "ok", label: t("statusActive"), sub: t("statusActiveSub"), pulse: true, dot: "var(--ok-dot)" };
+		case "active": return { kind: "ok", label: t("statusActive"), sub: t("statusActiveSub", [AGENT_HOST]), pulse: true, dot: "var(--ok-dot)" };
 		case "loading": return { kind: "warn", label: t("statusLoading"), sub: t("statusLoadingSub"), pulse: true, dot: "var(--warn-dot)" };
 		case "version-mismatch": return { kind: "warn", label: t("statusVersionMismatch"), sub: t("statusVersionMismatchSub"), pulse: false, dot: "var(--warn-dot)" };
 		case "error":

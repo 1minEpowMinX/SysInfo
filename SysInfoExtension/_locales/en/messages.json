@@ -31,7 +31,8 @@
 		"message": "Agent is active"
 	},
 	"statusActiveSub": {
-		"message": "Connected to localhost:8734"
+		"message": "Connected to $HOST$",
+		"placeholders": { "host": { "content": "$1" } }
 	},
 	"statusLoading": {
 		"message": "Checking connection…"
