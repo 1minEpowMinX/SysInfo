@@ -9,8 +9,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node
 import { join, relative, sep } from "node:path";
 import { tmpdir } from "node:os";
 
-import { EXT, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
-import { TEMPLATE_DIR, referencedPaths, renderManifest } from "../tools/manifest.mjs";
+import { EXT, buildConfigModule, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
+import { TEMPLATE_DIR, isPlainObject, referencedPaths, renderManifest } from "../tools/manifest.mjs";
 import { packageTarget, TARGETS } from "../tools/package.mjs";
 
 const version = packageVersion();
@@ -26,9 +26,30 @@ function listFiles(dir) {
 		.map(e => relative(dir, join(e.parentPath, e.name)).split(sep).join("/"));
 }
 
-/** Reports whether `v` is an object a leaf search can walk into. */
-function isPlainObject(v) {
-	return v !== null && typeof v === "object" && !Array.isArray(v);
+/** The file kinds an asset path can be typed in. */
+const SOURCE_RE = /\.(?:js|css|html)$/;
+
+// A reference is written relative to the file holding it, so any number of leading `../` is
+// stripped: what the delivery has to carry is the path from the extension root.
+const ASSET_RE = /(?:\.\.\/)*(assets\/[\w\-./]+)/g;
+
+/**
+ * Collects every path under assets/ that a source file in `dirs` loads by name.
+ *
+ * The manifest is deliberately not consulted: these are the references the page resolves for
+ * itself, which is the set no manifest key names and `referencedPaths` therefore cannot reach.
+ * @param dirs - Directories under the extension root to scan.
+ * @returns The paths, relative to the extension root, without repeats.
+ */
+function assetReferences(dirs) {
+	const found = new Set();
+	for (const dir of dirs) {
+		for (const rel of listFiles(join(EXT, dir))) {
+			if (!SOURCE_RE.test(rel)) continue;
+			for (const m of readFileSync(join(EXT, dir, rel), "utf8").matchAll(ASSET_RE)) found.add(m[1]);
+		}
+	}
+	return [...found].sort();
 }
 
 /** Reports whether `a` and `b` serialize alike, regardless of key order. */
@@ -157,6 +178,44 @@ const cases = {
 			ok(firefoxFiles.includes("assets/icons/sysinfo_ext.svg"), "firefox takes the vector icon");
 			ok(!firefoxFiles.some(f => f.endsWith("sysinfo_ext_128.png")),
 				"and none of the raster set it never names");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: the generated configuration is the one the manifest was rendered from"() {
+		// Packaged from a configuration the on-disk shared/build_config.js was not written from,
+		// which is the state `--config` leaves the tree in.
+		const other = { ...config, agentOrigin: "https://sysinfo-agent.example:9443" };
+		ok(other.agentOrigin !== config.agentOrigin,
+			"the case needs two different origins to tell the two configurations apart");
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			const dir = packageTarget({ target: "chromium", config: other, version, outRoot });
+			const shipped = readFileSync(join(dir, "shared", "build_config.js"), "utf8");
+			const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8"));
+
+			eq(shipped, buildConfigModule(other), "the module is rendered, not copied out of shared/");
+			ok(!shipped.includes(config.agentOrigin),
+				"so the origin the on-disk module carries is nowhere in the delivery");
+			ok(manifest.host_permissions.includes(other.agentOrigin + "/*"),
+				"and the manifest asks for the host the module beside it talks to");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: an asset a source loads by name ships for every target"() {
+		const refs = assetReferences(["popup", "content"]);
+		ok(refs.length > 0, "no asset reference was found at all, so this case would check nothing");
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			for (const target of Object.keys(TARGETS)) {
+				const files = listFiles(packageTarget({ target, config, version, outRoot }));
+				for (const ref of refs) {
+					ok(files.includes(ref), `${target} loads ${ref} but does not ship it`);
+				}
+			}
 		} finally {
 			rmSync(outRoot, { recursive: true, force: true });
 		}

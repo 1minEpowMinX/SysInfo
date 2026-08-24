@@ -12,9 +12,9 @@ import { run } from "./runner.mjs";
 import { ok, deepEq } from "./assert.mjs";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const EXT = fileURLToPath(new URL("..", import.meta.url));
+import { EXT } from "../tools/config.mjs";
+
 const LOCALES = join(EXT, "_locales");
 
 // The directories a message key may be named in. The bundle is left out: it is a generated copy

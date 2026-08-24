@@ -4,25 +4,27 @@ import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { EXT, loadConfig, packageVersion, substitutions } from "./config.mjs";
+import { EXT, buildConfigModule, loadConfig, packageVersion, substitutions } from "./config.mjs";
 import { referencedPaths, renderManifest } from "./manifest.mjs";
 
 /** The browsers a build targets, and the name each one's directories carry. */
 export const TARGETS = { chromium: "Chromium", firefox: "Firefox" };
 
 /**
- * What every target ships whatever its manifest names.
+ * What every target ships beyond what its manifest names.
  *
- * The icons are absent on purpose: each browser takes a different set, and the rendered manifest
- * is the list of the ones it takes.
+ * Anything a manifest key points at is collected by `referencedPaths` instead and is absent here
+ * on purpose: a path typed in both places is a hand-kept copy of a templated one, free to drift.
  */
 export const DELIVERY = [
 	"_locales",
+	// The popup page loads popup.css, popup.js and popup/lib/* itself; the manifest names only
+	// popup.html.
 	"popup",
 	"shared",
-	"background/service_worker.js",
-	"content/content_script.bundle.js",
-	"content/toast.css"
+	// Loaded by popup/lib/render.js as the header logo. No Chromium manifest key names it, so
+	// without this entry the Chromium delivery opens the popup to a broken image.
+	"assets/icons/sysinfo_ext.svg"
 ];
 
 /**
@@ -55,6 +57,10 @@ export function packageTarget({ target, config, version, outRoot, force = false 
 		cpSync(from, join(dir, rel), { recursive: true });
 	}
 	writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest, null, "\t") + "\n");
+	// Written from `config` rather than left as the copy of shared/build_config.js that came off
+	// disk: npm forwards no `--` argument to a pre-script, so the module on disk answers to
+	// whichever configuration the last build read, not to the one this manifest was rendered from.
+	writeFileSync(join(dir, "shared", "build_config.js"), buildConfigModule(config));
 	return dir;
 }
 
@@ -73,8 +79,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 	const version = packageVersion();
 	console.log(`config: ${path}`);
 
-	// The bundle and the generated configuration are the prepackage script's to produce: it runs
-	// the build, which owns the esbuild flags, so they are not repeated here.
+	// The bundle is the prepackage script's to produce: it runs the build, which owns the esbuild
+	// flags, so they are not repeated here. The generated configuration is not — `packageTarget`
+	// writes it into each tree from the configuration named here.
 	for (const target of pickTargets(argv)) {
 		const dir = packageTarget({
 			target, config, version,

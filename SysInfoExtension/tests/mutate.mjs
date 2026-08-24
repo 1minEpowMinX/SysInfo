@@ -385,6 +385,32 @@ const MUTATIONS = [
 		test: "packaging.test.mjs",
 		case: "manifests: every file either one names is in the tree"
 	},
+	// The build tooling, whose subject is a statement of the scripts that render and lay out the
+	// delivery.
+	{
+		what: "the agent origin is not asked for as a host permission",
+		file: "tools/config.mjs",
+		from: "hostPermissions: [config.agentOrigin, ...config.jiraOrigins].map(glob),",
+		to: "hostPermissions: [...config.jiraOrigins].map(glob),",
+		test: "build.test.mjs",
+		case: "substitutions: the agent and every Jira origin become host permissions"
+	},
+	{
+		what: "a version already published is rebuilt over without --force",
+		file: "tools/package.mjs",
+		from: "if (existsSync(dir) && !force) {",
+		to: "if (false) {",
+		test: "packaging.test.mjs",
+		case: "delivery: a version already built is not overwritten by accident"
+	},
+	{
+		what: "the icon set a manifest names is not collected for delivery",
+		file: "tools/manifest.mjs",
+		from: "Object.values(manifest.icons || {}).forEach(push);",
+		to: "void 0;",
+		test: "packaging.test.mjs",
+		case: "delivery: each target takes only the icons its manifest names"
+	},
 	{
 		what: "a translation loses a key the default locale carries",
 		file: "_locales/ru/messages.json",

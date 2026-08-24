@@ -48,7 +48,8 @@ export function loadConfig(argv = []) {
 }
 
 /**
- * Returns the version the package declares, which is the one the manifests carry.
+ * Returns the version the package declares.
+ * @returns The `version` field of package.json.
  */
 export function packageVersion() {
 	return JSON.parse(readFileSync(join(EXT, "package.json"), "utf8")).version;
@@ -83,6 +84,7 @@ export function substitutions(config, version) {
  * Only the values the extension reads at runtime are emitted. The origins and the gecko id are
  * the manifest's, and the worker reads the granted origins back through `runtime.getManifest()`.
  * @param config - A configuration object as `loadConfig` returns it.
+ * @returns The module's text, ready to be written.
  */
 export function buildConfigModule(config) {
 	return [
@@ -96,12 +98,13 @@ export function buildConfigModule(config) {
 }
 
 /**
- * Writes the generated module into the shared directory.
+ * Writes the generated module into a directory.
  * @param config - A configuration object as `loadConfig` returns it.
+ * @param dir - The directory the module is written to, the extension's own shared/ by default.
  * @returns The path written.
  */
-export function writeBuildConfig(config) {
-	const path = join(EXT, "shared", "build_config.js");
+export function writeBuildConfig(config, dir = join(EXT, "shared")) {
+	const path = join(dir, "build_config.js");
 	writeFileSync(path, buildConfigModule(config));
 	return path;
 }

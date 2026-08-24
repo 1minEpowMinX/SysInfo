@@ -5,6 +5,7 @@
 import { run } from "./runner.mjs";
 import { installEnv } from "./harness.mjs";
 import { ok, eq, deepEq, matches } from "./assert.mjs";
+import { AGENT_ORIGIN } from "../shared/build_config.js";
 
 /** Answers a fetch with a body of the given kind. */
 const reply = (kind, value) => Promise.resolve({
@@ -54,7 +55,7 @@ const cases = {
 		const { answer, returned } = await ask({ action: "getSystemInfo" });
 		deepEq(answer, { success: true, data: { hostname: "PC-01" } }, "reply shape");
 		eq(returned, true, "the listener keeps the channel open for an async reply");
-		matches(env.fetches[0]?.url, /^http:\/\/localhost:8734\/systeminfo$/, "requested URL");
+		eq(env.fetches[0]?.url, AGENT_ORIGIN + "/systeminfo", "requested URL");
 	},
 
 	"routing: getStatus is answered as text": async () => {

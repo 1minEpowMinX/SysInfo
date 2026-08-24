@@ -11,14 +11,19 @@ import { pathToFileURL } from "node:url";
 import { REQUIRED_KEYS, buildConfigModule, configPath, loadConfig, packageVersion, substitutions, writeBuildConfig } from "../tools/config.mjs";
 import { merge, substitute } from "../tools/manifest.mjs";
 
-/** Directories `tempConfig()` has created, removed once every case has run. */
+/** Directories `tempDir()` has created, removed once every case has run. */
 const tempDirs = [];
+
+/** Returns a throwaway directory of this run's own. */
+function tempDir() {
+	const dir = mkdtempSync(join(tmpdir(), "sysinfo-config-"));
+	tempDirs.push(dir);
+	return dir;
+}
 
 /** Returns the path of a throwaway configuration file holding `config`. */
 function tempConfig(config) {
-	const dir = mkdtempSync(join(tmpdir(), "sysinfo-config-"));
-	tempDirs.push(dir);
-	const path = join(dir, "build.config.json");
+	const path = join(tempDir(), "build.config.json");
 	writeFileSync(path, JSON.stringify(config));
 	return path;
 }
@@ -95,7 +100,11 @@ const cases = {
 	},
 
 	async "generated module: what is written is what is imported"() {
-		const path = writeBuildConfig(EXAMPLE);
+		// Written into a directory of this case's own: the default target is the build artefact
+		// the browser code imports, and a test that rewrites it hides a stale one.
+		const dir = tempDir();
+		const path = writeBuildConfig(EXAMPLE, dir);
+		ok(path.startsWith(dir), "the module lands in the directory it was given");
 		const mod = await import(pathToFileURL(path).href);
 		eq(mod.AGENT_ORIGIN, EXAMPLE.agentOrigin, "the written module parses and exports");
 		deepEq(mod.DEFAULT_PORTAL_IDS, EXAMPLE.defaultPortalIds, "and carries the seeds");

@@ -8,8 +8,8 @@ import { EXT } from "./config.mjs";
 /** The directory holding the base and the per-browser overlays. */
 export const TEMPLATE_DIR = join(EXT, "manifest");
 
-/** Reports whether `v` is an object that can be merged key by key. */
-function isPlainObject(v) {
+/** Reports whether `v` is a keyed object rather than an array or a primitive. */
+export function isPlainObject(v) {
 	return v !== null && typeof v === "object" && !Array.isArray(v);
 }
 
