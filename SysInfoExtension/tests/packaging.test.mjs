@@ -4,17 +4,27 @@
 // not the tests — so the checks read them off disk or render them in memory.
 
 import { run } from "./runner.mjs";
-import { ok, eq, deepEq } from "./assert.mjs";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { ok, eq, deepEq, threw } from "./assert.mjs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { join, relative, sep } from "node:path";
+import { tmpdir } from "node:os";
 
 import { EXT, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
 import { TEMPLATE_DIR, referencedPaths, renderManifest } from "../tools/manifest.mjs";
+import { packageTarget, TARGETS } from "../tools/package.mjs";
 
 const version = packageVersion();
-const values = substitutions(loadConfig([]).config, version);
+const config = loadConfig([]).config;
+const values = substitutions(config, version);
 const chromium = renderManifest("chromium", values);
 const firefox = renderManifest("firefox", values);
+
+/** Returns every file under `dir`, as paths relative to it with forward slashes. */
+function listFiles(dir) {
+	return readdirSync(dir, { recursive: true, withFileTypes: true })
+		.filter(e => e.isFile())
+		.map(e => relative(dir, join(e.parentPath, e.name)).split(sep).join("/"));
+}
 
 /** Reports whether `v` is an object a leaf search can walk into. */
 function isPlainObject(v) {
@@ -109,6 +119,72 @@ const cases = {
 			for (const path of duplicatedPaths(base, read(file))) {
 				ok(false, `${file} repeats ${path} from base.json — a copy waiting to drift`);
 			}
+		}
+	},
+
+	"delivery: the tree holds what the browser loads and nothing else"() {
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			const dir = packageTarget({ target: "chromium", config, version, outRoot });
+			const files = listFiles(dir);
+
+			ok(files.includes("manifest.json"), "the rendered manifest is written");
+			ok(files.includes("content/content_script.bundle.js"), "the bundle ships");
+			ok(files.includes("popup/popup.html"), "the popup ships");
+			ok(files.includes("shared/build_config.js"), "the generated configuration ships");
+
+			ok(!files.some(f => f.startsWith("assets/icons/old_design/")),
+				"the retired icon set stays out");
+			ok(!files.includes("content/content_script.js"), "the unbundled source stays out");
+			ok(!files.some(f => f.startsWith("content/lib/")), "and so do its imports");
+			ok(!files.some(f => f.startsWith("tests/") || f.startsWith("tools/")),
+				"the development files stay out");
+			ok(!files.includes("package.json"), "and so does the manifest of the toolchain");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: each target takes only the icons its manifest names"() {
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			const chromiumFiles = listFiles(packageTarget({ target: "chromium", config, version, outRoot }));
+			const firefoxFiles = listFiles(packageTarget({ target: "firefox", config, version, outRoot }));
+
+			ok(chromiumFiles.includes("assets/icons/sysinfo_ext_128.png"), "chromium takes its PNG set");
+			ok(!chromiumFiles.includes("assets/icons/sysinfo_ext_512.png"),
+				"the store listing artwork is not part of the extension");
+			ok(firefoxFiles.includes("assets/icons/sysinfo_ext.svg"), "firefox takes the vector icon");
+			ok(!firefoxFiles.some(f => f.endsWith("sysinfo_ext_128.png")),
+				"and none of the raster set it never names");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: a version already built is not overwritten by accident"() {
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			packageTarget({ target: "firefox", config, version, outRoot });
+			const e = threw(() => packageTarget({ target: "firefox", config, version, outRoot }));
+			ok(e !== null, "a second run over the same version stops");
+			ok(String(e && e.message).includes("--force"), "and the message says how to mean it");
+			ok(threw(() => packageTarget({ target: "firefox", config, version, outRoot, force: true })) === null,
+				"--force goes through");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: the directory is named after the browser and the version"() {
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			const dir = packageTarget({ target: "chromium", config, version, outRoot });
+			eq(relative(outRoot, dir).split(sep).join("/"),
+				`SysInfoExtension_${TARGETS.chromium}_Source/SysInfoExtension_${TARGETS.chromium}_v${version}`,
+				"the layout the policy channel already distributes");
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
 		}
 	}
 };

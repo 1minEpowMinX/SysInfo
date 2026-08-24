@@ -9,7 +9,9 @@
     "icons": "node tools/generate-icons.mjs",
     "pretest": "npm run build",
     "test": "node tests/run.mjs",
-    "test:mutate": "node tests/mutate.mjs"
+    "test:mutate": "node tests/mutate.mjs",
+    "prepackage": "npm run build",
+    "package": "node tools/package.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.1",
