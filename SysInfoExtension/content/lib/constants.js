@@ -1,12 +1,8 @@
-// Content-script constants. Storage keys and whitelist seeds come from
-// the shared module; all other constants are content-script-specific.
+// Content-script constants. Storage keys come from the shared module and the whitelist seeds
+// from the generated build configuration; all other constants are content-script-specific.
 
-export {
-	STORAGE_KEY,
-	HISTORY_KEY,
-	DEFAULT_PORTAL_IDS,
-	DEFAULT_TYPE_IDS,
-} from "../../shared/constants.js";
+export { STORAGE_KEY, HISTORY_KEY } from "../../shared/constants.js";
+export { DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS } from "../../shared/build_config.js";
 
 // A submitted form is matched against the ticket page that follows it for at
 // most this long. It bounds the one window a false entry can still slip

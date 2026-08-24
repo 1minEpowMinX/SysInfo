@@ -1,12 +1,8 @@
-// Popup constants. Storage keys and whitelist seeds come from the
-// shared module; the settings defaults are popup-specific.
+// Popup constants. Storage keys come from the shared module and the whitelist seeds from the
+// generated build configuration; the settings defaults are popup-specific.
 
-import {
-	STORAGE_KEY,
-	HISTORY_KEY,
-	DEFAULT_PORTAL_IDS,
-	DEFAULT_TYPE_IDS,
-} from "../../shared/constants.js";
+import { STORAGE_KEY, HISTORY_KEY } from "../../shared/constants.js";
+import { DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS } from "../../shared/build_config.js";
 import { resolveFields } from "../../shared/fields.js";
 
 export { STORAGE_KEY, HISTORY_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS };

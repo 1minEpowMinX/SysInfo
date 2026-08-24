@@ -6,7 +6,8 @@
 import { run } from "./runner.mjs";
 import { installEnv } from "./harness.mjs";
 import { ok, eq, deepEq } from "./assert.mjs";
-import { STORAGE_KEY, HISTORY_KEY, DEFAULT_PORTAL_IDS } from "../shared/constants.js";
+import { STORAGE_KEY, HISTORY_KEY } from "../shared/constants.js";
+import { DEFAULT_PORTAL_IDS } from "../shared/build_config.js";
 
 const setups = {
 	"nothing stored: the defaults apply": {},

@@ -5,7 +5,8 @@
 import { run } from "./runner.mjs";
 import { installEnv } from "./harness.mjs";
 import { ok, eq } from "./assert.mjs";
-import { STORAGE_KEY, DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS } from "../shared/constants.js";
+import { STORAGE_KEY } from "../shared/constants.js";
+import { DEFAULT_PORTAL_IDS, DEFAULT_TYPE_IDS } from "../shared/build_config.js";
 
 const STORED_FORM = "/servicedesk/customer/portal/3/create/27";
 const DEFAULT_FORM = `/servicedesk/customer/portal/${DEFAULT_PORTAL_IDS[0]}/create/${DEFAULT_TYPE_IDS[0]}`;

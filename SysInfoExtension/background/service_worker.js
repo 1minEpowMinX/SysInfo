@@ -1,5 +1,7 @@
 // Background service worker — proxies HTTP requests to the local SysInfo
-// agent at AGENT_BASE and reports its own diagnostic state.
+// agent at AGENT_ORIGIN and reports its own diagnostic state.
+
+import { AGENT_ORIGIN } from "../shared/build_config.js";
 
 // Cross-browser alias
 if (typeof browser === "undefined") {
@@ -11,8 +13,6 @@ const blog = (...args) => console.log(BG_TAG, ...args);
 const bwarn = (...args) => console.warn(BG_TAG, ...args);
 
 blog("service worker started", { runtimeId: browser.runtime.id });
-
-const AGENT_BASE = "http://localhost:8734";
 
 /**
  * Returns the fetch options every agent request carries, identifying this
@@ -28,7 +28,7 @@ function fetchOptions() {
  *
  * A failure answers with a `success: false` object carrying the message rather than rejecting.
  * Both outcomes are logged with their elapsed time.
- * @param path - Path appended to AGENT_BASE.
+ * @param path - Path appended to AGENT_ORIGIN.
  * @param parseAs - Selects the parser and the reply shape: "text" parses text and answers
  * through `text`, "json" parses JSON and answers through `data`.
  * @param sendResponse - The onMessage reply callback.
@@ -36,7 +36,7 @@ function fetchOptions() {
  */
 function proxyFetch(path, parseAs, sendResponse, label) {
 	const tStart = Date.now();
-	fetch(AGENT_BASE + path, fetchOptions())
+	fetch(AGENT_ORIGIN + path, fetchOptions())
 		.then(res => parseAs === "json" ? res.json() : res.text())
 		.then(data => {
 			blog(`${label} ✓`, "(", Date.now() - tStart, "ms)");

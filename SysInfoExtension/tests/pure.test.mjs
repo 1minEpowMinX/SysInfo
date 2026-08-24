@@ -8,7 +8,7 @@ import {
 	FORM_PATH_RE, TICKET_PATH_RE, SUBMIT_CONTROL_SELECTOR, TITLE_SELECTOR
 } from "../content/lib/constants.js";
 import { defaultSettings } from "../popup/lib/constants.js";
-import { DEFAULT_PORTAL_IDS } from "../shared/constants.js";
+import { DEFAULT_PORTAL_IDS } from "../shared/build_config.js";
 
 const cases = {
 	"payload: carries the four fields through"() {
