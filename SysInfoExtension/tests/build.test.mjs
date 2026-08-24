@@ -6,12 +6,17 @@ import { ok, eq, deepEq, threw } from "./assert.mjs";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
-import { REQUIRED_KEYS, configPath, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
+import { REQUIRED_KEYS, buildConfigModule, configPath, loadConfig, packageVersion, substitutions, writeBuildConfig } from "../tools/config.mjs";
+
+/** Directories `tempConfig()` has created, removed once every case has run. */
+const tempDirs = [];
 
 /** Returns the path of a throwaway configuration file holding `config`. */
 function tempConfig(config) {
 	const dir = mkdtempSync(join(tmpdir(), "sysinfo-config-"));
+	tempDirs.push(dir);
 	const path = join(dir, "build.config.json");
 	writeFileSync(path, JSON.stringify(config));
 	return path;
@@ -68,7 +73,34 @@ const cases = {
 
 	"version: the package declares one"() {
 		ok(/^\d+\.\d+\.\d+$/.test(packageVersion()), "package.json carries a three-part version");
+	},
+
+	"generated module: it exports what the browser code reads"() {
+		const text = buildConfigModule(EXAMPLE);
+		ok(text.includes("Do not edit"), "the file says it is generated");
+		ok(text.includes(`export const AGENT_ORIGIN = ${JSON.stringify(EXAMPLE.agentOrigin)};`),
+			"the agent origin is exported");
+		ok(text.includes(`export const DEFAULT_PORTAL_IDS = ${JSON.stringify(EXAMPLE.defaultPortalIds)};`),
+			"the portal seed is exported");
+		ok(text.includes(`export const DEFAULT_TYPE_IDS = ${JSON.stringify(EXAMPLE.defaultTypeIds)};`),
+			"the type seed is exported");
+	},
+
+	"generated module: the manifest's own values stay out of it"() {
+		const text = buildConfigModule(EXAMPLE);
+		ok(!text.includes(EXAMPLE.geckoId), "the gecko id is the manifest's, not the code's");
+		ok(!text.includes(EXAMPLE.jiraOrigins[0]),
+			"host permissions are read back from runtime.getManifest(), not duplicated here");
+	},
+
+	async "generated module: what is written is what is imported"() {
+		const path = writeBuildConfig(EXAMPLE);
+		const mod = await import(pathToFileURL(path).href);
+		eq(mod.AGENT_ORIGIN, EXAMPLE.agentOrigin, "the written module parses and exports");
+		deepEq(mod.DEFAULT_PORTAL_IDS, EXAMPLE.defaultPortalIds, "and carries the seeds");
 	}
 };
 
 await run(import.meta, cases);
+
+for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });

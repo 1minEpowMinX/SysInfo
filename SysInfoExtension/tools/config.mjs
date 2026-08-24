@@ -23,7 +23,7 @@ const EXAMPLE = join(EXT, "build.config.example.json");
 /**
  * Returns the configuration file a run reads.
  * @param argv - The arguments after the script name.
- * @return The path named by `--config`, the deployment's own file, or the committed example.
+ * @returns The path named by `--config`, the deployment's own file, or the committed example.
  */
 export function configPath(argv = []) {
 	const i = argv.indexOf("--config");
@@ -36,7 +36,7 @@ export function configPath(argv = []) {
 /**
  * Reads the configuration and checks that it is complete.
  * @param argv - The arguments after the script name.
- * @return The path read and the parsed object.
+ * @returns The path read and the parsed object.
  */
 export function loadConfig(argv = []) {
 	const path = configPath(argv);
@@ -66,7 +66,7 @@ function glob(origin) {
  * `/*` typed in by hand would drift away from the first one.
  * @param config - A configuration object as `loadConfig` returns it.
  * @param version - The version the manifests carry.
- * @return A value for every placeholder the templates name.
+ * @returns A value for every placeholder the templates name.
  */
 export function substitutions(config, version) {
 	return {
@@ -75,4 +75,41 @@ export function substitutions(config, version) {
 		hostPermissions: [config.agentOrigin, ...config.jiraOrigins].map(glob),
 		contentMatches: config.jiraOrigins.map(glob)
 	};
+}
+
+/**
+ * Returns the text of the module the browser code imports.
+ *
+ * Only the values the extension reads at runtime are emitted. The origins and the gecko id are
+ * the manifest's, and the worker reads the granted origins back through `runtime.getManifest()`.
+ * @param config - A configuration object as `loadConfig` returns it.
+ */
+export function buildConfigModule(config) {
+	return [
+		"// Generated from the build configuration by tools/config.mjs. Do not edit.",
+		"",
+		`export const AGENT_ORIGIN = ${JSON.stringify(config.agentOrigin)};`,
+		`export const DEFAULT_PORTAL_IDS = ${JSON.stringify(config.defaultPortalIds)};`,
+		`export const DEFAULT_TYPE_IDS = ${JSON.stringify(config.defaultTypeIds)};`,
+		""
+	].join("\n");
+}
+
+/**
+ * Writes the generated module into the shared directory.
+ * @param config - A configuration object as `loadConfig` returns it.
+ * @returns The path written.
+ */
+export function writeBuildConfig(config) {
+	const path = join(EXT, "shared", "build_config.js");
+	writeFileSync(path, buildConfigModule(config));
+	return path;
+}
+
+// Run directly, the module regenerates the browser's copy of the configuration. Imported, it
+// stays a library: the tests call the same functions without writing anything.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+	const { path, config } = loadConfig(process.argv.slice(2));
+	console.log(`config: ${path}`);
+	console.log(`wrote: ${writeBuildConfig(config)}`);
 }
