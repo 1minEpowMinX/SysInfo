@@ -61,15 +61,12 @@ project; the Qt binaries ship as produced by the official Qt @Qt6_VERSION@ relea
 
 The Qt modules and plugins listed above additionally incorporate third-party
 components, each under a license of its own rather than under the license of
-the module it is built into. Examples, not a complete list: pcre2, zlib,
-libpsl, md4c and the Unicode CLDR data inside the modules; libtiff, libwebp
-and xsvg inside the image-format and SVG plugins; wintab inside the Windows
-platform plugin.
+the module it is built into. Every one of them, with its version, copyright,
+license and the library it is delivered in, is named in the accompanying file:
 
-The Qt Company publishes the complete list, naming every component with its
-license and license text, as SPDX documents in the sbom/ directory of every Qt
-installation and as qt_attribution.json files throughout the Qt sources named
-above.
+    THIRD-PARTY-NOTICES.txt
+
+which also carries the full text of every license it names.
 
 -------------------------------------------------------------------------------
 Third-party component: LLVM runtime libraries

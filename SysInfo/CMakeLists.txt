@@ -302,9 +302,13 @@ configure_file(
     @ONLY
 )
 
+# THIRD-PARTY-NOTICES.txt is generated rather than written, by
+# tools/notices/generate.py over the SPDX documents of the Qt this build links
+# against. Regenerate it after a Qt upgrade or a change to the linked modules.
 set(LICENSE_NOTICES
     "${CMAKE_SOURCE_DIR}/../docs/GPL-3.0.txt"
     "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
+    "${CMAKE_SOURCE_DIR}/../docs/THIRD-PARTY-NOTICES.txt"
     "${CMAKE_CURRENT_BINARY_DIR}/README.txt"
 )
 
