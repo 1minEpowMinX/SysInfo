@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+# A later push to the same ref supersedes the run already in flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  extension:
+    name: Extension (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SysInfoExtension
+    strategy:
+      # One node version failing should not hide the result of the others.
+      fail-fast: false
+      matrix:
+        node: ['20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: SysInfoExtension/package-lock.json
+
+      - run: npm ci
+
+      # The pretest script generates shared/build_config.js. build.config.json
+      # is not in the repository, so this run reads build.config.example.json,
+      # which is what a clean clone has to build against.
+      - name: Test suite
+        run: npm test
+
+      # Proves the suite reacts to a broken statement. One interpreter is
+      # enough for that: it says nothing about node versions.
+      - name: Mutation run
+        if: matrix.node == '22'
+        run: npm run test:mutate
+
+  desktop:
+    name: Desktop (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows builds with llvm-mingw, the toolchain the release is
+          # produced with. Linux and macOS exist to keep their own hardware
+          # collectors compiling: hardware_info_linux.cpp and
+          # hardware_info_mac.cpp are reached by no other build.
+          - name: windows-llvm-mingw
+            os: windows-latest
+            qt_arch: win64_llvm_mingw
+            # Ninja comes from Qt's own tools rather than from whatever the
+            # runner image happens to carry on PATH.
+            qt_tools: 'tools_llvm_mingw1706 tools_ninja'
+          - name: linux
+            os: ubuntu-latest
+            qt_arch: ''
+            qt_tools: ''
+          - name: macos
+            os: macos-latest
+            qt_arch: ''
+            qt_tools: ''
+    steps:
+      - uses: actions/checkout@v4
+
+      # Qt Widgets links against GL and xkbcommon even though every test is
+      # QTEST_GUILESS_MAIN and no display is needed at run time.
+      - name: Install Qt build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libvulkan-dev
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.1'
+          arch: ${{ matrix.qt_arch }}
+          # qtsvg ships in the base package; these two do not. Qt6HttpServer
+          # pulls Qt6WebSockets, so both are named.
+          modules: 'qthttpserver qtwebsockets'
+          tools: ${{ matrix.qt_tools }}
+          cache: true
+
+      - name: Put the toolchain on PATH
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "$IQTA_TOOLS/llvm-mingw1706_64/bin" >> "$GITHUB_PATH"
+          echo "$IQTA_TOOLS/Ninja" >> "$GITHUB_PATH"
+
+      - name: Configure
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cmake -S SysInfo -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+          else
+            cmake -S SysInfo -B build -DCMAKE_BUILD_TYPE=Release
+          fi
+
+      # The default build ends in the run_tests target, which runs ctest with
+      # --output-on-failure. No separate test step is needed.
+      - name: Build and test
+        run: cmake --build build --parallel
+
+      # README.txt is configured from a template. An unresolved placeholder
+      # means the license notice went out naming no Qt version at all.
+      - name: Check the license notice resolved
+        shell: bash
+        run: |
+          notice=$(find build -maxdepth 2 -name README.txt | head -1)
+          test -n "$notice" || { echo "no README.txt was generated"; exit 1; }
+          if grep -q '@' "$notice"; then
+            echo "unresolved placeholder in $notice:"
+            grep -n '@' "$notice"
+            exit 1
+          fi
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A file that the ignore rules cover but that is tracked anyway. This is
+      # how a bundle built against a real deployment, or the deployment file
+      # itself, reaches the repository: the rules only protect what is not
+      # already in the index.
+      - name: No tracked file may be under the ignore rules
+        run: |
+          offenders=$(git ls-files -i -c --exclude-standard)
+          if [ -n "$offenders" ]; then
+            echo "tracked despite being ignored:"
+            echo "$offenders"
+            exit 1
+          fi
