@@ -10,8 +10,6 @@
 #include <QString>
 #include <QStringList>
 
-#include <unistd.h>
-
 namespace sysinfo::platform {
 
 namespace {
@@ -127,17 +125,28 @@ int physicalCoreCount()
 
 qint64 totalMemoryBytes()
 {
-    // sysconf rather than sysinfo(2): <sys/sysinfo.h> declares both a struct and
-    // a function named sysinfo in the global namespace, and this namespace
-    // already holds that name there, so the header cannot be included anywhere
-    // it is visible. No qualification helps — the clash is between two
-    // declarations, not between two uses.
-    const long pages = sysconf(_SC_PHYS_PAGES);
-    const long pageSize = sysconf(_SC_PAGESIZE);
-    if (pages <= 0 || pageSize <= 0) {
-        return 0;
+    // Not sysinfo(2): <sys/sysinfo.h> declares both a struct and a function
+    // named sysinfo in the global namespace, and this namespace already holds
+    // that name there, so the header cannot be included anywhere it is visible.
+    // No qualification helps — the clash is between two declarations, not
+    // between two uses.
+    //
+    // MemTotal is the same figure sysconf(_SC_PHYS_PAGES) would report: glibc
+    // reads this very line to answer it. Taking it here removes a layer rather
+    // than adding one, and keeps every source in this file a /proc or /sys read.
+    const QStringList lines =
+        readSysFile(QStringLiteral("/proc/meminfo")).split(QLatin1Char('\n'));
+    for (const QString &line : lines) {
+        if (!line.startsWith(QLatin1String("MemTotal"))) {
+            continue;
+        }
+        // The kernel writes kibibytes and labels them "kB".
+        bool parsed = false;
+        const qint64 kibibytes =
+            valueAfterColon(line).split(QLatin1Char(' ')).value(0).toLongLong(&parsed);
+        return parsed ? kibibytes * 1024 : 0;
     }
-    return qint64(pages) * qint64(pageSize);
+    return 0;
 }
 
 void fillMemoryIdentity(Memory &memory)
