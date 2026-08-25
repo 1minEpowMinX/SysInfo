@@ -69,10 +69,9 @@ QString osBuild();
 /**
  * @brief Returns the last boot time as a QDateTime, in local time.
  *
- * The single place that performs the platform query (GetTickCount64 on
- * Windows, sysinfo() on Linux, sysctl(KERN_BOOTTIME) on macOS);
- * lastBootTime() and bootTimeSecs() are thin renderings of this value and
- * add no OS-specific logic of their own.
+ * The single place that performs the platform query; lastBootTime() and
+ * bootTimeSecs() are thin renderings of this value and add no OS-specific
+ * logic of their own.
  *
  * @return A valid QDateTime on success, or an invalid one when the syscall
  *         fails or the platform is unsupported.

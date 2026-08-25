@@ -188,6 +188,14 @@ namespace sysinfo
 	QDateTime bootTime()
 	{
 #ifdef Q_OS_WIN
+		// The instant is derived rather than read: Windows exposes no
+		// documented call that reports it. A wall clock adjusted since boot
+		// therefore shifts this result by the adjustment, which the branches
+		// reading a boot timestamp directly do not.
+		//
+		// The two Windows sources that do report the instant are worse trades:
+		// WMI LastBootUpTime pulls COM in for one field, and
+		// NtQuerySystemInformation sits outside the documented API surface.
 		const ULONGLONG uptimeMs = GetTickCount64();
 		return QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
 
