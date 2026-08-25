@@ -119,6 +119,7 @@ it by hand.
 - **legal**: Name the Qt modules and the LLVM runtime the delivery ships ([`6cdc06e`](https://github.com/1minEpowMinX/SysInfo/commit/6cdc06e1af6917c7319c47fb50d5aaa213ed433f))
 - Point the readmes at this repository and the current release ([`bf4aabc`](https://github.com/1minEpowMinX/SysInfo/commit/bf4aabc2973aad7018f9f2a1a312de3a50885221))
 - **security**: Record the configuration the whitelist defaults want ([`dd77c31`](https://github.com/1minEpowMinX/SysInfo/commit/dd77c310f9350a27d227715f22f8fe47d17cc2c6))
+- **legal**: Generate the third-party notice from Qt's own SPDX documents ([`8e46ab0`](https://github.com/1minEpowMinX/SysInfo/commit/8e46ab05974ac68b8e8379c7f0209c7e389f6435))
 
 ### Tests
 
@@ -151,6 +152,7 @@ it by hand.
 ### Operations
 
 - Gate every push on both test suites ([`713e846`](https://github.com/1minEpowMinX/SysInfo/commit/713e84657c930a96a91b1cb178ef54540af98758))
+- Render the changelog and the release notes from the commit history ([`e54c73f`](https://github.com/1minEpowMinX/SysInfo/commit/e54c73f106927900bff7d048d7285fca29eab896))
 
 ### Style
 
