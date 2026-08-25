@@ -1,0 +1,86 @@
+# Changelog generation from the Conventional Commits history.
+#
+# One changelog for both products. The repository carries a single tag series,
+# and the desktop client and the extension are deployed to the fleet together,
+# so a reader wants one list. Which product an entry belongs to is carried by
+# its scope: (ext) is the extension, everything else is the client.
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to SysInfo and SysInfoExtension.
+
+Generated from the commit history by [git-cliff](https://git-cliff.org) over
+`cliff.toml`. Rewrite it with `git cliff -o CHANGELOG.md` rather than editing
+it by hand.
+
+"""
+
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v.") | trim_start_matches(pat="v") }}] \
+- {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## Unreleased
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+
+### {{ group | striptags | trim | upper_first }}
+{% for commit in commits %}
+- {% if commit.breaking %}**BREAKING** {% endif %}\
+{% if commit.scope %}**{{ commit.scope }}**: {% endif %}\
+{{ commit.message | upper_first }} \
+([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/1minEpowMinX/SysInfo/commit/{{ commit.id }}))\
+{% if commit.breaking and commit.breaking_description and commit.breaking_description != commit.message %}
+  - {{ commit.breaking_description }}\
+{% endif %}\
+{% endfor %}\
+{% endfor %}\n
+"""
+
+trim = true
+
+footer = ""
+
+[git]
+conventional_commits = true
+# An unconventional subject is kept and lands in "Other" rather than vanishing:
+# the history predates the convention in places, and a silently dropped commit
+# is worse than an ungrouped one.
+filter_unconventional = false
+filter_commits = false
+split_commits = false
+protect_breaking_commits = true
+
+# Both tag spellings the repository has used. The early releases carry a dot
+# after the "v"; from v2.0.0 on they do not.
+tag_pattern = "v\\.?[0-9]+\\.[0-9]+\\.[0-9]+"
+
+topo_order = false
+sort_commits = "oldest"
+
+# The HTML comment carries the sort key: group_by orders sections by the group
+# string, and the template strips the comment before printing. Two digits so
+# that ten sorts after two.
+#
+# Types the repository does not use are absent on purpose; add one here when a
+# commit first needs it.
+commit_parsers = [
+  { message = "^feat", group = "<!-- 00 -->Features" },
+  { message = "^fix", group = "<!-- 01 -->Fixes" },
+  { message = "^security", group = "<!-- 02 -->Security" },
+  { message = "^perf", group = "<!-- 03 -->Performance" },
+  { message = "^i18n", group = "<!-- 04 -->Translations" },
+  { message = "^refactor", group = "<!-- 05 -->Refactoring" },
+  { message = "^docs", group = "<!-- 06 -->Documentation" },
+  { message = "^test", group = "<!-- 07 -->Tests" },
+  { message = "^build", group = "<!-- 08 -->Build" },
+  { message = "^ops", group = "<!-- 09 -->Operations" },
+  { message = "^style", group = "<!-- 10 -->Style" },
+  { message = "^chore", group = "<!-- 11 -->Housekeeping" },
+  # Merge commits describe the branch, not the change; the commits they carry
+  # are already listed individually.
+  { message = "^Merge ", skip = true },
+  { message = ".*", group = "<!-- 12 -->Other" },
+]
