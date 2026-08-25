@@ -38,6 +38,15 @@ bool isExtensionIdChar(char c)
 
 } // namespace
 
+// The Firefox ID here and geckoId in the extension's build.config.json must name
+// the same add-on, and nothing checks that they do. A pair that disagrees answers
+// every request from the add-on it just shipped with 403, silently on this side.
+//
+// TODO: take these defaults from a deployment configuration, the way the
+// extension already takes geckoId, rather than from a literal. A committed
+// example carrying placeholders, the real file ignored, and the values reaching
+// this list through configure_file — that is the shape the extension side
+// settled on, and it is what would let one check compare the two.
 const QStringList &defaultAllowedExtensionIds()
 {
     static const QStringList ids = {
