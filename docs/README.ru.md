@@ -40,16 +40,16 @@
 ```sh
 # Linux
 sudo apt install p7zip-full
-sudo 7z x SysInfo-3.0.0-linux-x64.7z -o/usr/bin/
+sudo 7z x SysInfo-3.1.0-linux-x64.7z -o/usr/bin/
 
 # MacOS:
 brew install p7zip
-sudo 7z x SysInfo-3.0.0-macos-x64.7z -o/usr/local/bin/
+sudo 7z x SysInfo-3.1.0-macos-x64.7z -o/usr/local/bin/
 
 # Windows:
 New-EventLog -LogName "SysInfo" -Source "SysInfo"
 Limit-EventLog -LogName "SysInfo" -MaximumSize 5MB
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-3.0.0-windows-x64.7z -o"C:\Program Files\"
+"C:\Program Files\7-Zip\7z.exe" x SysInfo-3.1.0-windows-x64.7z -o"C:\Program Files\"
 ```
 
 ### 3. Добавить в автозагрузку
@@ -131,9 +131,9 @@ reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
 ## 🤝 Вклад
 
 Приветствуются вклады, вопросы и запросы на добавление новых функций!  
-Не стесняйтесь заглянуть на [страницу вопросов](https://github.com/1minEpowMinX/InvBinderBot/issues).
+Не стесняйтесь заглянуть на [страницу вопросов](https://github.com/1minEpowMinX/SysInfo/issues).
 
 ## 📝 Лицензия
 
 Авторские права © 2026 [1minEpowMinX](https://github.com/1minEpowMinX).  
-Этот проект лицензирован по лицензии [GPL-3.0](https://github.com/1minEpowMinX/InvBinderBot/blob/main/LICENSE).
+Этот проект лицензирован по лицензии [GPL-3.0](https://github.com/1minEpowMinX/SysInfo/blob/main/LICENSE).
