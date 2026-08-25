@@ -53,6 +53,7 @@ it by hand.
 - **ext**: Settle the caller when a rejection carries no message ([`bd16798`](https://github.com/1minEpowMinX/SysInfo/commit/bd167984ef9bf9d540b94c506805656dfbc8b758))
 - **ext**: Count the first attempt in the retry log ([`659c1ea`](https://github.com/1minEpowMinX/SysInfo/commit/659c1ea937638c75d4d654f925d19fe0c9f8619a))
 - **ext**: Ship every asset the popup loads and the configuration it was packaged from ([`a2a7159`](https://github.com/1minEpowMinX/SysInfo/commit/a2a71591be7deb23dc09f96e6d9171516df86bc4))
+- **sysinfo**: Stop including a header that cannot coexist with this namespace ([`b0cfb4b`](https://github.com/1minEpowMinX/SysInfo/commit/b0cfb4bd260c414e7563c4e52d2663894f95356e))
 
 ### Performance
 
@@ -120,6 +121,7 @@ it by hand.
 - Point the readmes at this repository and the current release ([`bf4aabc`](https://github.com/1minEpowMinX/SysInfo/commit/bf4aabc2973aad7018f9f2a1a312de3a50885221))
 - **security**: Record the configuration the whitelist defaults want ([`dd77c31`](https://github.com/1minEpowMinX/SysInfo/commit/dd77c310f9350a27d227715f22f8fe47d17cc2c6))
 - **legal**: Generate the third-party notice from Qt's own SPDX documents ([`8e46ab0`](https://github.com/1minEpowMinX/SysInfo/commit/8e46ab05974ac68b8e8379c7f0209c7e389f6435))
+- Refresh the changelog ([`e860202`](https://github.com/1minEpowMinX/SysInfo/commit/e860202957f17c22483240f1fdd68099f5970353))
 
 ### Tests
 
@@ -153,6 +155,7 @@ it by hand.
 
 - Gate every push on both test suites ([`713e846`](https://github.com/1minEpowMinX/SysInfo/commit/713e84657c930a96a91b1cb178ef54540af98758))
 - Render the changelog and the release notes from the commit history ([`e54c73f`](https://github.com/1minEpowMinX/SysInfo/commit/e54c73f106927900bff7d048d7285fca29eab896))
+- Drop the Windows build and take the actions off node 20 ([`38853e8`](https://github.com/1minEpowMinX/SysInfo/commit/38853e85237052d36c5ae4ec4e3e22c46ac8ff04))
 
 ### Style
 
