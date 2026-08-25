@@ -6,7 +6,7 @@
 import { run } from "./runner.mjs";
 import { ok, eq, deepEq, threw } from "./assert.mjs";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { tmpdir } from "node:os";
 
 import { EXT, buildConfigModule, loadConfig, packageVersion, substitutions } from "../tools/config.mjs";
@@ -77,6 +77,48 @@ function duplicatedPaths(base, overlay, prefix = "") {
 		else if (baseValue !== undefined && sameValue(value, baseValue)) dups.push(path);
 	}
 	return dups;
+}
+
+/** The attributes of a page that name another file of the delivery. */
+const HTML_REF_RE = /\b(?:src|href)="([^"]+)"/g;
+
+/** A static import, in the `from "x"` form and in the bare `import "x"` form alike. */
+// Anchored to the start of a line because every import in the extension is a top-level one: a
+// path that merely appears inside a comment or a string must not count as a module being loaded.
+const IMPORT_RE = /^\s*import\s+(?:[^"';]*?\bfrom\s*)?"([^"]+)"/gm;
+
+/**
+ * Walks a packaged tree from the files its manifest names and reports what it reached.
+ *
+ * A page is followed through its `src` and `href` attributes and a module through its static
+ * imports; anything else is a leaf. A reference the tree cannot answer is collected rather than
+ * thrown, so one run reports every break at once.
+ * @param dir - Root of a packaged tree.
+ * @param entries - The paths the manifest names, relative to that root.
+ * @returns `reached`, every path the walk resolved, and `missing`, the references it could not.
+ */
+function walkDelivery(dir, entries) {
+	const reached = new Set();
+	const missing = [];
+	const queue = [];
+	const consider = (rel, from) => {
+		if (existsSync(join(dir, rel))) queue.push(rel);
+		else missing.push(from ? `${from} -> ${rel}` : rel);
+	};
+
+	for (const entry of entries) consider(entry, null);
+	while (queue.length) {
+		const rel = queue.shift();
+		if (reached.has(rel)) continue;
+		reached.add(rel);
+
+		const re = rel.endsWith(".html") ? HTML_REF_RE : rel.endsWith(".js") ? IMPORT_RE : null;
+		if (!re) continue;
+		for (const [, ref] of readFileSync(join(dir, rel), "utf8").matchAll(re)) {
+			consider(join(dirname(rel), ref).split(sep).join("/"), rel);
+		}
+	}
+	return { reached, missing };
 }
 
 const cases = {
@@ -187,6 +229,31 @@ const cases = {
 					`${target} ships the sizes its manifest names, no more and no fewer`);
 				ok(files.includes("assets/icons/sysinfo_ext.svg"),
 					`${target} takes the master, which the popup loads as its header logo`);
+			}
+		} finally {
+			rmSync(outRoot, { recursive: true, force: true });
+		}
+	},
+
+	"delivery: every module in the tree is reached from the manifest"() {
+		// The directories the delivery copies whole, where a file nothing loads rides along
+		// unnoticed. content/ is out of scope: what ships from it is one bundle, and the sources
+		// it was built from never ship at all.
+		const WALKED = ["popup/", "shared/", "background/"];
+		const outRoot = mkdtempSync(join(tmpdir(), "sysinfo-delivery-"));
+		try {
+			for (const [target, manifest] of [["chromium", chromium], ["firefox", firefox]]) {
+				const dir = packageTarget({ target, config, version, outRoot });
+				const entries = [
+					manifest.action.default_popup,
+					manifest.background.service_worker,
+					...(manifest.background.scripts || [])
+				].filter(Boolean);
+				const { reached, missing } = walkDelivery(dir, entries);
+
+				deepEq(missing, [], `${target} carries a file loading something the tree does not`);
+				deepEq(listFiles(dir).filter(f => WALKED.some(d => f.startsWith(d)) && !reached.has(f)),
+					[], `${target} ships a file nothing reaches from the manifest`);
 			}
 		} finally {
 			rmSync(outRoot, { recursive: true, force: true });

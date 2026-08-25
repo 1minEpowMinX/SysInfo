@@ -412,6 +412,14 @@ const MUTATIONS = [
 		case: "delivery: each target takes the icon sizes its manifest names and no others"
 	},
 	{
+		what: "the popup ships as its page alone, without the scripts it loads",
+		file: "tools/package.mjs",
+		from: '\t"popup",\n',
+		to: "",
+		test: "packaging.test.mjs",
+		case: "delivery: every module in the tree is reached from the manifest"
+	},
+	{
 		what: "a translation loses a key the default locale carries",
 		file: "_locales/ru/messages.json",
 		from: '"timeMinutesAgo"',
