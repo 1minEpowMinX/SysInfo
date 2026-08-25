@@ -292,13 +292,34 @@ elseif(APPLE)
     )
 endif()
 
+# README.txt names the Qt release the binaries were taken from in four places,
+# one of them the major.minor the LGPL replacement clause permits. Configured
+# rather than copied, so the version comes from the Qt package this build found
+# and cannot fall behind it.
+configure_file(
+    "${CMAKE_SOURCE_DIR}/../docs/README.txt.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/README.txt"
+    @ONLY
+)
+
+set(LICENSE_NOTICES
+    "${CMAKE_SOURCE_DIR}/../docs/GPL-3.0.txt"
+    "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
+    "${CMAKE_CURRENT_BINARY_DIR}/README.txt"
+)
+
+# windeployqt leaves libc++.dll and libunwind.dll in the tree for a Windows
+# build made with llvm-mingw, and Apache-2.0 section 4(a) requires their license
+# to travel with them. No other toolchain ships those files.
+if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    list(APPEND LICENSE_NOTICES "${CMAKE_SOURCE_DIR}/../docs/LLVM-Apache-2.0.txt")
+endif()
+
 add_custom_command(TARGET SysInfo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/../docs/GPL-3.0.txt"
-        "${CMAKE_SOURCE_DIR}/../docs/LGPL-3.0.txt"
-        "${CMAKE_SOURCE_DIR}/../docs/README.txt"
+        ${LICENSE_NOTICES}
         "$<TARGET_FILE_DIR:SysInfo>"
-    COMMENT "Copying GPL-3.0.txt, LGPL-3.0.txt and README.txt next to the executable"
+    COMMENT "Copying the license notices next to the executable"
     VERBATIM
 )
 

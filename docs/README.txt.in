@@ -1,0 +1,103 @@
+SysInfo
+=======
+
+SysInfo is a cross-platform system information utility.
+Project home: https://github.com/1minEpowMinX/SysInfo
+
+-------------------------------------------------------------------------------
+Licensing of SysInfo itself
+-------------------------------------------------------------------------------
+
+SysInfo is distributed under the terms of the GNU General Public License
+version 3 (GPL-3.0-only). The full text of the GPL v3 is provided in the
+accompanying file GPL-3.0.txt.
+
+Corresponding source code for this build is available at:
+    https://github.com/1minEpowMinX/SysInfo
+
+-------------------------------------------------------------------------------
+Third-party component: Qt
+-------------------------------------------------------------------------------
+
+This product uses the Qt framework (version @Qt6_VERSION@).
+
+    Copyright (C) The Qt Company Ltd. and other Qt contributors.
+
+The Qt modules used in this build are licensed as follows:
+
+  Qt6Core, Qt6Gui, Qt6Widgets, Qt6Network, Qt6Svg, Qt6WebSockets
+      GNU Lesser General Public License version 3 (LGPL-3.0-only)
+
+  Qt6HttpServer
+      GNU General Public License version 3 (GPL-3.0-only)
+
+The LGPL v3 incorporates the terms of the GPL v3, supplemented by additional
+permissions granted by the LGPL v3. Accordingly, two license documents
+accompany this distribution:
+
+    GPL-3.0.txt     - GNU General Public License, version 3
+    LGPL-3.0.txt    - GNU Lesser General Public License, version 3
+
+The Qt libraries are delivered as separate dynamically-linked shared libraries:
+on Windows, one .dll per module named above, together with the platform and
+plugin .dll files shipped alongside the executable; equivalent .so/.dylib files
+on Linux/macOS.
+
+As permitted by LGPL v3 section 4(d)(1), this satisfies the "suitable shared
+library mechanism" requirement: you may replace the LGPL-licensed Qt shared
+libraries with a modified or recompiled version of the same Qt major.minor
+release (@Qt6_VERSION_MAJOR@.@Qt6_VERSION_MINOR@.x) by overwriting the corresponding files in the
+installation directory, and SysInfo will continue to load and run with the
+replaced libraries.
+
+Complete and corresponding source code for the exact Qt version used in this
+build is published by The Qt Company at:
+
+    https://download.qt.io/archive/qt/@Qt6_VERSION_MAJOR@.@Qt6_VERSION_MINOR@/@Qt6_VERSION@/single/
+    https://code.qt.io/
+
+No modifications have been made to the Qt source code by the SysInfo
+project; the Qt binaries ship as produced by the official Qt @Qt6_VERSION@ release.
+
+The Qt modules and plugins listed above additionally incorporate third-party
+components, each under a license of its own rather than under the license of
+the module it is built into. Examples, not a complete list: pcre2, zlib,
+libpsl, md4c and the Unicode CLDR data inside the modules; libtiff, libwebp
+and xsvg inside the image-format and SVG plugins; wintab inside the Windows
+platform plugin.
+
+The Qt Company publishes the complete list, naming every component with its
+license and license text, as SPDX documents in the sbom/ directory of every Qt
+installation and as qt_attribution.json files throughout the Qt sources named
+above.
+
+-------------------------------------------------------------------------------
+Third-party component: LLVM runtime libraries
+-------------------------------------------------------------------------------
+
+Windows builds produced with the llvm-mingw toolchain ship the LLVM C++ runtime
+alongside the executable:
+
+    libc++.dll      - LLVM C++ standard library
+    libunwind.dll   - LLVM unwinder
+
+    Copyright (c) The LLVM Project contributors.
+
+Both are part of the LLVM Project and are licensed under the Apache License
+version 2.0 with LLVM Exceptions. The full text is provided in the accompanying
+file LLVM-Apache-2.0.txt.
+
+Source code for the LLVM Project is published at:
+
+    https://github.com/llvm/llvm-project
+
+Builds produced with another toolchain link that toolchain's own C++ runtime
+instead and do not ship these files.
+
+-------------------------------------------------------------------------------
+Warranty
+-------------------------------------------------------------------------------
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GPL and LGPL texts for details.
