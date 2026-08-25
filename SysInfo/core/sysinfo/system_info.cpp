@@ -15,8 +15,6 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
-#elif defined(Q_OS_LINUX)
-#include <sys/sysinfo.h>
 #elif defined(Q_OS_MAC)
 #include <sys/sysctl.h>
 #endif
@@ -194,10 +192,29 @@ namespace sysinfo
 		return QDateTime::currentDateTime().addMSecs(-qint64(uptimeMs));
 
 #elif defined(Q_OS_LINUX)
-		struct sysinfo s_info;
-		if (::sysinfo(&s_info) == 0) // Linux sys/sysinfo.h disambiguation
+		// /proc/stat rather than sysinfo(2): <sys/sysinfo.h> declares both a
+		// struct and a function named sysinfo in the global namespace, and this
+		// namespace already holds that name there, so the header cannot be
+		// included anywhere it is visible. No qualification helps — the clash is
+		// between two declarations, not between two uses.
+		//
+		// btime is the boot instant itself, in epoch seconds, so unlike an
+		// uptime it needs nothing subtracted from the current clock and does not
+		// drift when that clock is adjusted.
+		QFile stat(QStringLiteral("/proc/stat"));
+		if (stat.open(QIODevice::ReadOnly | QIODevice::Text))
 		{
-			return QDateTime::currentDateTime().addSecs(-s_info.uptime);
+			while (!stat.atEnd())
+			{
+				const QByteArray line = stat.readLine();
+				if (!line.startsWith("btime "))
+				{
+					continue;
+				}
+				bool ok = false;
+				const qint64 seconds = line.mid(6).trimmed().toLongLong(&ok);
+				return ok ? QDateTime::fromSecsSinceEpoch(seconds) : QDateTime();
+			}
 		}
 		return {};
 

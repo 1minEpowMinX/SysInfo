@@ -10,7 +10,7 @@
 #include <QString>
 #include <QStringList>
 
-#include <sys/sysinfo.h>
+#include <unistd.h>
 
 namespace sysinfo::platform {
 
@@ -127,11 +127,17 @@ int physicalCoreCount()
 
 qint64 totalMemoryBytes()
 {
-    struct sysinfo s_info;
-    if (::sysinfo(&s_info) != 0) { // Linux sys/sysinfo.h disambiguation
+    // sysconf rather than sysinfo(2): <sys/sysinfo.h> declares both a struct and
+    // a function named sysinfo in the global namespace, and this namespace
+    // already holds that name there, so the header cannot be included anywhere
+    // it is visible. No qualification helps — the clash is between two
+    // declarations, not between two uses.
+    const long pages = sysconf(_SC_PHYS_PAGES);
+    const long pageSize = sysconf(_SC_PAGESIZE);
+    if (pages <= 0 || pageSize <= 0) {
         return 0;
     }
-    return qint64(s_info.totalram) * s_info.mem_unit;
+    return qint64(pages) * qint64(pageSize);
 }
 
 void fillMemoryIdentity(Memory &memory)
