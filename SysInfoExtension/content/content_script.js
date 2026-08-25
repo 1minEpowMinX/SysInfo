@@ -1,23 +1,18 @@
-// Bootstrap entry. All declarations live in lib/*.js (imported below).
-//
-//   1. loadPortals             — read whitelist arrays from storage.
-//   2. finalizeHistoryIfCreated — covers the rare case of reloading the
-//                                 page while already on a created ticket.
-//   3. setupUrlWatcher         — react to SPA navigation between forms
-//                                 and ticket pages.
-//   4. startInsertion          — fetch sysinfo, then start the editor
-//                                 watcher. Data is captured in closure
-//                                 so the watcher tick is synchronous.
+// Bootstrap entry. All declarations live in lib/*.js.
 
 import { slog } from "./lib/compat.js";
-import { loadPortals } from "./lib/portals.js";
-import { finalizeHistoryIfCreated } from "./lib/history.js";
+import { loadSettings } from "./lib/settings.js";
 import { setupUrlWatcher } from "./lib/url_watcher.js";
+import { setupSubmitWatcher } from "./lib/submit_watcher.js";
 import { startInsertion } from "./lib/insertion.js";
 
 slog("bootstrap", { pathname: location.pathname, readyState: document.readyState });
 
-loadPortals();
-finalizeHistoryIfCreated();
-setupUrlWatcher();
-startInsertion();
+// Everything downstream asks isTicketAllowed whether it may act, and that function answers from
+// the default lists until the stored ones arrive. Arming the watchers before then lets a form the
+// user excluded pass on the first check.
+loadSettings().then(() => {
+	setupUrlWatcher();
+	setupSubmitWatcher();
+	startInsertion();
+});

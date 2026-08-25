@@ -1,0 +1,41 @@
+name: Release
+
+# Release notes for a tag, rendered from the same cliff.toml the committed
+# CHANGELOG.md is rendered from, so the two cannot disagree.
+#
+# Both tag spellings the repository has used are matched. New tags should carry
+# no dot after the "v".
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v.[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    name: Draft the release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # git-cliff reads the history between tags, which a shallow clone
+          # does not carry.
+          fetch-depth: 0
+
+      - name: Render the notes for this tag
+        uses: orhun/git-cliff-action@v4
+        id: cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+
+      - name: Create the release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.cliff.outputs.content }}
+          # Left as a draft: the archives are still produced by hand, and the
+          # release is not publishable until they are attached.
+          draft: true

@@ -3,6 +3,7 @@
 
 import { state, root } from "./state.js";
 import { t } from "./compat.js";
+import { AGENT_ORIGIN } from "../../shared/build_config.js";
 import { el, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 import { renderStatusTab } from "./tab_status.js";
@@ -11,9 +12,8 @@ import { renderHistoryTab } from "./tab_history.js";
 import { renderSettingsTab } from "./tab_settings.js";
 
 /**
- * The function `applyTheme` reads `state.settings.theme` and sets `root.className` to either
- * `"theme-dark"` or `"theme-light"`. When the theme is `"auto"` the OS preference is used via
- * `matchMedia`.
+ * Puts the configured theme's class on the root element, following the OS preference when the
+ * setting is "auto".
  */
 function applyTheme() {
 	const choice = state.settings.theme;
@@ -21,15 +21,19 @@ function applyTheme() {
 	root.className = dark ? "theme-dark" : "theme-light";
 }
 
+// The status line names the agent by host: the scheme is fixed and reads as noise in a chip
+// that is two words wide.
+const AGENT_HOST = new URL(AGENT_ORIGIN).host;
+
 /**
- * The function `statusInfo` maps the current `state.status` value to a display descriptor
- * object used by both the mini-pill in the header and the full status card.
- * @returns An object with `kind`, `label`, `sub`, `pulse`, and `dot` properties describing how
- * the current status should be rendered.
+ * Maps the current agent status onto how it is drawn.
+ *
+ * The header pill and the status card both read it.
+ * @returns A descriptor carrying `kind`, `label`, `sub`, `pulse` and `dot`.
  */
 export function statusInfo() {
 	switch (state.status) {
-		case "active": return { kind: "ok", label: t("statusActive"), sub: t("statusActiveSub"), pulse: true, dot: "var(--ok-dot)" };
+		case "active": return { kind: "ok", label: t("statusActive"), sub: t("statusActiveSub", [AGENT_HOST]), pulse: true, dot: "var(--ok-dot)" };
 		case "loading": return { kind: "warn", label: t("statusLoading"), sub: t("statusLoadingSub"), pulse: true, dot: "var(--warn-dot)" };
 		case "version-mismatch": return { kind: "warn", label: t("statusVersionMismatch"), sub: t("statusVersionMismatchSub"), pulse: false, dot: "var(--warn-dot)" };
 		case "error":
@@ -38,9 +42,10 @@ export function statusInfo() {
 }
 
 /**
- * The function `render` is the single entry point for updating the popup UI. It applies the
- * current theme, clears `#root`, and rebuilds the full DOM tree — header, tab bar, and the
- * active tab body — from the current `state` in a single synchronous pass.
+ * Rebuilds the whole popup from `state` in one synchronous pass.
+ *
+ * The single entry point for updating the interface: every helper that mutates state ends with
+ * a call here rather than patching the nodes it affects.
  */
 export function render() {
 	applyTheme();
@@ -56,10 +61,8 @@ export function render() {
 }
 
 /**
- * The function `renderHeader` builds the top bar of the popup containing the extension logo,
- * the title and subtitle, and a mini status pill that mirrors the current agent connection
- * state with an animated dot.
- * @returns A `div.hdr` element representing the popup header.
+ * Builds the top bar: the logo, the title pair, and a pill mirroring the agent's state.
+ * @returns The header element.
  */
 function renderHeader() {
 	const sc = statusInfo();
@@ -70,7 +73,7 @@ function renderHeader() {
 	return el("div", { class: "hdr" }, [
 		el("img", {
 			class: "hdr-logo",
-			src: "../assets/SysInfo_Ext_Icon_128.png",
+			src: "../assets/icons/sysinfo_ext.svg",
 			alt: ""
 		}),
 		el("div", { class: "hdr-text" }, [
@@ -79,15 +82,14 @@ function renderHeader() {
 		]),
 		el("div", { class: "mini-pill" }, [
 			dotWrap,
-			el("span", { style: { fontWeight: "500" } }, sc.label.split(" ")[0])
+			el("span", {}, sc.label.split(" ")[0])
 		])
 	]);
 }
 
 /**
- * The function `renderTabs` builds the tab navigation bar. Clicking a tab button updates
- * `state.tab` and calls `render()` to switch the active body.
- * @returns A `div.tabs` element containing one button per tab.
+ * Builds the tab bar, each button switching `state.tab` and re-rendering.
+ * @returns The tab bar element, holding one button per tab.
  */
 function renderTabs() {
 	const tabs = [

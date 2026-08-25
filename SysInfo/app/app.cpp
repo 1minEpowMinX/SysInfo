@@ -2,65 +2,91 @@
 
 #include "welcome_notifier.h"
 #include "core/logging/logger.h"
-#include "core/settings/settings_manager.h"
-#include "core/sysinfo/system_info.h"
+#include "core/ports/dialog_presenter.h"
+#include "core/ports/tray_view.h"
+#include "core/ports/user_prompt.h"
+#include "core/settings/onboarding_flags.h"
+#include "core/sysinfo/info_source.h"
 #include "core/sysinfo/system_info_presenter.h"
 #include "services/integration_server.h"
-#include "ui/about_dialog.h"
-#include "ui/tray_controller.h"
-#include "ui/tray_guide.h"
 
 #include <QApplication>
 #include <QClipboard>
-#include <QMessageBox>
 #include <QTimer>
 
+#include <utility>
+
 namespace {
+
+/// Interval between tray tooltip re-collections.
 constexpr int kTrayUpdateIntervalMs = 30'000;
-constexpr int kWelcomeDelayMs       = 60'000;
-constexpr const char* kTrayIconPath = ":/resources/icons/sysinfo_icon.png";
+
+/// How long the "copied to the clipboard" confirmation stays on screen.
+constexpr int kCopyNoticeMs         = 5'000;
+
 } // namespace
 
-App::App(SettingsManager& settings, QObject* parent)
+// The settings store enters as one port plus one string rather than whole, so
+// App can name the store without being able to read it. The path is by value
+// because it is fixed for the life of that store.
+App::App(OnboardingFlags& flags,
+         IntegrationServer& server,
+         UserPrompt& prompt,
+         TrayView& tray,
+         DialogPresenter& dialogs,
+         sysinfo::InfoSource& info,
+         QString settingsFilePath,
+         QObject* parent)
     : QObject(parent)
-    , m_settings(settings)
+    , m_flags(flags)
+    , m_server(server)
+    , m_prompt(prompt)
+    , m_tray(tray)
+    , m_dialogs(dialogs)
+    , m_info(info)
+    , m_settingsFilePath(std::move(settingsFilePath))
 {
     QApplication::setQuitOnLastWindowClosed(false);
 }
 
 bool App::start()
 {
-    if (!TrayController::isSystemTrayAvailable()) {
-        QMessageBox::critical(nullptr, tr("Error"),
-                              tr("The system tray is unavailable."));
+    // Gates on the tray before anything is collected, to avoid an idle load.
+    if (!m_tray.init()) {
+        m_prompt.showError(tr("Error"),
+                           tr("The system tray is unavailable."));
         Logger::log(Logger::EventId::TrayUnavailable,
                     "The system tray is unavailable. The application will be terminated.");
         return false;
     }
 
-    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
+    m_cachedInfo = sysinfo::presenter::toText(m_info.current());
+    m_tray.setTooltip(m_cachedInfo);
+    m_tray.show();
 
-    m_tray = new TrayController(this);
-    m_tray->init(kTrayIconPath);
-    m_tray->setTooltip(m_cachedInfo);
-    m_tray->show();
+    connect(&m_tray, &TrayView::copyRequested,  this, &App::onCopyRequested);
+    connect(&m_tray, &TrayView::aboutRequested, this, &App::onAboutRequested);
+    connect(&m_tray, &TrayView::quitRequested,  this, &App::onQuitRequested);
 
-    connect(m_tray, &TrayController::copyRequested,  this, &App::onCopyRequested);
-    connect(m_tray, &TrayController::aboutRequested, this, &App::onAboutRequested);
-    connect(m_tray, &TrayController::quitRequested,  this, &App::onQuitRequested);
+    // The guide retires itself from inside its own window, and the flag it
+    // clears is this layer's to persist. Its reader sits in WelcomeNotifier;
+    // OnboardingFlags carries both halves so that the flag's lifetime has one
+    // place to be read in.
+    connect(&m_dialogs, &DialogPresenter::trayGuideDismissedForGood, this,
+            [this] { m_flags.setShowTrayGuide(false); });
 
     startTrayUpdateTimer();
 
-    m_notifier = new WelcomeNotifier(*m_tray, m_settings, this);
+    m_notifier = new WelcomeNotifier(m_tray, m_flags,
+                                     WelcomeNotifier::kDefaultLifetimes, this);
     connect(m_notifier, &WelcomeNotifier::trayGuideRequested,
             this, &App::onTrayGuideRequested);
-    m_notifier->scheduleShow(kWelcomeDelayMs);
+    m_notifier->scheduleShow();
 
-    m_server = new IntegrationServer(m_settings, this);
-    if (!m_server->start()) {
-        QMessageBox::critical(nullptr, tr("Error"),
-                              tr("Failed to start the local server. "
-                                 "Integration with Jira SM is unavailable."));
+    if (!m_server.start()) {
+        m_prompt.showError(tr("Error"),
+                           tr("Failed to start the local server. "
+                              "Integration with Jira SM is unavailable."));
         Logger::log(Logger::EventId::ServerStartError,
                     "Failed to start the local server. "
                     "Integration with Jira SM is unavailable.");
@@ -73,10 +99,10 @@ void App::startTrayUpdateTimer()
 {
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        const QString fresh = sysinfo::presenter::toText(sysinfo::collect());
+        const QString fresh = sysinfo::presenter::toText(m_info.current());
         if (fresh != m_cachedInfo) {
             m_cachedInfo = fresh;
-            m_tray->setTooltip(m_cachedInfo);
+            m_tray.setTooltip(m_cachedInfo);
         }
     });
     timer->start(kTrayUpdateIntervalMs);
@@ -91,20 +117,21 @@ void App::onCopyRequested()
         return;
     }
 
-    m_cachedInfo = sysinfo::presenter::toText(sysinfo::collect());
+    // Answers a user action, so the re-collection window is bypassed.
+    m_info.refresh();
+    m_cachedInfo = sysinfo::presenter::toText(m_info.current());
     clipboard->setText(m_cachedInfo);
-    m_tray->setTooltip(m_cachedInfo);
+    m_tray.setTooltip(m_cachedInfo);
 
-    m_tray->showNotification(tr("System information"),
-                             tr("Information copied to the clipboard."),
-                             QSystemTrayIcon::Information,
-                             5000);
+    m_tray.showNotification(tr("System information"),
+                            tr("Information copied to the clipboard."),
+                            kCopyNoticeMs);
 }
 
 void App::onAboutRequested()
 {
-    AboutDialog dlg(m_settings);
-    dlg.exec();
+    m_dialogs.showAbout(
+        sysinfo::presenter::toAboutFacts(m_info.current(), m_settingsFilePath));
 }
 
 void App::onQuitRequested()
@@ -113,9 +140,7 @@ void App::onQuitRequested()
         "The application collects system information and assists in diagnostics."
         "<p><b>Do you still want to close the application?</b></p>");
 
-    const auto reply = QMessageBox::question(nullptr, tr("Exit"), text,
-                                             QMessageBox::Yes | QMessageBox::No);
-    if (reply == QMessageBox::Yes) {
+    if (m_prompt.confirm(tr("Exit"), text)) {
         Logger::log(Logger::EventId::AppExit, "Application terminated by user.");
         qApp->quit();
     }
@@ -123,7 +148,5 @@ void App::onQuitRequested()
 
 void App::onTrayGuideRequested()
 {
-    auto* guide = new TrayGuide(m_settings);
-    guide->setAttribute(Qt::WA_DeleteOnClose);
-    guide->show();
+    m_dialogs.showTrayGuide();
 }

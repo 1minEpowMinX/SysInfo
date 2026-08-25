@@ -6,57 +6,55 @@
 #include <QLabel>
 #include <QPushButton>
 
-class SettingsManager;
-
 /**
- * @brief Windows-only dialog that explains how to pin the tray icon.
+ * @brief Explains how to pin the tray icon; Windows only.
  *
  * Triggered when the user clicks the onboarding tray-guide notification
  * (see WelcomeNotifier). Shows a short animated screenshot demonstrating
- * the drag-from-overflow gesture, plus a "Don't show again" checkbox that
- * persists the choice via SettingsManager.
+ * the drag-from-overflow gesture, plus a "Don't show again" checkbox.
  *
- * The dialog is modal and self-disposing: App creates it with
+ * Persists nothing of its own: a ticked checkbox is reported as
+ * dismissedForGood() and the receiver decides what to store.
+ *
+ * The dialog is modal and self-disposing: WidgetDialogs creates it with
  * Qt::WA_DeleteOnClose, so it deletes itself once the user closes it.
  */
 class TrayGuide : public QDialog {
     Q_OBJECT
 public:
-    /**
-     * @param settings Reference to the app-wide settings store; used to
-     *                 persist the "Don't show again" choice. Must outlive
-     *                 the dialog.
-     * @param parent   Standard Qt parent.
-     */
-    explicit TrayGuide(SettingsManager& settings, QWidget* parent = nullptr);
+    /// @param parent Standard Qt parent.
+    explicit TrayGuide(QWidget* parent = nullptr);
+
+signals:
+    /// Fires when the dialog closes with "Don't show again" ticked, whichever of the Close
+    /// button, the Esc key and the window's close box retired it.
+    void dismissedForGood();
 
 private slots:
-    /// Handle the Close button — saves the "don't show again" flag and closes.
-    void onCloseClicked();
+    /// Reports a ticked checkbox as the dialog closes.
+    void onFinished();
 
 private:
-    /// Configure window-level flags (title, modality, stays-on-top).
+    /// Configures window-level flags (title, modality, stays-on-top).
     void setupWindow();
 
-    /// Build the looping screenshot animation; logs UiResourceMissing if the
+    /// Builds the looping screenshot animation; logs UiResourceMissing if the
     /// .gif resource is unavailable but does not abort construction.
     void setupAnimation();
 
-    /// Build the explanatory text label.
+    /// Builds the explanatory text label.
     void setupTexts();
 
-    /// Build the "Don't show again" checkbox and the Close button, plus the
-    /// signal/slot connection that makes the button work.
+    /// Builds the "Don't show again" checkbox and the Close button, plus the connections that
+    /// close the dialog and read the checkbox as it goes.
     void setupControls();
 
-    /// Lay out all four widgets vertically in this dialog.
+    /// Lays out all four widgets vertically in this dialog.
     void buildLayout();
-
-    SettingsManager& m_settings;     ///< Injected settings store (not owned).
 
     QLabel*      m_gifLabel;         ///< Holds the animated screenshot.
     QLabel*      m_textLabel;        ///< Multi-line explanatory text.
-    QCheckBox*   m_dontShowAgain;    ///< Persists "Show this hint again?" preference.
+    QCheckBox*   m_dontShowAgain;    ///< "Don't show again"; read on close to clear the flag.
     QPushButton* m_closeButton;      ///< Close action.
 };
 

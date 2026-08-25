@@ -1,16 +1,18 @@
 #include "welcome_notifier.h"
 
-#include "core/settings/settings_manager.h"
-#include "ui/tray_controller.h"
+#include "core/ports/notification_sink.h"
+#include "core/settings/onboarding_flags.h"
 
 #include <QTimer>
 
-WelcomeNotifier::WelcomeNotifier(TrayController& tray,
-                                 SettingsManager& settings,
+WelcomeNotifier::WelcomeNotifier(NotificationSink& sink,
+                                 OnboardingFlags& flags,
+                                 Lifetimes lifetimes,
                                  QObject* parent)
     : QObject(parent)
-    , m_tray(tray)
-    , m_settings(settings)
+    , m_sink(sink)
+    , m_flags(flags)
+    , m_lifetimes(lifetimes)
 {}
 
 void WelcomeNotifier::scheduleShow(int delayMs)
@@ -18,31 +20,50 @@ void WelcomeNotifier::scheduleShow(int delayMs)
     QTimer::singleShot(delayMs, this, &WelcomeNotifier::onTimerFired);
 }
 
+// Nothing guards against a second entry: the singleShot above fires once per
+// scheduleShow() call.
 void WelcomeNotifier::onTimerFired()
 {
-    // General welcome — shown once on any supported OS.
-    if (m_settings.showWelcome()) {
-        m_tray.showNotification(
+    if (m_flags.showWelcome()) {
+        m_sink.showNotification(
             tr("SysInfo runs in the background"),
             tr("The application collects system information and assists in diagnostics.\n"
                "For more details, see the \"About\" section."),
-            QSystemTrayIcon::Information,
-            15'000);
-        m_settings.setShowWelcome(false);
+            m_lifetimes.welcomeMs);
+        m_flags.setShowWelcome(false);
+
+        // The hint follows once this message has expired, leaving exactly one
+        // notification clickable at any moment.
+        QTimer::singleShot(m_lifetimes.welcomeMs, this,
+                           &WelcomeNotifier::showTrayGuideHint);
+        return;
     }
 
+    showTrayGuideHint();
+}
+
+void WelcomeNotifier::showTrayGuideHint()
+{
 #ifdef Q_OS_WINDOWS
-    // Windows-only hint on how to pin the tray icon.
-    if (m_settings.showTrayGuide()) {
-        connect(&m_tray, &TrayController::notificationClicked,
-                this, &WelcomeNotifier::trayGuideRequested);
-
-        m_tray.showNotification(
-            tr("Make the icon visible in the tray"),
-            tr("Drag the SysInfo icon to the notification area.\n"
-               "Click here to open detailed instructions."),
-            QSystemTrayIcon::Information,
-            25'000);
+    if (!m_flags.showTrayGuide()) {
+        return;
     }
+
+    // QSystemTrayIcon::messageClicked reports that a notification was clicked
+    // but not which one, so the window the click arrives in is the only thing
+    // identifying its source — hence a subscription bounded by this hint.
+    const QMetaObject::Connection link =
+        connect(&m_sink, &NotificationSink::notificationClicked,
+                this, &WelcomeNotifier::trayGuideRequested,
+                Qt::SingleShotConnection);
+
+    m_sink.showNotification(
+        tr("Make the icon visible in the tray"),
+        tr("Drag the SysInfo icon to the notification area.\n"
+           "Click here to open detailed instructions."),
+        m_lifetimes.trayGuideMs);
+
+    QTimer::singleShot(m_lifetimes.trayGuideMs, this,
+                       [link] { QObject::disconnect(link); });
 #endif
 }

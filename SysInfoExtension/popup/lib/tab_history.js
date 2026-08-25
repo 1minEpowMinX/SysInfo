@@ -8,11 +8,9 @@ import { el, formatWhen, svgIcon } from "./dom.js";
 import { I } from "./icons.js";
 
 /**
- * The function `renderHistoryTab` builds the History tab body, which shows the most recent
- * tickets (up to 10) where sysinfo was inserted. Each entry is a link that opens the ticket in a
- * new tab. When the history list is empty an empty-state message is rendered instead.
- * @returns A `div.pad-tight` element containing the section heading and the history list or
- * empty-state message.
+ * Builds the History tab: the most recent tickets the block was inserted into, each a link
+ * opening in a new tab, or an empty-state message when there are none.
+ * @returns The tab body.
  */
 export function renderHistoryTab() {
 	const items = state.history || [];
@@ -26,6 +24,8 @@ export function renderHistoryTab() {
 		body = el("div", { class: "hist-empty" }, t("historyEmpty"));
 	} else {
 		body = el("div", { class: "hist-list" }, items.slice(0, 10).map(it => {
+			// The entry comes from storage, which a page cannot reach but the user can edit
+			// through devtools; anything but http(s) here would make the link a script sink.
 			const safeUrl = /^https?:\/\//i.test(it.url) ? it.url : "#";
 			return el("a", {
 				class: "hist-item", href: safeUrl, target: "_blank", rel: "noopener"

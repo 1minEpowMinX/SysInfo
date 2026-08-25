@@ -1,10 +1,21 @@
 {
   "name": "sysinfo-extension",
   "private": true,
+  "version": "2.1.0",
   "scripts": {
-    "build": "esbuild content/content_script.js --bundle --outfile=content/content_script.bundle.js --format=iife --platform=browser"
+    "config": "node tools/config.mjs",
+    "prebuild": "npm run config",
+    "build": "esbuild content/content_script.js --bundle --outfile=content/content_script.bundle.js --format=iife --platform=browser",
+    "icons": "node tools/generate-icons.mjs",
+    "pretest": "npm run build",
+    "test": "node tests/run.mjs",
+    "test:mutate": "node tests/mutate.mjs",
+    "prepackage": "npm run build",
+    "package": "node tools/package.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.28.1"
-  }
+    "esbuild": "^0.28.1",
+    "sharp": "^0.35.3"
+  },
+  "type": "module"
 }

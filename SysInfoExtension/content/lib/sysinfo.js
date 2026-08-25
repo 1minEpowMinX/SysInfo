@@ -2,22 +2,41 @@
 
 import { t, slog, swarn } from "./compat.js";
 import { SYSINFO_REQUEST_RETRIES, SYSINFO_REQUEST_RETRY_MS } from "./constants.js";
+import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
+import { FIELD_KEYS, resolveFields } from "../../shared/fields.js";
+
+// The agent reports an unobtainable value as an empty string: it carries data,
+// and how a missing value is spelled belongs to the client that displays it.
+// Without this the line would read "IP address: " and stop there. An absent key
+// lands here too, so a field a later agent stops sending cannot reach the ticket
+// as the text "undefined".
+const orFallback = (value, fallbackKey) => value || t(fallbackKey);
+
+// The label and the "no value" spelling of each field, keyed as FIELD_KEYS names them. Both are
+// catalogue keys rather than text: the block is written in the browser's UI language.
+const FIELD_TEXT = {
+	hostname: { label: "sysinfoHostname", fallback: "sysinfoUnavailable" },
+	username: { label: "sysinfoUsername", fallback: "sysinfoUnavailable" },
+	ip: { label: "sysinfoIP", fallback: "sysinfoNoIp" },
+	lastBootTime: { label: "sysinfoLastBootTime", fallback: "sysinfoUnavailable" }
+};
 
 /**
- * The function `buildSysInfoLines` takes system information data and formats it into pairs of lines
- * for display.
- * @param data - The `buildSysInfoLines` function takes an object `data` as a parameter, which should
- * have the following properties:
- * @returns The function `buildSysInfoLines(data)` returns an array of strings where each element
- * contains two lines of system information data joined by a comma and a space.
+ * Renders the visible fields of an agent payload as labelled lines, joined in pairs.
+ *
+ * Pairing follows what is left after the hidden fields are dropped, so switching one off closes
+ * the gap rather than leaving a line half empty.
+ * @param data - A normalized payload, carrying `hostname`, `username`, `ip` and `lastBootTime`.
+ * @param fields - A visibility flag per field, as `resolveFields` returns it; every field is
+ * rendered when the caller names none.
+ * @returns An array of strings, each holding up to two labelled fields joined by ", ". Empty
+ * when every field is switched off.
  */
-export function buildSysInfoLines(data) {
-	const raw = [
-		`${t("sysinfoHostname")}: ${data.hostname}`,
-		`${t("sysinfoUsername")}: ${data.username}`,
-		`${t("sysinfoIP")}: ${data.ip}`,
-		`${t("sysinfoUptime")}: ${data.uptime}`
-	];
+export function buildSysInfoLines(data, fields = resolveFields()) {
+	const raw = FIELD_KEYS
+		.filter(key => fields[key])
+		.map(key => `${t(FIELD_TEXT[key].label)}: ${orFallback(data[key], FIELD_TEXT[key].fallback)}`);
+
 	const result = [];
 	for (let i = 0; i < raw.length; i += 2) {
 		result.push(raw.slice(i, i + 2).join(", "));
@@ -26,58 +45,50 @@ export function buildSysInfoLines(data) {
 }
 
 /**
- * The `makeDivider` function generates a divider line made of a specified character repeated a certain
- * percentage of the length of the longest line in a given array of lines.
- * @param lines - Lines is an array of strings that you want to create a divider for. Each string in
- * the array represents a line of text.
- * @param [char=─] - The `char` parameter in the `makeDivider` function is used to specify the
- * character that will be repeated to create the divider line. By default, it is set to "─" which is
- * the em dash character. You can change this parameter to any character you prefer when calling the
- * function.
- * @param [percent=0.45] - The `percent` parameter in the `makeDivider` function determines what
- * percentage of the maximum line length should be used to create the divider. It is set to a default
- * value of 0.45, meaning that by default, the divider will be 45% of the maximum line length. You
- * @returns The `makeDivider` function returns a string consisting of the character specified repeated
- * a number of times based on the maximum length of the lines provided and the percentage specified.
+ * Returns a run of `char` as wide as `percent` of the longest string in `lines`.
+ * @param lines - The lines the divider is drawn above.
+ * @param char - The character the run is built from.
+ * @param percent - The fraction of the longest line the run spans.
+ * @returns The repeated character, rounded down to a whole number of characters; empty when
+ * there is no line to measure against.
  */
 export function makeDivider(lines, char = "─", percent = 0.45) {
+	// Math.max of nothing is -Infinity, which repeat() answers with a RangeError rather than a
+	// short divider.
+	if (lines.length === 0) return "";
 	const maxLen = Math.max(...lines.map(l => l.length));
 	return char.repeat(Math.floor(maxLen * percent));
 }
 
 /**
- * The function `alreadyInserted` checks if a target element already contains a specific divider
- * string.
- * @param target - The `target` parameter is the element or object where you want to check if a
- * specific `divider` is already inserted. It could be an HTML element, a string, or any object that
- * has a `value` or `innerText` property.
- * @param divider - The `divider` parameter is the string that we are checking for in the `target`
- * element. It is the substring that we want to see if it is already present in the `target` element.
- * @returns The function `alreadyInserted` returns a boolean value indicating whether the `divider` is
- * present in the `target` element's value or inner text.
+ * Reports whether `target` already carries `divider`.
+ * @param target - The editor element, read through `innerText`.
+ * @param divider - The divider string to search for; an empty one is carried by every editor
+ * there is, so it is answered as "not there" rather than as "already inserted".
  */
 export function alreadyInserted(target, divider) {
-	const haystack = ("value" in target ? target.value : target.innerText) || "";
-	return haystack.includes(divider);
+	if (!divider) return false;
+	return (target.innerText || "").includes(divider);
 }
 
 /**
- * The function `requestSysInfo` attempts to fetch system information with retries and provides
- * feedback in case of failure.
- * @param callback - The `callback` parameter is a function that will be called with the system
- * information data once it is successfully retrieved.
- * @param [retriesLeft] - The `retriesLeft` parameter in the `requestSysInfo` function represents the
- * number of retries left for fetching system information. It is used to keep track of how many more
- * times the function can attempt to retrieve the system information in case of failures. The default
- * value for `retriesLeft`
+ * Asks the background script for an agent payload, retrying on a messaging error, an
+ * unsuccessful response or a thrown exception.
+ *
+ * Attempts are spaced SYSINFO_REQUEST_RETRY_MS apart and every outcome is logged.
+ * @param callback - Receives the payload normalized onto the internal field names, or null once
+ * every attempt has failed.
+ * @param retriesLeft - The attempts still available.
  */
 export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) {
-	const attempt = SYSINFO_REQUEST_RETRIES - retriesLeft + 1;
+	// The first call is an attempt of its own, so the run is one longer than the retry budget.
+	const attempts = SYSINFO_REQUEST_RETRIES + 1;
+	const attempt = attempts - retriesLeft;
 	const tStart = Date.now();
 
 	const retry = (reason) => {
 		swarn("sysinfo fetch failed",
-			`(attempt ${attempt}/${SYSINFO_REQUEST_RETRIES})`,
+			`(attempt ${attempt}/${attempts})`,
 			"reason=", reason,
 			"elapsed=", Date.now() - tStart, "ms");
 		if (retriesLeft > 0) {
@@ -99,7 +110,10 @@ export function requestSysInfo(callback, retriesLeft = SYSINFO_REQUEST_RETRIES) 
 				return;
 			}
 			slog("sysinfo received", "(elapsed=", Date.now() - tStart, "ms)", res.data);
-			callback(res.data);
+			// Normalizing here keeps the wire names off every path downstream.
+			// A success carrying no payload stays null so the caller's own guard
+			// against it still fires.
+			callback(res.data ? normalizeSysInfo(res.data) : null);
 		});
 	} catch (e) {
 		retry(e && e.message);

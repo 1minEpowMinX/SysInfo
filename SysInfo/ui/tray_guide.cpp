@@ -1,15 +1,12 @@
 #include "tray_guide.h"
 
 #include "core/logging/logger.h"
-#include "core/settings/settings_manager.h"
 
 #include <QMovie>
-#include <QObject>
 #include <QVBoxLayout>
 
-TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
+TrayGuide::TrayGuide(QWidget* parent)
     : QDialog(parent)
-    , m_settings(settings)
 {
     setupWindow();
     setupAnimation();
@@ -22,7 +19,7 @@ TrayGuide::TrayGuide(SettingsManager& settings, QWidget* parent)
 
 void TrayGuide::setupWindow()
 {
-    setWindowTitle(QObject::tr("How to pin an icon to the tray"));
+    setWindowTitle(tr("How to pin an icon to the tray"));
     setWindowFlag(Qt::WindowStaysOnTopHint);
     setModal(true);
 }
@@ -44,10 +41,10 @@ void TrayGuide::setupAnimation()
 
 void TrayGuide::setupTexts()
 {
-    m_textLabel = new QLabel(QObject::tr(
+    m_textLabel = new QLabel(tr(
         "<p><b>To keep the app visible in the notification area:</b><br>"
         "1. Open hidden icons by clicking the up arrow next to the system tray.<br>"
-        "2️. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
+        "2. Find the SysInfo icon and drag it to the visible area of the panel.</p>"
         ), this);
     m_textLabel->setWordWrap(true);
     m_textLabel->setAlignment(Qt::AlignCenter);
@@ -55,10 +52,15 @@ void TrayGuide::setupTexts()
 
 void TrayGuide::setupControls()
 {
-    m_dontShowAgain = new QCheckBox(QObject::tr("Don't show again"), this);
-    m_closeButton   = new QPushButton(QObject::tr("Close"), this);
+    m_dontShowAgain = new QCheckBox(tr("Don't show again"), this);
+    m_closeButton   = new QPushButton(tr("Close"), this);
 
-    connect(m_closeButton, &QPushButton::clicked, this, &TrayGuide::onCloseClicked);
+    connect(m_closeButton, &QPushButton::clicked, this, &QDialog::close);
+
+    // The tick is read from finished() and not from the button: Esc reaches reject() and the
+    // window's close box reaches closeEvent(), and both retire the dialog through done() without
+    // the button ever being pressed. finished() is the one point all three exits pass through.
+    connect(this, &QDialog::finished, this, &TrayGuide::onFinished);
 }
 
 void TrayGuide::buildLayout()
@@ -71,11 +73,9 @@ void TrayGuide::buildLayout()
     setLayout(layout);
 }
 
-void TrayGuide::onCloseClicked()
+void TrayGuide::onFinished()
 {
     if (m_dontShowAgain->isChecked()) {
-        m_settings.setShowTrayGuide(false);
+        emit dismissedForGood();
     }
-
-    close();
 }

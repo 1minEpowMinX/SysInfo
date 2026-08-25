@@ -6,14 +6,10 @@ import { t } from "./compat.js";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * The function `svgEl` creates and returns a new SVG element with the specified attributes.
- * @param name - The `name` parameter in the `svgEl` function represents the name of the SVG element
- * that you want to create, such as 'circle', 'rect', 'line', etc.
- * @param attrs - The `attrs` parameter in the `svgEl` function is an object that contains the
- * attributes to be set on the SVG element being created. Each key-value pair in the `attrs` object
- * represents an attribute and its corresponding value that will be set on the SVG element.
- * @returns The function `svgEl` is returning a newly created SVG element with the specified name and
- * attributes.
+ * Creates an SVG element and sets `attrs` on it.
+ * @param name - Tag name of the element, created in the SVG namespace.
+ * @param attrs - Attributes set on the new element, one per key.
+ * @returns The new element.
  */
 function svgEl(name, attrs) {
 	const el = document.createElementNS(SVG_NS, name);
@@ -21,10 +17,7 @@ function svgEl(name, attrs) {
 	return el;
 }
 
-/**
- * The function `buildCheckIcon` creates a checkmark icon using SVG elements.
- * @returns An SVG element representing a check icon with a polyline shape.
- */
+/** Returns the checkmark icon drawn in the toast's leading badge. */
 function buildCheckIcon() {
 	const svg = svgEl("svg", {
 		width: "11", height: "11", viewBox: "0 0 24 24",
@@ -35,11 +28,20 @@ function buildCheckIcon() {
 	return svg;
 }
 
-/**
- * The function `buildCloseIcon` creates a close icon using SVG elements.
- * @returns The `buildCloseIcon` function is returning an SVG element that represents a close icon. The
- * close icon consists of two diagonal lines forming an "X" shape.
- */
+/** Returns the exclamation mark drawn in the leading badge of a failure toast. */
+function buildAlertIcon() {
+	const svg = svgEl("svg", {
+		width: "11", height: "11", viewBox: "0 0 24 24",
+		fill: "none", stroke: "currentColor",
+		"stroke-width": "3", "stroke-linecap": "round", "stroke-linejoin": "round"
+	});
+	svg.appendChild(svgEl("line", { x1: "12", y1: "6", x2: "12", y2: "13" }));
+	// A line of zero length painted with a round cap, which is the dot of the mark.
+	svg.appendChild(svgEl("line", { x1: "12", y1: "18", x2: "12", y2: "18" }));
+	return svg;
+}
+
+/** Returns the icon drawn in the toast's dismiss button. */
 function buildCloseIcon() {
 	const svg = svgEl("svg", {
 		width: "14", height: "14", viewBox: "0 0 24 24",
@@ -52,12 +54,8 @@ function buildCloseIcon() {
 }
 
 /**
- * The function `ensureToastContainer` creates a toast container element if it doesn't already exist
- * and returns it.
- * @returns The function `ensureToastContainer()` returns the toast container element with the id
- * "sysinfo-toast-container" from the document if it already exists. If it doesn't exist, it creates a
- * new div element with that id, appends it to the document, and then returns the newly created
- * container element.
+ * Returns the element every toast is stacked into, creating and attaching it on the first call.
+ * @returns The container element.
  */
 function ensureToastContainer() {
 	let container = document.getElementById("sysinfo-toast-container");
@@ -68,32 +66,41 @@ function ensureToastContainer() {
 	return container;
 }
 
+// The kinds a toast comes in. Each one names its title and its glyph; the colour of the rail and
+// of the badge follows from the modifier class, which redefines a single custom property.
+const KINDS = {
+	success: { titleKey: "bannerTitle", buildIcon: buildCheckIcon },
+	error: { titleKey: "toastErrorTitle", buildIcon: buildAlertIcon }
+};
+
 /**
- * The function `showToast` displays a toast message with a specified message and duration.
- * @param message - The `message` parameter in the `showToast` function is the text that you want to
- * display in the toast notification. It is the information or message that you want to communicate to
- * the user through the toast.
- * @param [duration=3000] - The `duration` parameter in the `showToast` function specifies how long the
- * toast message will be displayed on the screen before automatically disappearing. By default, if no
- * duration is provided, the toast will be displayed for 3000 milliseconds (3 seconds). You can
- * customize this duration by passing a different
+ * Shows a toast carrying `message` and dismisses it once `duration` has passed.
+ *
+ * The dismiss button removes it earlier.
+ * @param message - Body text of the toast, shown under the title of its kind.
+ * @param duration - Milliseconds the toast stays up. A value of zero or less leaves it up until
+ * the dismiss button is pressed.
+ * @param kind - A key of KINDS; an unknown one is shown as a success.
+ * @returns A function dismissing this toast, which does nothing once the toast is gone.
  */
-export function showToast(message, duration = 3000) {
+export function showToast(message, duration = 3000, kind = "success") {
 	const container = ensureToastContainer();
+	const kindName = KINDS[kind] ? kind : "success";
+	const spec = KINDS[kindName];
 
 	const toast = document.createElement("div");
-	toast.className = "sysinfo-toast";
+	toast.className = `sysinfo-toast sysinfo-toast--${kindName}`;
 
 	const iconWrap = document.createElement("div");
 	iconWrap.className = "sysinfo-toast__icon";
 	iconWrap.setAttribute("aria-hidden", "true");
-	iconWrap.appendChild(buildCheckIcon());
+	iconWrap.appendChild(spec.buildIcon());
 
 	const textWrap = document.createElement("div");
 	textWrap.className = "sysinfo-toast__text";
 	const title = document.createElement("div");
 	title.className = "sysinfo-toast__title";
-	title.textContent = t("bannerTitle");
+	title.textContent = t(spec.titleKey);
 	const body = document.createElement("div");
 	body.className = "sysinfo-toast__body";
 	body.textContent = message;
@@ -113,22 +120,23 @@ export function showToast(message, duration = 3000) {
 
 	container.appendChild(toast);
 	requestAnimationFrame(() => toast.classList.add("show"));
-	setTimeout(() => removeToast(toast), duration);
+	if (duration > 0) setTimeout(() => removeToast(toast), duration);
+
+	return () => removeToast(toast);
 }
 
 /**
- * The function `removeToast` removes a toast element by applying CSS classes for fading out and then
- * removes the element from the DOM after a transition or a timeout.
- * @param toast - The `toast` parameter in the `removeToast` function is a reference to the toast
- * element that you want to remove from the DOM. The function first checks if the `toast` element is
- * connected to the DOM using the `isConnected` property. If it is connected, the function then removes
- * @returns The function `removeToast` will return `undefined`.
+ * Fades `toast` out and detaches it once the fade ends.
+ * @param toast - The toast element; one already detached is left alone.
  */
 function removeToast(toast) {
+	// The timer and the dismiss button may both reach the same toast.
 	if (!toast.isConnected) return;
 	toast.classList.remove("show");
 	toast.classList.add("sysinfo-toast--fading");
 	const cleanup = () => toast.remove();
+	// The timer is a backstop: transitionend never fires when the transition does not run,
+	// which would strand the node in the DOM.
 	toast.addEventListener("transitionend", cleanup, { once: true });
 	setTimeout(cleanup, 600);
 }

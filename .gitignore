@@ -1,0 +1,24 @@
+# base
+.vscode/
+.claude/
+docs/confluence/
+docs/specs/
+docs/plans/
+build/
+*.zip
+
+# SysInfo App
+CMakeLists.txt.user
+SysInfo/.qtcreator/
+SysInfo/build/
+SysInfo/resources/icons/old_design/
+*.qm
+
+# SysInfo Extension
+SysInfoExtension/assets/icons/old_design/
+SysInfoExtension_test_build/
+SysInfoExtension/node_modules/
+SysInfoExtension/build.config.json
+SysInfoExtension/shared/build_config.js
+SysInfoExtension/content/content_script.bundle.js
+*.crx

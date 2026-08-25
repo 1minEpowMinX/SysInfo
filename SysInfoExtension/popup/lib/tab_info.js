@@ -8,22 +8,21 @@ import { I } from "./icons.js";
 import { fetchSysinfo, copyValue } from "./agent.js";
 
 /**
- * The function `renderInfoTab` builds the Data tab body, which lists the current sysinfo fields
- * filtered by `state.settings.fields`. Each row shows an icon, label, value, and a copy button
- * that briefly switches to a checkmark after a successful clipboard write. A refresh button
- * triggers a new `fetchSysinfo` call.
- * @returns A `div.pad-tight` element containing the section heading, field rows, and refresh
- * action.
+ * Builds the Data tab: one row per field the user has left visible, each with a copy button,
+ * and a button that reads the values again.
+ *
+ * An unreachable agent renders the rows disabled rather than dropping them.
+ * @returns The tab body.
  */
 export function renderInfoTab() {
 	const sysinfo = state.sysinfo;
 	const isError = state.status === "error" || !sysinfo;
 	const fields = state.settings.fields;
 	const rows = [
-		{ key: "hostname", label: t("sysinfoHostname"), icon: I.device, mono: true, value: sysinfo?.hostname || "—" },
-		{ key: "username", label: t("sysinfoUsername"), icon: I.user, mono: false, value: sysinfo?.username || "—" },
-		{ key: "ip", label: t("sysinfoIP"), icon: I.ip, mono: true, value: sysinfo?.ip || "—" },
-		{ key: "uptime", label: t("sysinfoUptime"), icon: I.uptime, mono: false, value: sysinfo?.uptime || "—" }
+		{ key: "hostname", label: t("sysinfoHostname"), icon: I.device, value: sysinfo?.hostname || "—" },
+		{ key: "username", label: t("sysinfoUsername"), icon: I.user, value: sysinfo?.username || "—" },
+		{ key: "ip", label: t("sysinfoIP"), icon: I.ip, value: sysinfo?.ip || "—" },
+		{ key: "lastBootTime", label: t("sysinfoLastBootTime"), icon: I.lastBootTime, value: sysinfo?.lastBootTime || "—" }
 	].filter(r => fields[r.key]);
 
 	const head = el("div", { class: "info-head" }, [
@@ -37,7 +36,7 @@ export function renderInfoTab() {
 			el("div", { class: "info-icon" }, svgIcon(r.icon)),
 			el("div", { class: "info-content" }, [
 				el("div", { class: "info-label" }, r.label),
-				el("div", { class: "info-value" + (r.mono ? " mono" : "") }, r.value)
+				el("div", { class: "info-value" }, r.value)
 			]),
 			el("button", {
 				class: "copy-btn" + (isCopied ? " copied" : ""),
@@ -55,7 +54,7 @@ export function renderInfoTab() {
 		el("span", {}, t("refresh"))
 	]);
 
-	return el("div", { class: "pad-tight", style: { padding: "12px 8px 8px" } }, [
+	return el("div", { class: "pad-rows" }, [
 		head,
 		list,
 		el("div", { class: "divider info-actions" }, [refreshBtn])

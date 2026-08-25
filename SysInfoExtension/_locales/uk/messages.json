@@ -1,4 +1,8 @@
 {
+	"uiLocale": {
+		"message": "uk",
+		"description": "BCP 47 tag of this catalogue, used as the popup's lang attribute. Must match the _locales folder holding this file."
+	},
 	"extName": {
 		"message": "SysInfo для Jira SM"
 	},
@@ -27,7 +31,8 @@
 		"message": "Агент активний"
 	},
 	"statusActiveSub": {
-		"message": "Підключення до localhost:8734"
+		"message": "Підключення до $HOST$",
+		"placeholders": { "host": { "content": "$1" } }
 	},
 	"statusLoading": {
 		"message": "Перевірка з’єднання…"
@@ -71,6 +76,12 @@
 	"sectionSysinfoSub": {
 		"message": "Що буде додано в новий тікет"
 	},
+	"sectionStatus": {
+		"message": "Стан агента"
+	},
+	"sectionStatusSub": {
+		"message": "Зв'язок з локальним застосунком"
+	},
 	"sysinfoHostname": {
 		"message": "Ім'я пристрою"
 	},
@@ -80,8 +91,14 @@
 	"sysinfoIP": {
 		"message": "IP-адреса"
 	},
-	"sysinfoUptime": {
+	"sysinfoLastBootTime": {
 		"message": "Час вмикання"
+	},
+	"sysinfoNoIp": {
+		"message": "Немає IP"
+	},
+	"sysinfoUnavailable": {
+		"message": "Недоступно"
 	},
 	"copy": {
 		"message": "Копіювати"
@@ -100,6 +117,40 @@
 	},
 	"historyEmpty": {
 		"message": "Поки що нічого — створіть тікет у Jira SM, і вставка з’явиться тут."
+	},
+	"timeJustNow": {
+		"message": "щойно",
+		"description": "Age of a history entry younger than a minute."
+	},
+	"timeMinutesAgo": {
+		"message": "$COUNT$ хв тому",
+		"description": "Age of a history entry in minutes. The unit has to read the same for every count: chrome.i18n cannot select a plural form, so a language that inflects the noun needs an abbreviation that does not.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "5"
+			}
+		}
+	},
+	"timeHoursAgo": {
+		"message": "$COUNT$ год тому",
+		"description": "Age of a history entry in hours. The unit has to read the same for every count.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "2"
+			}
+		}
+	},
+	"timeDaysAgo": {
+		"message": "$COUNT$ дн тому",
+		"description": "Age of a history entry in days. The unit has to read the same for every count.",
+		"placeholders": {
+			"count": {
+				"content": "$1",
+				"example": "3"
+			}
+		}
 	},
 	"sectionSettings": {
 		"message": "Налаштування"
@@ -160,6 +211,15 @@
 	},
 	"bannerTitle": {
 		"message": "Системну інформацію додано"
+	},
+	"toastErrorTitle": {
+		"message": "Системну інформацію не додано"
+	},
+	"toastAgentUnreachable": {
+		"message": "Агент SysInfo не відповідає. Запустіть його та оновіть сторінку, інакше дані не потраплять до заявки."
+	},
+	"toastEditorMissing": {
+		"message": "Не вдалося знайти поле опису. Заповніть заявку як зазвичай і повідомте про це адміністратора."
 	},
 	"loading": {
 		"message": "Завантаження..."

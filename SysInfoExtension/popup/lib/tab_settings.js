@@ -8,11 +8,11 @@ import { saveSettings } from "./storage.js";
 import { render } from "./render.js";
 
 /**
- * The function `renderSettingsTab` builds the Settings tab body, which contains a theme
- * segmented control, a group of field visibility toggles, and two editable chip lists for
- * allowed portal IDs and ticket type IDs. Every change is persisted immediately via
- * `saveSettings` and the popup is re-rendered.
- * @returns A `div.pad-tight.scroll` element containing all settings sections.
+ * Builds the Settings tab: the theme control, the field-visibility toggles, and the two
+ * whitelist editors.
+ *
+ * There is no save button — every change is written to storage as it is made.
+ * @returns The tab body.
  */
 export function renderSettingsTab() {
 	const s = state.settings;
@@ -35,7 +35,7 @@ export function renderSettingsTab() {
 			["hostname", t("sysinfoHostname")],
 			["username", t("sysinfoUsername")],
 			["ip", t("sysinfoIP")],
-			["uptime", t("sysinfoUptime")]
+			["lastBootTime", t("sysinfoLastBootTime")]
 		].map(([k, lbl]) => toggleRow(lbl, s.fields[k], (v) => { s.fields[k] = v; saveSettings(); render(); }))
 	);
 
@@ -67,17 +67,13 @@ export function renderSettingsTab() {
 	]);
 }
 
-// Generic chip list for plain string IDs (portals + types share the same
-// shape, so the editor is shared too).
 /**
- * The function `renderIdList` builds a generic chip list for a flat array of string IDs. Each
- * chip shows the ID and an inline remove button. An add button opens a `prompt` dialog; the new
- * ID is rejected silently if empty or with an `alert` if it is already in the list.
- * @param items - The mutable array of string IDs to display and edit in place.
- * @param addLabel - Label text for the add button chip.
- * @param promptKey - i18n key for the `prompt` dialog message shown when adding a new ID.
- * @param dupKey - i18n key for the `alert` message shown when the entered ID already exists.
- * @returns A `div.id-list` element containing the existing ID chips and the add button.
+ * Builds an editable list of ID chips, each removable, with a chip that prompts for another.
+ * @param items - The array of IDs, edited in place.
+ * @param addLabel - Label of the chip that adds an ID.
+ * @param promptKey - Message key for the prompt shown when adding.
+ * @param dupKey - Message key for the alert shown when the ID is already listed.
+ * @returns The list element.
  */
 function renderIdList(items, { addLabel, promptKey, dupKey }) {
 	return el("div", { class: "id-list" }, [
@@ -101,6 +97,8 @@ function renderIdList(items, { addLabel, promptKey, dupKey }) {
 			onclick: () => {
 				const v = prompt(t(promptKey));
 				if (!v) return;
+				// Both lists are matched against the digit groups of FORM_PATH_RE, so a
+				// non-numeric entry could never match a URL and is dropped without a word.
 				const trimmed = v.trim().slice(0, 20);
 				if (!trimmed || !/^\d+$/.test(trimmed)) return;
 				if (items.includes(trimmed)) {

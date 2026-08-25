@@ -1,62 +1,35 @@
 /**
  * @file main.cpp
- * @brief Application entry point.
+ * @brief Starts the application and enters the Qt event loop.
  *
- * Responsibilities, in order:
- *   1. Set Qt application identity (org / app / version) — must precede the
- *      QApplication constructor so QSettings, QStandardPaths and the lock
- *      file pick up the right names.
- *   2. Construct QApplication.
- *   3. Acquire a single-instance lock via QLockFile in TempLocation; bail
- *      out silently if another SysInfo is already running.
- *   4. Load the user's UI-language translation, falling back to English.
- *   5. Construct SettingsManager (owns QSettings) and App (composition
- *      root) on the stack — guarantees destruction order
- *      ~App -> ~SettingsManager -> ~QApplication.
- *   6. Call App::start(); exit code 1 if the system tray is unavailable.
- *   7. Log AppStart and enter the Qt event loop.
+ * The composition root: everything App and the integration server are handed
+ * is built here, on the stack, and torn down in reverse.
  */
 
 #include "app/app.h"
 #include "core/logging/logger.h"
+#include "core/runtime/single_instance_guard.h"
 #include "core/settings/settings_manager.h"
+#include "core/sysinfo/device_inventory.h"
+#include "core/sysinfo/info_source.h"
+#include "services/integration_server.h"
+#include "ui/message_box_prompt.h"
+#include "ui/tray_controller.h"
+#include "ui/widget_dialogs.h"
 
 #include <QApplication>
-#include <QDir>
 #include <QFile>
 #include <QLocale>
-#include <QLockFile>
-#include <QStandardPaths>
+#include <QMessageBox>
+#include <QObject>
+#include <QTimer>
 #include <QTranslator>
 
 namespace
 {
 
 	/**
-	 * @brief Lazily-initialised lock file used to enforce single-instance behaviour.
-	 *
-	 * Held by reference for the entire lifetime of the process so the lock
-	 * is released only on exit. Stale-lock detection is disabled
-	 * (setStaleLockTime(0)) — if a previous SysInfo crashed, the user can
-	 * delete the lock file manually rather than us silently stealing it.
-	 */
-	QLockFile &singleInstanceLock()
-	{
-		static QLockFile lock(
-			QDir(QStandardPaths::writableLocation(QStandardPaths::TempLocation))
-				.absoluteFilePath("SysInfo.lock"));
-		lock.setStaleLockTime(0);
-		return lock;
-	}
-
-	/// @return true if this process is the first SysInfo instance, false otherwise.
-	bool acquireSingleInstance()
-	{
-		return singleInstanceLock().tryLock(100);
-	}
-
-	/**
-	 * @brief Try to load the most preferred UI-language translation.
+	 * @brief Tries to load the most preferred UI-language translation.
 	 *
 	 * Walks QLocale::system().uiLanguages() in user-preference order and
 	 * stops at the first ":/i18n/sysinfo_<locale>.qm" that loads
@@ -101,16 +74,45 @@ int main(int argc, char *argv[])
 
 	QApplication a(argc, argv);
 
-	if (!acquireSingleInstance())
-	{
-		return 0;
-	}
-
 	QTranslator translator;
 	loadTranslator(a, translator);
 
+	SingleInstanceGuard instance(SingleInstanceGuard::defaultLockFilePath());
+	switch (instance.tryAcquire())
+	{
+	case SingleInstanceGuard::Result::AlreadyRunning:
+		return 0;
+
+	case SingleInstanceGuard::Result::Unavailable:
+		QMessageBox::critical(
+			nullptr, QObject::tr("Error"),
+			QObject::tr("Failed to verify that SysInfo is not already running. "
+						"The application will not start."));
+		Logger::log(Logger::EventId::SingleInstanceUnavailable,
+					QString("Could not create the single-instance lock file: %1")
+						.arg(SingleInstanceGuard::defaultLockFilePath()));
+		return 1;
+
+	case SingleInstanceGuard::Result::Acquired:
+		break;
+	}
+
+	if (instance.reclaimedStaleLock())
+	{
+		Logger::log(Logger::EventId::StaleLockReclaimed,
+					QString("Removed an unreadable single-instance lock file left "
+							"by an unclean shutdown: %1")
+						.arg(SingleInstanceGuard::defaultLockFilePath()));
+	}
+
 	SettingsManager settings;
-	App app(settings);
+	MessageBoxPrompt prompt;
+	TrayController tray;
+	WidgetDialogs dialogs;
+	sysinfo::InfoSource info;
+    // The settings store is handed to each consumer as the interface that consumer takes
+	IntegrationServer server(settings, info);
+	App app(settings, server, prompt, tray, dialogs, info, settings.filePath());
 	if (!app.start())
 	{
 		return 1;
@@ -118,6 +120,12 @@ int main(int argc, char *argv[])
 
 	Logger::log(Logger::EventId::AppStart,
 				QString("SysInfo started. Version=%1").arg(PROJECT_VERSION));
+
+    // Async device snapshot to avoid application start delay.
+	QTimer::singleShot(0, &a, []
+					   { Logger::log(Logger::EventId::DeviceInventory,
+									 QStringLiteral("Device inventory snapshot."),
+									 sysinfo::inventory::payload()); });
 
 	return a.exec();
 }

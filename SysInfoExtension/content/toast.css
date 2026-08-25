@@ -9,28 +9,56 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	/* Duplicated from the --sans property in popup/popup.css. This file is
+	 * injected into a foreign document, where the popup's custom properties do
+	 * not exist and the page's own font must not be inherited either. */
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	/* Every colour below resolves through these properties, so a second
+	 * appearance costs one block that redefines them. That block belongs under a
+	 * selector matching the host page's own theme, not the popup's theme setting
+	 * and not prefers-color-scheme: the toast sits on the page, and either of
+	 * those two would put a dark card on a light page. */
+	--toast-bg: #FFFFFF;
+	--toast-border: #DCDFE4;
+	--toast-status: #22A06B;
+	--toast-status-fg: #FFFFFF;
+	--toast-title: #172B4D;
+	--toast-body: #626F86;
+	--toast-close-hover-bg: rgba(23, 43, 77, 0.08);
+	--toast-shadow: 0 1px 1px rgba(9, 30, 66, 0.13), 0 8px 20px -6px rgba(9, 30, 66, 0.28);
+	/* Keeps the scrollbars and controls of the toast light while the page's
+	 * theme is the only source of a dark one. */
 	color-scheme: light;
 }
 
+/* The status rail is the inset shadow rather than a left border, so it follows
+ * the corner radius instead of meeting the 1px border in a wedge. It is painted
+ * over the padding, hence the extra 3px on the left: that keeps the gutter
+ * between rail and text equal to the other three. */
 .sysinfo-toast {
 	pointer-events: auto;
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
-	padding: 14px;
+	padding: 14px 14px 14px 17px;
 	border-radius: 8px;
-	background: #DCFFF1;
-	border: 1px solid #E9EBEE;
-	color: #172B4D;
+	background: var(--toast-bg);
+	border: 1px solid var(--toast-border);
+	color: var(--toast-title);
 	font-size: 13px;
 	line-height: 1.45;
 	box-sizing: border-box;
 	max-width: 360px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	box-shadow: inset 3px 0 0 var(--toast-status), var(--toast-shadow);
 	opacity: 0;
 	transform: translateY(8px);
 	transition: opacity 220ms ease, transform 220ms ease;
+}
+
+/* A kind is one property: the rail and the badge are the only coloured surfaces, and both read
+ * --toast-status. */
+.sysinfo-toast--error {
+	--toast-status: #E2483D;
 }
 
 .sysinfo-toast.show {
@@ -49,8 +77,8 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 999px;
-	background: #22A06B;
-	color: #FFFFFF;
+	background: var(--toast-status);
+	color: var(--toast-status-fg);
 	display: grid;
 	place-items: center;
 	flex-shrink: 0;
@@ -65,7 +93,7 @@
 /* Matches the popup's .status-label / .hdr-title scale. */
 .sysinfo-toast__title {
 	font-weight: 600;
-	color: #0E4429;
+	color: var(--toast-title);
 	font-size: 14px;
 	line-height: 1.3;
 }
@@ -73,7 +101,7 @@
 /* Matches .status-sub — secondary body copy in Atlassian-style cards. */
 .sysinfo-toast__body {
 	font-size: 12px;
-	color: #172B4D;
+	color: var(--toast-body);
 	margin-top: 4px;
 	line-height: 1.45;
 }
@@ -84,7 +112,7 @@
 	background: transparent;
 	border: none;
 	cursor: pointer;
-	color: #626F86;
+	color: var(--toast-body);
 	padding: 6px;
 	border-radius: 4px;
 	display: grid;
@@ -96,6 +124,6 @@
 }
 
 .sysinfo-toast__close:hover {
-	background: rgba(23, 43, 77, 0.08);
-	color: #172B4D;
+	background: var(--toast-close-hover-bg);
+	color: var(--toast-title);
 }

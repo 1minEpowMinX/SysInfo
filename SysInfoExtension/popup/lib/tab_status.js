@@ -8,10 +8,9 @@ import { statusInfo } from "./render.js";
 import { checkStatus } from "./agent.js";
 
 /**
- * The function `renderStatusTab` builds the Status tab body, which displays the agent
- * connection state as an animated card, a pair of version chips for the agent and the extension,
- * and a manual retry button that re-triggers `checkStatus`.
- * @returns A `div.pad` element containing the status card, version row, and action row.
+ * Builds the Status tab: the agent's state as a card, a version chip for each side, and a
+ * button that pings the agent again.
+ * @returns The tab body.
  */
 export function renderStatusTab() {
 	const sc = statusInfo();
@@ -34,17 +33,21 @@ export function renderStatusTab() {
 		: (state.agentVersion || "v?");
 	const agentVerCls = "val" + (state.status === "version-mismatch" ? " warn" : "");
 
+	// The build stamp shares the version's line so that both chips stand the
+	// same height whether or not the agent reported one.
 	const agentChip = el("div", { class: "version-chip" }, [
 		el("div", { class: "lbl" }, t("agentVersion")),
-		el("div", { class: agentVerCls }, agentVer),
-		state.status !== "error" && state.agentBuild
-			? el("div", { class: "build" }, "build " + state.agentBuild)
-			: null
+		el("div", { class: "vals" }, [
+			el("span", { class: agentVerCls }, agentVer),
+			state.status !== "error" && state.agentBuild
+				? el("span", { class: "build" }, " · build " + state.agentBuild)
+				: null
+		])
 	]);
 
 	const extChip = el("div", { class: "version-chip" }, [
 		el("div", { class: "lbl" }, t("extVersion")),
-		el("div", { class: "val" }, "v" + state.extVersion)
+		el("div", { class: "vals" }, [el("span", { class: "val" }, "v" + state.extVersion)])
 	]);
 
 	const retryBtn = el("button", {
@@ -55,7 +58,13 @@ export function renderStatusTab() {
 		el("span", {}, t("retry"))
 	]);
 
+	const head = el("div", { class: "section-head" }, [
+		el("div", { class: "h" }, t("sectionStatus")),
+		el("div", { class: "s" }, t("sectionStatusSub"))
+	]);
+
 	return el("div", { class: "pad" }, [
+		head,
 		card,
 		el("div", { class: "version-row" }, [agentChip, extChip]),
 		el("div", { class: "action-row" }, [retryBtn])

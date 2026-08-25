@@ -3,13 +3,12 @@
 
 import { state } from "./state.js";
 import { render } from "./render.js";
+import { normalizeSysInfo } from "../../shared/sysinfo_payload.js";
 
 /**
- * The function `sendBg` sends a message to the background service worker and returns a Promise
- * that resolves with the response once the background script replies.
- * @param action - The `action` parameter is a string identifying the message type, matching a
- * handler registered in the background service worker.
- * @returns A Promise that resolves to the response object returned by the background script.
+ * Sends an action to the background service worker and waits for its reply.
+ * @param action - Names the message, matching a handler in the service worker.
+ * @returns A promise for the reply object.
  */
 function sendBg(action) {
 	return new Promise(resolve =>
@@ -18,10 +17,11 @@ function sendBg(action) {
 }
 
 /**
- * The function `checkStatus` pings the background agent via `getStatus`, updates `state.status`
- * to reflect the result, and on a successful response kicks off `fetchVersion` and `fetchSysinfo`
- * to populate the remaining state. A `render()` is called both at the start and at the end so
- * the popup reflects the in-flight and settled states.
+ * Pings the agent and settles `state.status` on the outcome.
+ *
+ * A reachable agent then populates the rest of the state through `fetchVersion` and
+ * `fetchSysinfo`. The popup is rendered on both sides of the request so the in-flight state is
+ * shown as well as the settled one.
  */
 export async function checkStatus() {
 	state.status = "loading";
@@ -42,9 +42,9 @@ export async function checkStatus() {
 }
 
 /**
- * The function `fetchVersion` requests the agent version and build metadata from the background
- * script and stores the result in `state.agentVersion` and `state.agentBuild`. On failure the
- * previous values are left in place so the UI does not regress.
+ * Reads the agent's version and build stamp into the state.
+ *
+ * A failure leaves the previous values in place rather than blanking the chips.
  */
 async function fetchVersion() {
 	try {
@@ -58,27 +58,26 @@ async function fetchVersion() {
 }
 
 /**
- * The function `fetchSysinfo` requests current system information from the background script and
- * stores the result in `state.sysinfo`, then re-renders. On failure the previous sysinfo value
- * is retained silently.
+ * Reads the current system information into the state, normalized onto the internal field names.
+ *
+ * A failure leaves the previous values in place rather than blanking the rows.
  */
 export async function fetchSysinfo() {
 	try {
 		const res = await sendBg("getSystemInfo");
 		if (res && res.success && res.data) {
-			state.sysinfo = res.data;
+			state.sysinfo = normalizeSysInfo(res.data);
 			render();
 		}
 	} catch (e) { /* keep previous sysinfo in state */ }
 }
 
 /**
- * The function `copyValue` writes `value` to the system clipboard, then briefly sets
- * `state.copied` to `key` so the corresponding row can render a confirmation checkmark. The
- * copied indicator is automatically cleared after 1.1 seconds.
- * @param key - The field key (e.g. `"hostname"`) used to identify which row shows the copied
- * state.
- * @param value - The string value that will be written to the clipboard.
+ * Writes `value` to the clipboard and flashes the row's confirmation checkmark.
+ *
+ * A clipboard the browser refuses is silent: nothing is copied and no checkmark appears.
+ * @param key - Names the field, marking which row shows the checkmark.
+ * @param value - The text written to the clipboard.
  */
 export function copyValue(key, value) {
 	navigator.clipboard.writeText(value).then(() => {

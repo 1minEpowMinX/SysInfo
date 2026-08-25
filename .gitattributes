@@ -1,0 +1,16 @@
+# Line endings are settled here rather than left to each clone's core.autocrlf.
+#
+# packaging.test.mjs compares content_script.bundle.js byte for byte against
+# what esbuild builds from the sources, and esbuild writes LF. Where the
+# checkout carries CRLF, that case fails on a clean clone and keeps failing
+# until somebody happens to run the build — a red suite that says nothing about
+# the code.
+
+* text=auto eol=lf
+
+# Note: .ts is a Qt translation catalogue here, not TypeScript.
+
+*.png  binary
+*.ico  binary
+*.icns binary
+*.gif  binary

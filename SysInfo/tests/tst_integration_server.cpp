@@ -1,5 +1,7 @@
 #include "services/integration_server.h"
-#include "core/settings/settings_manager.h"
+#include "services/request_policy.h"
+#include "core/sysinfo/info_source.h"
+#include "core/settings/extension_whitelist.h"
 
 #include <QByteArray>
 #include <QEventLoop>
@@ -9,13 +11,21 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QSettings>
-#include <QStandardPaths>
 #include <QTest>
 #include <QTimer>
 #include <QUrl>
 
 namespace {
+
+/// Serves the whitelist override straight from memory, so no test reaches the
+/// developer's real settings store.
+class FakeWhitelist : public ExtensionWhitelist
+{
+public:
+    QStringList allowedExtensionIds() const override { return ids; }
+
+    QStringList ids;
+};
 
 struct HttpResult {
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
@@ -25,9 +35,9 @@ struct HttpResult {
 };
 
 /**
- * @brief One-shot HTTP request with custom method and headers.
+ * @brief Performs a one-shot HTTP request with custom method and headers.
  *
- * Built on QNetworkAccessManager — sufficient for our integration tests
+ * Built on QNetworkAccessManager — sufficient for these integration tests
  * because Qt allows raw-setting Origin / X-Sysinfo-Client / Sec-Fetch-*
  * (none of them are on QNAM's restricted-headers list).
  */
@@ -86,10 +96,12 @@ QByteArray header(const HttpResult &r, const QByteArray &name)
     return {};
 }
 
-// Built-in default extension IDs (kept in sync with kDefaultAllowedExtensionIds
-// in integration_server.cpp). Tests rely on these matching.
-constexpr const char *kChromeProdId = "mjdcgdoembmihkaajaabkffkejompofj";
-constexpr const char *kFirefoxProdId = "sysinfo-addon@pivdenny.ua";
+// Read off the policy rather than restated, so these cannot drift from the
+// list the server actually serves.
+const QByteArray kChromeProdId =
+    integration::defaultAllowedExtensionIds().at(0).toUtf8();
+const QByteArray kFirefoxProdId =
+    integration::defaultAllowedExtensionIds().at(1).toUtf8();
 
 QUrl statusUrl(const IntegrationServer &server)
 {
@@ -113,11 +125,9 @@ class TestIntegrationServer : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanup();
-
     // Lifecycle
     void startStop_togglesListening();
+    void restart_afterStop_servesAgain();
     void start_withZeroPort_bindsEphemeral();
 
     // Happy paths via plain GET (non-browser context — no Origin)
@@ -131,6 +141,8 @@ private slots:
     // Context filter (Origin + Sec-Fetch-Mode)
     void pageOrigin_isRejected();
     void navigateMode_isRejected();
+    void malformedExtensionOrigin_isRejected_data();
+    void malformedExtensionOrigin_isRejected();
 
     // Client whitelist (X-Sysinfo-Client)
     void extensionOriginWithoutClientId_isRejected();
@@ -151,26 +163,13 @@ private slots:
     void settingsOverride_replacesDefaults();
 };
 
-void TestIntegrationServer::initTestCase()
-{
-    // Isolate QSettings("Pivdenny", "SysInfo") so settingsOverride_* tests
-    // don't touch the developer's real registry/ini file.
-    QStandardPaths::setTestModeEnabled(true);
-}
-
-void TestIntegrationServer::cleanup()
-{
-    // Wipe any test-mode settings between cases so override leakage cannot
-    // affect the next test's whitelist.
-    QSettings("Pivdenny", "SysInfo").clear();
-}
-
 // --- Lifecycle ---------------------------------------------------------------
 
 void TestIntegrationServer::startStop_togglesListening()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(!server.isListening());
 
     QVERIFY(server.start(0));
@@ -181,11 +180,34 @@ void TestIntegrationServer::startStop_togglesListening()
     QVERIFY(!server.isListening());
 }
 
+// stop() closes the socket while the route table and the bind survive it, so the second start()
+// serves from the same routes rather than needing them rebuilt.
+void TestIntegrationServer::restart_afterStop_servesAgain()
+{
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
+    QNetworkAccessManager nam;
+
+    QVERIFY(server.start(0));
+    QCOMPARE(httpGet(nam, statusUrl(server)).body, QByteArray("OK"));
+
+    server.stop();
+    QVERIFY(server.start(0));
+    QVERIFY(server.isListening());
+
+    const HttpResult r = httpGet(nam, statusUrl(server));
+    QCOMPARE(r.error, QNetworkReply::NoError);
+    QCOMPARE(r.statusCode, 200);
+    QCOMPARE(r.body, QByteArray("OK"));
+}
+
 void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 {
-    SettingsManager settings;
-    IntegrationServer a(settings);
-    IntegrationServer b(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer a(whitelist, info);
+    IntegrationServer b(whitelist, info);
     QVERIFY(a.start(0));
     QVERIFY(b.start(0));
     QVERIFY(a.boundPort() != b.boundPort());
@@ -195,8 +217,9 @@ void TestIntegrationServer::start_withZeroPort_bindsEphemeral()
 
 void TestIntegrationServer::statusEndpoint_returnsOk()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -209,8 +232,9 @@ void TestIntegrationServer::statusEndpoint_returnsOk()
 
 void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -229,7 +253,7 @@ void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
     QVERIFY(doc.isObject());
 
     const QJsonObject obj = doc.object();
-    // Both fields must be present and non-empty. We compare exactly with
+    // Both fields must be present and non-empty. Compared exactly against
     // the same PROJECT_VERSION / BUILD_DATE the server is built against,
     // so a CMake project(VERSION) bump that wasn't propagated would fail
     // this test loudly.
@@ -241,8 +265,9 @@ void TestIntegrationServer::versionEndpoint_returnsJsonWithVersionAndBuild()
 
 void TestIntegrationServer::versionEndpoint_isRejectedFromBrowserWithoutClientId()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -256,8 +281,9 @@ void TestIntegrationServer::versionEndpoint_isRejectedFromBrowserWithoutClientId
 
 void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     // No Origin / Sec-Fetch-* — non-browser caller (curl, support).
@@ -293,8 +319,9 @@ void TestIntegrationServer::systemInfoForNonBrowser_returnsJsonWithLabels()
 
 void TestIntegrationServer::systemInfoForExtension_returnsJsonWithoutLabels()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     // Browser caller (extension SW). The extension localises labels
@@ -324,8 +351,9 @@ void TestIntegrationServer::systemInfoForExtension_returnsJsonWithoutLabels()
 
 void TestIntegrationServer::corsHeaders_arePresentForNonBrowser()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -342,8 +370,9 @@ void TestIntegrationServer::corsHeaders_arePresentForNonBrowser()
 
 void TestIntegrationServer::pageOrigin_isRejected()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -355,8 +384,9 @@ void TestIntegrationServer::pageOrigin_isRejected()
 
 void TestIntegrationServer::navigateMode_isRejected()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -366,12 +396,55 @@ void TestIntegrationServer::navigateMode_isRejected()
     QCOMPARE(r.statusCode, 403);
 }
 
+void TestIntegrationServer::malformedExtensionOrigin_isRejected_data()
+{
+    QTest::addColumn<QByteArray>("origin");
+
+    // The extension scheme alone is not enough: whatever follows it is
+    // echoed back in Access-Control-Allow-Origin, so the identifier must
+    // look like one before it is served — and to reflect — it.
+    QTest::newRow("empty id")
+        << QByteArray("chrome-extension://");
+    QTest::newRow("path traversal")
+        << QByteArray("chrome-extension://abcdef/../../evil");
+    QTest::newRow("dotted host")
+        << QByteArray("moz-extension://evil.com");
+    QTest::newRow("wildcard")
+        << QByteArray("chrome-extension://*");
+    QTest::newRow("comma-separated second origin")
+        << QByteArray("chrome-extension://abcdef,https://evil.com");
+    QTest::newRow("over-long id")
+        << (QByteArray("edge-extension://") + QByteArray(200, 'a'));
+}
+
+void TestIntegrationServer::malformedExtensionOrigin_isRejected()
+{
+    QFETCH(QByteArray, origin);
+
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
+    QVERIFY(server.start(0));
+
+    QNetworkAccessManager nam;
+    const HttpResult r = httpRequest(nam, systeminfoUrl(server), "GET", {
+        {"Origin",           origin},
+        {"X-Sysinfo-Client", kChromeProdId},
+    });
+
+    QCOMPARE(r.statusCode, 403);
+    // Nothing may be reflected back for a rejected origin.
+    QVERIFY2(header(r, "Access-Control-Allow-Origin") != origin,
+             "a rejected origin must never be echoed into the CORS header");
+}
+
 // --- Client whitelist --------------------------------------------------------
 
 void TestIntegrationServer::extensionOriginWithoutClientId_isRejected()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -385,8 +458,9 @@ void TestIntegrationServer::extensionOriginWithoutClientId_isRejected()
 
 void TestIntegrationServer::extensionOriginWithBogusClientId_isRejected()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -400,8 +474,9 @@ void TestIntegrationServer::extensionOriginWithBogusClientId_isRejected()
 
 void TestIntegrationServer::extensionOriginWithChromeDefaultId_returnsOk()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -416,8 +491,9 @@ void TestIntegrationServer::extensionOriginWithChromeDefaultId_returnsOk()
 
 void TestIntegrationServer::extensionOriginWithFirefoxDefaultId_returnsOk()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -437,8 +513,9 @@ void TestIntegrationServer::extensionOriginWithFirefoxDefaultId_returnsOk()
 
 void TestIntegrationServer::preflightFromExtension_returnsNoContent()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -455,8 +532,9 @@ void TestIntegrationServer::preflightFromExtension_returnsNoContent()
 
 void TestIntegrationServer::preflightFromPage_isRejected()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -471,8 +549,9 @@ void TestIntegrationServer::preflightFromPage_isRejected()
 
 void TestIntegrationServer::preflightResponse_includesXSysinfoClientInAllowHeaders()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -493,8 +572,9 @@ void TestIntegrationServer::preflightResponse_includesXSysinfoClientInAllowHeade
 
 void TestIntegrationServer::corsAllowOrigin_reflectsExtensionOrigin()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     const QByteArray origin = "moz-extension://abcdef-1234-5678";
@@ -512,8 +592,9 @@ void TestIntegrationServer::corsAllowOrigin_reflectsExtensionOrigin()
 
 void TestIntegrationServer::corsAllowOrigin_isWildcardForNonBrowser()
 {
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -527,17 +608,10 @@ void TestIntegrationServer::corsAllowOrigin_isWildcardForNonBrowser()
 
 void TestIntegrationServer::settingsOverride_replacesDefaults()
 {
-    // Prepopulate isolated test settings with a custom whitelist BEFORE
-    // constructing SettingsManager / IntegrationServer.
-    {
-        QSettings s("Pivdenny", "SysInfo");
-        s.setValue("Integration/AllowedExtensionIds",
-                   QStringList{"corp-custom-extension-id"});
-        s.sync();
-    }
-
-    SettingsManager settings;
-    IntegrationServer server(settings);
+    FakeWhitelist whitelist;
+    whitelist.ids = QStringList{"corp-custom-extension-id"};
+    sysinfo::InfoSource info;
+    IntegrationServer server(whitelist, info);
     QVERIFY(server.start(0));
 
     QNetworkAccessManager nam;
@@ -550,7 +624,7 @@ void TestIntegrationServer::settingsOverride_replacesDefaults()
     });
     QCOMPARE(prodReject.statusCode, 403);
 
-    // The custom ID from settings should pass.
+    // The custom ID from the override should pass.
     const HttpResult customAllow = httpRequest(nam, statusUrl(server), "GET", {
         {"Origin",            "chrome-extension://corp-custom-extension-id"},
         {"X-Sysinfo-Client",  "corp-custom-extension-id"},

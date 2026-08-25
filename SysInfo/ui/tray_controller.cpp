@@ -4,13 +4,26 @@
 #include <QAction>
 #include <QIcon>
 #include <QMenu>
+#include <QSize>
 
-TrayController::TrayController(QObject* parent)
-    : QObject(parent)
+#include <utility>
+
+namespace
+{
+    /// Size rendered once to tell a loadable icon from a missing file.
+    constexpr QSize kProbeIconSize(16, 16);
+}
+
+const QString TrayController::kDefaultIconPath =
+    QStringLiteral(":/resources/icons/sysinfo_app.svg");
+
+TrayController::TrayController(QString iconPath, QObject* parent)
+    : TrayView(parent)
+    , m_iconPath(std::move(iconPath))
 {}
 
 // Out-of-line destructor: unique_ptr<QMenu> needs a complete type for its
-// deleter, which pull in via the <QMenu> include above.
+// deleter, which the <QMenu> include above supplies.
 TrayController::~TrayController() = default;
 
 bool TrayController::isSystemTrayAvailable()
@@ -18,18 +31,34 @@ bool TrayController::isSystemTrayAvailable()
     return QSystemTrayIcon::isSystemTrayAvailable();
 }
 
-bool TrayController::init(const QString& iconPath)
+bool TrayController::init()
 {
-    m_icon = new QSystemTrayIcon(QIcon(iconPath), this);
-    if (m_icon->icon().isNull()) {
+    if (!isSystemTrayAvailable()) {
+        return false;
+    }
+
+    // A second call would orphan the previous icon on this QObject and drop
+    // the menu that the tray icon still points at.
+    if (m_icon != nullptr) {
+        return false;
+    }
+
+    const QIcon icon(m_iconPath);
+
+    // QIcon stores the path without reading it, so isNull() answers false even
+    // for a path that resolves to nothing. Rendering one pixmap is what tells
+    // a real icon from a missing file.
+    if (icon.pixmap(kProbeIconSize).isNull()) {
         Logger::log(Logger::EventId::TrayIconMissing,
                     "Tray icon failed to load from resources.");
     }
 
+    m_icon = new QSystemTrayIcon(icon, this);
+
     buildMenu();
 
     connect(m_icon, &QSystemTrayIcon::messageClicked,
-            this, &TrayController::notificationClicked);
+            this, &NotificationSink::notificationClicked);
 
     return true;
 }
@@ -44,9 +73,9 @@ void TrayController::buildMenu()
     QAction* about = m_menu->addAction(tr("About"));
     QAction* quit  = m_menu->addAction(tr("Exit"));
 
-    connect(copy,  &QAction::triggered, this, &TrayController::copyRequested);
-    connect(about, &QAction::triggered, this, &TrayController::aboutRequested);
-    connect(quit,  &QAction::triggered, this, &TrayController::quitRequested);
+    connect(copy,  &QAction::triggered, this, &TrayView::copyRequested);
+    connect(about, &QAction::triggered, this, &TrayView::aboutRequested);
+    connect(quit,  &QAction::triggered, this, &TrayView::quitRequested);
 
     m_icon->setContextMenu(m_menu.get());
 }
@@ -68,10 +97,9 @@ void TrayController::setTooltip(const QString& text)
 
 void TrayController::showNotification(const QString& title,
                                       const QString& body,
-                                      QSystemTrayIcon::MessageIcon icon,
                                       int msecs)
 {
     if (m_icon) {
-        m_icon->showMessage(title, body, icon, msecs);
+        m_icon->showMessage(title, body, QSystemTrayIcon::Information, msecs);
     }
 }
