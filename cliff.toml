@@ -24,6 +24,28 @@ body = """
 {% else %}\
 ## Unreleased
 {% endif %}\
+{# Deployment prerequisites, collected from the Deploy: trailer of the commit
+   that created each one, so the section grows with the code instead of being
+   reconstructed from the log at release time. Each trailer stands alone in the
+   rendered list, which is why the convention asks for a self-contained
+   instruction rather than a note that leans on its commit. #}\
+{% set_global steps = [] %}\
+{% for commit in commits %}\
+{# Commits from before the convention was adopted carry no footers field at
+   all, and an unguarded access to it fails the whole render. #}\
+{% for footer in commit.footers | default(value=[]) %}\
+{% if footer.token == "Deploy" %}\
+{% set_global steps = steps | concat(with=footer.value) %}\
+{% endif %}\
+{% endfor %}\
+{% endfor %}\
+{% if steps | length > 0 %}
+
+### Action required
+{% for step in steps %}
+- {{ step }}
+{%- endfor %}
+{% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
 
 ### {{ group | striptags | trim | upper_first }}

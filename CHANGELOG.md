@@ -6,7 +6,7 @@ Generated from the commit history by [git-cliff](https://git-cliff.org) over
 `cliff.toml`. Rewrite it with `git cliff -o CHANGELOG.md` rather than editing
 it by hand.
 
-## Unreleased
+## [3.1.0] - 2026-08-25
 
 
 ### Features
@@ -98,6 +98,7 @@ it by hand.
 - **ext**: Drop the bundled monospace face ([`c268b38`](https://github.com/1minEpowMinX/SysInfo/commit/c268b383914dfbc8e828d97f486640c89332be4a))
 - **ext**: Write the block through innerText alone ([`90d5bc1`](https://github.com/1minEpowMinX/SysInfo/commit/90d5bc1b7ddc1716d0d929efb1bd82904e698a7d))
 - **ext**: Take the agent origin and the whitelist seeds from the build configuration ([`1a6ab4e`](https://github.com/1minEpowMinX/SysInfo/commit/1a6ab4ebe43cb1a792f23cf4b8bf896e1f36fcde))
+- **sysinfo**: Read the installed memory the way this file reads everything ([`22c7f96`](https://github.com/1minEpowMinX/SysInfo/commit/22c7f968398b5bc38df315676603c6c30e3d6082))
 
 ### Documentation
 
@@ -122,6 +123,8 @@ it by hand.
 - **security**: Record the configuration the whitelist defaults want ([`dd77c31`](https://github.com/1minEpowMinX/SysInfo/commit/dd77c310f9350a27d227715f22f8fe47d17cc2c6))
 - **legal**: Generate the third-party notice from Qt's own SPDX documents ([`8e46ab0`](https://github.com/1minEpowMinX/SysInfo/commit/8e46ab05974ac68b8e8379c7f0209c7e389f6435))
 - Refresh the changelog ([`e860202`](https://github.com/1minEpowMinX/SysInfo/commit/e860202957f17c22483240f1fdd68099f5970353))
+- Refresh the changelog ([`696a256`](https://github.com/1minEpowMinX/SysInfo/commit/696a2566a891732081a337934d7327fec220b737))
+- **sysinfo**: Record that the Windows boot time is derived, not read ([`21431ee`](https://github.com/1minEpowMinX/SysInfo/commit/21431ee6b836060a1fe6ce116f8ff9236110f2a5))
 
 ### Tests
 
