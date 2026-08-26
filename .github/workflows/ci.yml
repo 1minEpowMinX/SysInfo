@@ -1,128 +1,136 @@
 name: CI
 
 on:
-  pull_request:
-  push:
-    branches: [main, dev]
+    pull_request:
+    push:
+        branches: [main, dev]
 
 # A later push to the same ref supersedes the run already in flight.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  extension:
-    name: Extension (node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: SysInfoExtension
-    strategy:
-      # One node version failing should not hide the result of the others.
-      fail-fast: false
-      matrix:
-        node: ['20', '22', '24']
-    steps:
-      - uses: actions/checkout@v5
+    extension:
+        name: Extension (node ${{ matrix.node }})
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: SysInfoExtension
+        strategy:
+            # One node version failing should not hide the result of the others.
+            fail-fast: false
+            matrix:
+                node: ["20", "22", "24"]
+        steps:
+            - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-          cache-dependency-path: SysInfoExtension/package-lock.json
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: ${{ matrix.node }}
+                  cache: npm
+                  cache-dependency-path: SysInfoExtension/package-lock.json
 
-      - run: npm ci
+            - run: npm ci
 
-      # The pretest script generates shared/build_config.js. build.config.json
-      # is not in the repository, so this run reads build.config.example.json,
-      # which is what a clean clone has to build against.
-      - name: Test suite
-        run: npm test
+            # The pretest script generates shared/build_config.js. build.config.json
+            # is not in the repository, so this run reads build.config.example.json,
+            # which is what a clean clone has to build against.
+            - name: Test suite
+              run: npm test
 
-      # Proves the suite reacts to a broken statement. One interpreter is
-      # enough for that: it says nothing about node versions.
-      - name: Mutation run
-        if: matrix.node == '22'
-        run: npm run test:mutate
+            # Proves the suite reacts to a broken statement. One interpreter is
+            # enough for that: it says nothing about node versions.
+            - name: Mutation run
+              if: matrix.node == '22'
+              run: npm run test:mutate
 
-  desktop:
-    name: Desktop (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # These two exist because hardware_info_linux.cpp and
-        # hardware_info_mac.cpp are compiled by no other build.
-        #
-        # Windows is absent, and not because it does not matter: aqtinstall
-        # cannot install Qt 6.11 there. Qt split the Windows repository by
-        # toolchain (qt6_6111_llvm_mingw and siblings) while aqt still looks
-        # for a qt6_6111 beneath qt6_6111; 6.10.3 is the last version it
-        # resolves, and 3.3.0 is the newest aqt. Building here against a Qt
-        # the release is not built with would buy false confidence, and the
-        # Windows delivery is produced with llvm-mingw on every change anyway.
-        # Restore the entry once aqt follows the new layout.
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@v5
+    desktop:
+        name: Desktop (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                # hardware_info_linux.cpp and
+                # hardware_info_mac.cpp are usually compiled by no other build.
+                #
+                # Windows is absent: aqtinstall cannot install Qt 6.11 there.
+                # Qt split the Windows repository by toolchain (qt6_6111_llvm_mingw and siblings)
+                # while aqt still looks for a qt6_6111 beneath qt6_6111.
+                os: [ubuntu-latest, macos-latest]
+        steps:
+            - uses: actions/checkout@v5
 
-      # Qt Widgets links against GL and xkbcommon even though every test is
-      # QTEST_GUILESS_MAIN and no display is needed at run time.
-      - name: Install Qt build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libvulkan-dev
+            # Qt Widgets links against GL and xkbcommon even though every test is
+            # QTEST_GUILESS_MAIN and no display is needed at run time.
+            - name: Install Qt build dependencies
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y \
+                    libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libvulkan-dev
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.11.1'
-          # qtsvg ships in the base package; these two do not. Qt6HttpServer
-          # pulls Qt6WebSockets, so both are named.
-          modules: 'qthttpserver qtwebsockets'
-          cache: true
+            - name: Install Qt
+              uses: jurplel/install-qt-action@v4
+              with:
+                  version: "6.11.1"
+                  # qtsvg ships in the base package; these two do not. Qt6HttpServer
+                  # pulls Qt6WebSockets, so both are named.
+                  modules: "qthttpserver qtwebsockets"
+                  cache: true
 
-      - name: Configure
-        run: cmake -S SysInfo -B build -DCMAKE_BUILD_TYPE=Release
+            - name: Configure
+              run: cmake -S SysInfo -B build -DCMAKE_BUILD_TYPE=Release
 
-      # The default build ends in the run_tests target, which runs ctest with
-      # --output-on-failure. No separate test step is needed.
-      - name: Build and test
-        run: cmake --build build --parallel
+            # The default build ends in the run_tests target, which runs ctest with
+            # --output-on-failure. No separate test step is needed.
+            - name: Build and test
+              run: cmake --build build --parallel
 
-      # README.txt is configured from a template. An unresolved placeholder
-      # means the license notice went out naming no Qt version at all.
-      - name: Check the license notice resolved
-        shell: bash
-        run: |
-          notice=$(find build -maxdepth 2 -name README.txt | head -1)
-          test -n "$notice" || { echo "no README.txt was generated"; exit 1; }
-          if grep -q '@' "$notice"; then
-            echo "unresolved placeholder in $notice:"
-            grep -n '@' "$notice"
-            exit 1
-          fi
+            # README.txt is configured from a template. An unresolved placeholder
+            # means the license notice went out naming no Qt version at all.
+            - name: Check the license notice resolved
+              shell: bash
+              run: |
+                  notice=$(find build -maxdepth 2 -name README.txt | head -1)
+                  test -n "$notice" || { echo "no README.txt was generated"; exit 1; }
+                  if grep -q '@' "$notice"; then
+                    echo "unresolved placeholder in $notice:"
+                    grep -n '@' "$notice"
+                    exit 1
+                  fi
 
-  hygiene:
-    name: Repository hygiene
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
+            # The archive is the release artefact, the Windows delivery additionally built on a workstation.
+            #The Linux and macOS deploy rules now run nowhere else.
+            - name: Build the delivery archive
+              run: cmake --build build --target delivery
 
-      # A file that the ignore rules cover but that is tracked anyway. This is
-      # how a bundle built against a real deployment, or the deployment file
-      # itself, reaches the repository: the rules only protect what is not
-      # already in the index.
-      - name: No tracked file may be under the ignore rules
-        run: |
-          offenders=$(git ls-files -i -c --exclude-standard)
-          if [ -n "$offenders" ]; then
-            echo "tracked despite being ignored:"
-            echo "$offenders"
-            exit 1
-          fi
+            # Every one of these is a license text the delivery is required to carry.
+            - name: Check the delivery carries the license notices
+              shell: bash
+              run: |
+                  archive=$(find build -name 'SysInfo-*-x64.7z' | head -1)
+                  test -n "$archive" || { echo "no delivery archive was written"; exit 1; }
+                  for name in README.txt GPL-3.0.txt LGPL-3.0.txt THIRD-PARTY-NOTICES.txt; do
+                    found=$(find "$(dirname "$archive")" -name "$name" | head -1)
+                    test -n "$found" || { echo "the delivery is missing $name"; exit 1; }
+                  done
+
+    hygiene:
+        name: Repository hygiene
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            # Tracked ignored files guard
+            - name: No tracked file may be under the ignore rules
+              run: |
+                  offenders=$(git ls-files -i -c --exclude-standard)
+                  if [ -n "$offenders" ]; then
+                    echo "tracked despite being ignored:"
+                    echo "$offenders"
+                    exit 1
+                  fi
