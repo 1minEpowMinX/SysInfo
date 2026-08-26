@@ -6,6 +6,22 @@ Generated from the commit history by [git-cliff](https://git-cliff.org) over
 `cliff.toml`. Rewrite it with `git cliff -o CHANGELOG.md` rather than editing
 it by hand.
 
+## Unreleased
+
+
+### Upgrade Steps
+
+* extract the Linux delivery to /opt and the macOS delivery to /Applications, then remove the previous copies from /usr/bin and /usr/local/bin
+
+
+### Other Changes
+
+
+* Render the changelog in the shape the release notes carry ([`5b9358e`](https://github.com/1minEpowMinX/SysInfo/commit/5b9358e85891c98c4197706c840750799b37be8d))
+* **sysinfo:** Build the delivery archive from the install rules ([`f07d36a`](https://github.com/1minEpowMinX/SysInfo/commit/f07d36aa5cd6a0ebf1a9875f51b7dd6c8807c247))
+* Point the install instructions at the delivery paths ([`dda22fc`](https://github.com/1minEpowMinX/SysInfo/commit/dda22fce02b0fae0cacab31f47a8be77124f42d3))
+* **ci:** Build the delivery archive on Linux and macOS ([`7933954`](https://github.com/1minEpowMinX/SysInfo/commit/7933954b5dff44d0912eea05050cf3b592bf505e))
+
 ## [3.1.0](https://github.com/1minEpowMinX/SysInfo/compare/v3.0.0...v3.1.0) (2026-08-25)
 
 
