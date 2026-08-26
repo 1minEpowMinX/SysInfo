@@ -56,6 +56,7 @@ it by hand.
 * **ui:** Name the tray tooltip field after the boot time it carries ([`01c5f04`](https://github.com/1minEpowMinX/SysInfo/commit/01c5f04a8f4cbdaae8f3ad76d1c9c5b8273f330d))
 * **ui:** Report the tray-guide dismissal whichever way the window closes ([`d6a9c38`](https://github.com/1minEpowMinX/SysInfo/commit/d6a9c382bf441a90205bf99f5698556b791a0b65))
 * **sysinfo:** Stop including a header that cannot coexist with this namespace ([`b0cfb4b`](https://github.com/1minEpowMinX/SysInfo/commit/b0cfb4bd260c414e7563c4e52d2663894f95356e))
+* **sysinfo:** Deploy the Qt the Linux delivery ships ([`e220ce2`](https://github.com/1minEpowMinX/SysInfo/commit/e220ce21b23f9582d12e8bb7d73855f5874468b8))
 
 **Browser Extension**
 
@@ -151,6 +152,9 @@ it by hand.
 * **ci:** Build the delivery archive on Linux and macOS ([`7933954`](https://github.com/1minEpowMinX/SysInfo/commit/7933954b5dff44d0912eea05050cf3b592bf505e))
 * Refresh the changelog ([`922d856`](https://github.com/1minEpowMinX/SysInfo/commit/922d856d664780f135c6826a5cf9391b90be6ba1))
 * **release:** Attach the Linux and macOS archives to the release ([`6f71c0d`](https://github.com/1minEpowMinX/SysInfo/commit/6f71c0dc073a3071ae5ed912771ad0eaa6344c4f))
+* Render the pending work as part of 3.1.0 ([`bd968a6`](https://github.com/1minEpowMinX/SysInfo/commit/bd968a621245c4de065dd8e1e26f0f7a6ba60bad))
+* **release:** Attach the archives the release run built ([`75933a4`](https://github.com/1minEpowMinX/SysInfo/commit/75933a4ce15fb8c7e3391f0426f9b4ea98b2b5be))
+* **ci:** Hold the delivery to carrying a platform plugin and Qt ([`013297e`](https://github.com/1minEpowMinX/SysInfo/commit/013297e7e74dea97830882e6d263d118c5699f6c))
 
 **Browser Extension**
 

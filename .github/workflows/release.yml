@@ -95,7 +95,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ steps.cliff.outputs.content }}
-          files: archives/*.7z
+          # The artifact keeps the directory the archive was written in, so
+          # the glob has to descend. fail_on_unmatched_files is what turns a
+          # glob that matches nothing into a failure rather than a release
+          # with no assets.
+          files: archives/**/*.7z
+          fail_on_unmatched_files: true
           # Left as a draft: the Windows archive is built elsewhere, and the
           # release is not publishable until it is attached.
           draft: true

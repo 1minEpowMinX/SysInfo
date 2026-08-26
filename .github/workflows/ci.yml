@@ -109,15 +109,28 @@ jobs:
               run: cmake --build build --target delivery
 
             # Every one of these is a license text the delivery is required to carry.
-            - name: Check the delivery carries the license notices
+            - name: Check the delivery is complete
               shell: bash
               run: |
                   archive=$(find build -name 'SysInfo-*-x64.7z' | head -1)
                   test -n "$archive" || { echo "no delivery archive was written"; exit 1; }
+                  root=$(dirname "$archive")
+
+                  # Every one of these is a license text the delivery is
+                  # required to carry, and the install rules put them there.
                   for name in README.txt GPL-3.0.txt LGPL-3.0.txt THIRD-PARTY-NOTICES.txt; do
-                    found=$(find "$(dirname "$archive")" -name "$name" | head -1)
+                    found=$(find "$root" -name "$name" | head -1)
                     test -n "$found" || { echo "the delivery is missing $name"; exit 1; }
                   done
+
+                  # A delivery without these is the executable on its own,
+                  # which starts on no machine that lacks a system Qt. The
+                  # deploy step drops what it cannot resolve without saying so,
+                  # so nothing but the result is worth trusting.
+                  plugin=$(find "$root" -path '*/platforms/*' -type f | head -1)
+                  test -n "$plugin" || { echo "the delivery carries no platform plugin"; exit 1; }
+                  qtcore=$(find "$root" \( -name 'libQt6Core.so*' -o -name 'QtCore' \) -type f | head -1)
+                  test -n "$qtcore" || { echo "the delivery carries no Qt libraries"; exit 1; }
 
     hygiene:
         name: Repository hygiene
