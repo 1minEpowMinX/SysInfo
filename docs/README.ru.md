@@ -38,13 +38,13 @@
 ### 2. Извлечь архив
 
 ```sh
-# Linux
+# Linux:
 sudo apt install p7zip-full
-sudo 7z x SysInfo-3.1.0-linux-x64.7z -o/usr/bin/
+sudo 7z x SysInfo-3.1.0-linux-x64.7z -o/opt/
 
 # MacOS:
 brew install p7zip
-sudo 7z x SysInfo-3.1.0-macos-x64.7z -o/usr/local/bin/
+sudo 7z x SysInfo-3.1.0-macos-x64.7z -o/Applications/
 
 # Windows:
 New-EventLog -LogName "SysInfo" -Source "SysInfo"
@@ -55,7 +55,7 @@ Limit-EventLog -LogName "SysInfo" -MaximumSize 5MB
 ### 3. Добавить в автозагрузку
 
 ```sh
-# Linux
+# Linux:
 curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/dev/SysInfo/resources/sysinfo.desktop
 
 # macOS:
