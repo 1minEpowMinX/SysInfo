@@ -20,6 +20,30 @@ add_compile_definitions(BUILD_DATE="${BUILD_DATE}")
 string(TIMESTAMP BUILD_YEAR "%Y" UTC)
 add_compile_definitions(BUILD_YEAR="${BUILD_YEAR}")
 
+# The delivery is one directory the operator extracts where the application is
+# to live, with the executable, the Qt libraries and the plugin directories
+# beside each other.
+#
+# QT_DEPLOY_BIN_DIR and QT_DEPLOY_LIB_DIR take their values from the matching
+# CMAKE_INSTALL_..._DIR at the moment the Qt Core package is found, which is
+# what places this above find_package.
+if(APPLE)
+    set(SYSINFO_DELIVERY_DIR "SysInfo.app")
+else()
+    set(SYSINFO_DELIVERY_DIR "SysInfo")
+    set(CMAKE_INSTALL_BINDIR "${SYSINFO_DELIVERY_DIR}")
+    set(CMAKE_INSTALL_LIBDIR "${SYSINFO_DELIVERY_DIR}")
+endif()
+
+# The token the delivery archive is named after.
+if(WIN32)
+    set(SYSINFO_PLATFORM "windows")
+elseif(APPLE)
+    set(SYSINFO_PLATFORM "macos")
+else()
+    set(SYSINFO_PLATFORM "linux")
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Widgets
@@ -231,14 +255,20 @@ if(UNIX AND NOT APPLE)
     )
     set_target_properties(SysInfo PROPERTIES
         OUTPUT_NAME "SysInfo"
+        # The delivery carries its own Qt in the same directory as the
+        # executable, and the loader finds it there only through this.
+        INSTALL_RPATH "$ORIGIN"
     )
 endif()
 
 include(GNUInstallDirs)
+# Everything the archive carries belongs to the delivery component, and the
+# freedesktop desktop entry and icon theme, which belong to a system install,
+# stay out of it. Installing that component alone is what produces the archive.
 install(TARGETS SysInfo
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION . COMPONENT delivery
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT delivery
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT delivery
 )
 
 # Desktop integration for freedesktop systems. sysinfo.desktop carries
@@ -262,14 +292,46 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
-# Qt deploy script for Win/macOS/Linux (used by `cmake --install`)
-qt_generate_deploy_app_script(
-    TARGET SysInfo
-    OUTPUT_SCRIPT deploy_script
-    NO_UNSUPPORTED_PLATFORM_ERROR
-)
+# Qt deploy script for Win/macOS/Linux (used by `cmake --install`).
+#
+# Windows and Linux take the low-level command. macOS keeps the high-level
+# command, whose whole subject is the bundle layout.
+#
+# The paths name SYSINFO_DELIVERY_DIR rather than QT_DEPLOY_BIN_DIR, which
+# CMAKE_INSTALL_BINDIR sets from it. Deferring the expansion does not reach the
+# script: the versionless command forwards its arguments through a macro, which
+# expands the content a second time on the way.
+if(APPLE)
+    qt_generate_deploy_app_script(
+        TARGET SysInfo
+        OUTPUT_SCRIPT deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+else()
+    set(SYSINFO_DEPLOY_TOOL_OPTIONS "")
+    if(WIN32)
+        set(SYSINFO_DEPLOY_TOOL_OPTIONS
+            "
+    DEPLOY_TOOL_OPTIONS --no-system-d3d-compiler --no-opengl-sw")
+    endif()
 
-install(SCRIPT ${deploy_script})
+    qt_generate_deploy_script(
+        TARGET SysInfo
+        OUTPUT_SCRIPT deploy_script
+        CONTENT "
+qt_deploy_runtime_dependencies(
+    EXECUTABLE \"${SYSINFO_DELIVERY_DIR}/$<TARGET_FILE_NAME:SysInfo>\"
+    LIB_DIR \"${SYSINFO_DELIVERY_DIR}\"
+    PLUGINS_DIR \"${SYSINFO_DELIVERY_DIR}\"
+    NO_TRANSLATIONS
+    EXCLUDE_PLUGIN_TYPES generic networkinformation tls
+    EXCLUDE_PLUGINS qicns qjpeg qtga qtiff qwbmp qwebp${SYSINFO_DEPLOY_TOOL_OPTIONS}
+)
+")
+endif()
+
+install(SCRIPT ${deploy_script} COMPONENT delivery)
 
 # Copy Qt runtime next to the executable in the build tree so the built binary
 # is directly runnable without install.
@@ -327,6 +389,20 @@ add_custom_command(TARGET SysInfo POST_BUILD
     VERBATIM
 )
 
+# Installed from the same list that copies them into the build tree, so a
+# notice cannot reach one and miss the other. They travel inside the delivery
+# directory, which on macOS means the bundle's own resource directory.
+if(APPLE)
+    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}/Contents/Resources")
+else()
+    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}")
+endif()
+
+install(FILES ${LICENSE_NOTICES}
+    DESTINATION "${LICENSE_NOTICE_DESTINATION}"
+    COMPONENT delivery
+)
+
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SysInfo)
 endif()
@@ -354,4 +430,38 @@ if(BUILD_TESTING)
         USES_TERMINAL
     )
     add_dependencies(run_tests ${SYSINFO_TEST_TARGETS})
+endif()
+
+# --- Delivery archive, written by `cmake --build <dir> --target delivery`.
+# The archive is named for the release and the directory inside it for the path
+# the application is installed to, which is why the two names differ.
+set(SYSINFO_DELIVERY_NAME "SysInfo-${PROJECT_VERSION}-${SYSINFO_PLATFORM}-x64")
+set(SYSINFO_DELIVERY_ROOT "${CMAKE_SOURCE_DIR}/../build/${SYSINFO_DELIVERY_NAME}")
+
+add_custom_target(delivery
+    # Removed rather than overwritten: an install over a previous run keeps
+    # whatever that run wrote and this one does not.
+    COMMAND ${CMAKE_COMMAND} -E rm -rf
+        "${SYSINFO_DELIVERY_ROOT}/${SYSINFO_DELIVERY_DIR}"
+        "${SYSINFO_DELIVERY_ROOT}/${SYSINFO_DELIVERY_NAME}.7z"
+
+    COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}"
+        --config $<CONFIG>
+        --component delivery
+        --prefix "${SYSINFO_DELIVERY_ROOT}"
+
+    COMMAND ${CMAKE_COMMAND} -E chdir "${SYSINFO_DELIVERY_ROOT}"
+        ${CMAKE_COMMAND} -E tar cf "${SYSINFO_DELIVERY_NAME}.7z"
+            --format=7zip "${SYSINFO_DELIVERY_DIR}"
+
+    COMMENT "Writing ${SYSINFO_DELIVERY_NAME}.7z"
+    VERBATIM
+    USES_TERMINAL
+)
+
+add_dependencies(delivery SysInfo)
+
+# No archive comes out of a build whose tests did not run.
+if(TARGET run_tests)
+    add_dependencies(delivery run_tests)
 endif()
