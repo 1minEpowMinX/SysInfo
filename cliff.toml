@@ -1,9 +1,13 @@
 # Changelog generation from the Conventional Commits history.
 #
+# The rendered shape is the one the releases have carried since 3.0.0, so a
+# release note is the generated body with a summary written above it and the
+# standing Notes written below. Everything between those two is derived.
+#
 # One changelog for both products. The repository carries a single tag series,
 # and the desktop client and the extension are deployed to the fleet together,
-# so a reader wants one list. Which product an entry belongs to is carried by
-# its scope: (ext) is the extension, everything else is the client.
+# so a reader wants one list; inside each section the two are separated, so a
+# reader who deploys only one of them can stop after their half.
 
 [changelog]
 header = """
@@ -18,24 +22,114 @@ it by hand.
 """
 
 body = """
+{# Scopes belonging to the extension. Anything else is the desktop client,
+   including an entry with no scope at all. Held here rather than derived
+   because no property of a scope string says which product it names. #}\
+{% set EXT_SCOPES = ["ext", "popup", "content", "bg", "manifest", "deps-dev"] %}\
 {% if version %}\
+{% if previous.version %}\
+## [{{ version | trim_start_matches(pat="v.") | trim_start_matches(pat="v") }}]\
+(https://github.com/1minEpowMinX/SysInfo/compare/{{ previous.version }}...{{ version }}) \
+({{ timestamp | date(format="%Y-%m-%d") }})
+{% else %}\
 ## [{{ version | trim_start_matches(pat="v.") | trim_start_matches(pat="v") }}] \
-- {{ timestamp | date(format="%Y-%m-%d") }}
+({{ timestamp | date(format="%Y-%m-%d") }})
+{% endif %}\
 {% else %}\
 ## Unreleased
 {% endif %}\
-{% for group, commits in commits | group_by(attribute="group") %}
-
-### {{ group | striptags | trim | upper_first }}
-{% for commit in commits %}
-- {% if commit.breaking %}**BREAKING** {% endif %}\
-{% if commit.scope %}**{{ commit.scope }}**: {% endif %}\
-{{ commit.message | upper_first }} \
-([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/1minEpowMinX/SysInfo/commit/{{ commit.id }}))\
-{% if commit.breaking and commit.breaking_description and commit.breaking_description != commit.message %}
-  - {{ commit.breaking_description }}\
+{# Deployment prerequisites, collected from the Deploy: trailer of the commit
+   that created each one, so the section grows with the code instead of being
+   reconstructed from the log at release time. Each trailer stands alone in the
+   rendered list, which is why the convention asks for a self-contained
+   instruction rather than a note that leans on its commit. #}\
+{% set_global steps = [] %}\
+{% for commit in commits %}\
+{# Commits from before the convention was adopted carry no footers field at
+   all, and an unguarded access to it fails the whole render. #}\
+{% for footer in commit.footers | default(value=[]) %}\
+{% if footer.token == "Deploy" %}\
+{% set_global steps = steps | concat(with=footer.value) %}\
 {% endif %}\
 {% endfor %}\
+{% endfor %}\
+{% if steps | length > 0 %}
+
+### Upgrade Steps
+{% for step in steps %}
+* {{ step }}
+{%- endfor %}
+{% endif %}\
+{# Breaking changes are pulled out of their type sections and stated once,
+   because a reader scanning for what stopped working should not have to find
+   them inside Build or Features. #}\
+{% set_global breaks = [] %}\
+{% for commit in commits | filter(attribute="breaking", value=true) %}\
+{% set text = commit.message | upper_first %}\
+{% if commit.breaking_description and commit.breaking_description != commit.message %}\
+{% set text = text ~ ". " ~ commit.breaking_description %}\
+{% endif %}\
+{# The short id is bound first: Tera will not take a filter inside a `~`
+   concatenation. #}\
+{% set short = commit.id | truncate(length=7, end="") %}\
+{% set link = "([`" ~ short ~ "`](https://github.com/1minEpowMinX/SysInfo/commit/" ~ commit.id ~ "))" %}\
+{% set_global breaks = breaks | concat(with="* " ~ text ~ " " ~ link) %}\
+{% endfor %}\
+{% if breaks | length > 0 %}
+
+### Breaking Changes
+{% for entry in breaks %}
+{{ entry }}
+{%- endfor %}
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}\
+{# Each section is split by product. The entries are rendered into two string
+   lists first, so that a subheading is printed only where it has entries. #}\
+{% set_global ext_lines = [] %}\
+{% set_global app_lines = [] %}\
+{% for commit in commits %}\
+{# Reset per iteration: set_global outlives the loop body, and a value left
+   over from the previous commit would file this one under the wrong product.
+   The conditions are nested rather than joined, because Tera takes `in` only
+   as a condition of its own. #}\
+{% set_global is_ext = false %}\
+{% set_global label = "" %}\
+{% if commit.scope %}\
+{% if commit.scope in EXT_SCOPES %}\
+{% set_global is_ext = true %}\
+{% endif %}\
+{# The scope is printed except where the subheading already says it. #}\
+{% if commit.scope != "ext" %}\
+{% set_global label = "**" ~ commit.scope ~ ":** " %}\
+{% endif %}\
+{% endif %}\
+{% set short = commit.id | truncate(length=7, end="") %}\
+{% set text = commit.message | upper_first %}\
+{% set link = "([`" ~ short ~ "`](https://github.com/1minEpowMinX/SysInfo/commit/" ~ commit.id ~ "))" %}\
+{% set line = "* " ~ label ~ text ~ " " ~ link %}\
+{% if is_ext %}\
+{% set_global ext_lines = ext_lines | concat(with=line) %}\
+{% else %}\
+{% set_global app_lines = app_lines | concat(with=line) %}\
+{% endif %}\
+{% endfor %}
+
+### {{ group | striptags | trim }}
+{% if app_lines | length > 0 and ext_lines | length > 0 %}
+**Desktop Application**
+{% for line in app_lines %}
+{{ line }}
+{%- endfor %}
+
+**Browser Extension**
+{% for line in ext_lines %}
+{{ line }}
+{%- endfor %}
+{% else %}
+{% for line in app_lines | concat(with=ext_lines) %}
+{{ line }}
+{%- endfor %}
+{% endif %}\
 {% endfor %}\n
 """
 
@@ -45,9 +139,9 @@ footer = ""
 
 [git]
 conventional_commits = true
-# An unconventional subject is kept and lands in "Other" rather than vanishing:
-# the history predates the convention in places, and a silently dropped commit
-# is worse than an ungrouped one.
+# An unconventional subject is kept and lands in "Other Changes" rather than
+# vanishing: the history predates the convention in places, and a silently
+# dropped commit is worse than an ungrouped one.
 filter_unconventional = false
 filter_commits = false
 split_commits = false
@@ -64,23 +158,25 @@ sort_commits = "oldest"
 # string, and the template strips the comment before printing. Two digits so
 # that ten sorts after two.
 #
-# Types the repository does not use are absent on purpose; add one here when a
-# commit first needs it.
+# The set is deliberately smaller than the set of commit types: a release note
+# wants four sections, not eleven, and the type of an entry is legible from its
+# text. Breaking changes and deployment steps are lifted out of these sections
+# by the template above.
 commit_parsers = [
-  { message = "^feat", group = "<!-- 00 -->Features" },
-  { message = "^fix", group = "<!-- 01 -->Fixes" },
-  { message = "^security", group = "<!-- 02 -->Security" },
-  { message = "^perf", group = "<!-- 03 -->Performance" },
-  { message = "^i18n", group = "<!-- 04 -->Translations" },
-  { message = "^refactor", group = "<!-- 05 -->Refactoring" },
-  { message = "^docs", group = "<!-- 06 -->Documentation" },
-  { message = "^test", group = "<!-- 07 -->Tests" },
-  { message = "^build", group = "<!-- 08 -->Build" },
-  { message = "^ops", group = "<!-- 09 -->Operations" },
-  { message = "^style", group = "<!-- 10 -->Style" },
-  { message = "^chore", group = "<!-- 11 -->Housekeeping" },
+  { message = "^feat", group = "<!-- 00 -->New Features" },
+  { message = "^perf", group = "<!-- 00 -->New Features" },
+  { message = "^security", group = "<!-- 01 -->Security" },
+  { message = "^fix", group = "<!-- 02 -->Bug Fixes" },
+  { message = "^i18n", group = "<!-- 03 -->Other Changes" },
+  { message = "^refactor", group = "<!-- 03 -->Other Changes" },
+  { message = "^docs", group = "<!-- 03 -->Other Changes" },
+  { message = "^test", group = "<!-- 03 -->Other Changes" },
+  { message = "^build", group = "<!-- 03 -->Other Changes" },
+  { message = "^ops", group = "<!-- 03 -->Other Changes" },
+  { message = "^style", group = "<!-- 03 -->Other Changes" },
+  { message = "^chore", group = "<!-- 03 -->Other Changes" },
   # Merge commits describe the branch, not the change; the commits they carry
   # are already listed individually.
   { message = "^Merge ", skip = true },
-  { message = ".*", group = "<!-- 12 -->Other" },
+  { message = ".*", group = "<!-- 03 -->Other Changes" },
 ]

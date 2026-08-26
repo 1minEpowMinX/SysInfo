@@ -15,8 +15,59 @@ permissions:
   contents: write
 
 jobs:
+  archives:
+    name: Delivery (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing should not cost the other its archive.
+      fail-fast: false
+      matrix:
+        # Windows is absent for the reason ci.yml records: aqtinstall cannot
+        # install Qt 6.11 there. That archive is built on a workstation with
+        # llvm-mingw and attached to the draft by hand.
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v5
+
+      # Qt Widgets links against GL and xkbcommon even though nothing here
+      # opens a display.
+      - name: Install Qt build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libglu1-mesa-dev libxkbcommon-dev libvulkan-dev
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.1'
+          # qtsvg ships in the base package; these two do not. Qt6HttpServer
+          # pulls Qt6WebSockets, so both are named.
+          modules: 'qthttpserver qtwebsockets'
+          cache: true
+
+      - name: Configure
+        run: cmake -S SysInfo -B build -DCMAKE_BUILD_TYPE=Release
+
+      # The delivery target depends on run_tests, so the archive comes out of a
+      # build whose suite passed.
+      - name: Build the delivery archive
+        run: cmake --build build --target delivery --parallel
+
+      # An empty upload would reach the release as a missing asset rather than
+      # a failure, which is what if-no-files-found guards against.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delivery-${{ matrix.os }}
+          path: build/SysInfo-*-x64/SysInfo-*-x64.7z
+          if-no-files-found: error
+
   notes:
     name: Draft the release
+    # Both jobs write to the same release, so only one of them does: the
+    # archives arrive here as artifacts and go up with the notes in one call.
+    needs: archives
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -32,10 +83,19 @@ jobs:
           config: cliff.toml
           args: --latest --strip header
 
+      # merge-multiple flattens the per-platform artifacts into one directory,
+      # which is what lets a single glob name them all.
+      - name: Collect the archives
+        uses: actions/download-artifact@v4
+        with:
+          path: archives
+          merge-multiple: true
+
       - name: Create the release
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ steps.cliff.outputs.content }}
-          # Left as a draft: the archives are still produced by hand, and the
-          # release is not publishable until they are attached.
+          files: archives/*.7z
+          # Left as a draft: the Windows archive is built elsewhere, and the
+          # release is not publishable until it is attached.
           draft: true
