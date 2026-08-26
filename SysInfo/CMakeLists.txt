@@ -297,10 +297,17 @@ endif()
 # Windows and Linux take the low-level command. macOS keeps the high-level
 # command, whose whole subject is the bundle layout.
 #
-# The paths name SYSINFO_DELIVERY_DIR rather than QT_DEPLOY_BIN_DIR, which
-# CMAKE_INSTALL_BINDIR sets from it. Deferring the expansion does not reach the
-# script: the versionless command forwards its arguments through a macro, which
-# expands the content a second time on the way.
+# EXECUTABLE names the binary in the build tree, not the installed copy. The
+# step finds what to deploy by resolving that binary's dependencies through its
+# own runtime path, and the installed copy carries INSTALL_RPATH, which leads
+# to the delivery directory and nowhere else: every Qt library comes back
+# unresolved, and unresolved dependencies are dropped without a word.
+#
+# LIB_DIR and PLUGINS_DIR name SYSINFO_DELIVERY_DIR rather than the
+# QT_DEPLOY_..._DIR variables that CMAKE_INSTALL_BINDIR sets from it. Deferring
+# the expansion does not reach the script: the versionless command forwards its
+# arguments through a macro, which expands the content a second time on the
+# way.
 if(APPLE)
     qt_generate_deploy_app_script(
         TARGET SysInfo
@@ -321,7 +328,7 @@ else()
         OUTPUT_SCRIPT deploy_script
         CONTENT "
 qt_deploy_runtime_dependencies(
-    EXECUTABLE \"${SYSINFO_DELIVERY_DIR}/$<TARGET_FILE_NAME:SysInfo>\"
+    EXECUTABLE \"$<TARGET_FILE:SysInfo>\"
     LIB_DIR \"${SYSINFO_DELIVERY_DIR}\"
     PLUGINS_DIR \"${SYSINFO_DELIVERY_DIR}\"
     NO_TRANSLATIONS
@@ -381,23 +388,27 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     list(APPEND LICENSE_NOTICES "${CMAKE_SOURCE_DIR}/../docs/LLVM-Apache-2.0.txt")
 endif()
 
+# The notices sit where the delivery presents them, which on macOS is the
+# bundle's resource directory. The build tree puts them in the same place, so
+# the bundle the deploy step carries into the archive holds one copy.
+if(APPLE)
+    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}/Contents/Resources")
+    set(LICENSE_NOTICE_BUILD_DIR "$<TARGET_BUNDLE_CONTENT_DIR:SysInfo>/Resources")
+else()
+    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}")
+    set(LICENSE_NOTICE_BUILD_DIR "$<TARGET_FILE_DIR:SysInfo>")
+endif()
+
 add_custom_command(TARGET SysInfo POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${LICENSE_NOTICES}
-        "$<TARGET_FILE_DIR:SysInfo>"
-    COMMENT "Copying the license notices next to the executable"
+        "${LICENSE_NOTICE_BUILD_DIR}"
+    COMMENT "Copying the license notices into the delivery"
     VERBATIM
 )
 
-# Installed from the same list that copies them into the build tree, so a
-# notice cannot reach one and miss the other. They travel inside the delivery
-# directory, which on macOS means the bundle's own resource directory.
-if(APPLE)
-    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}/Contents/Resources")
-else()
-    set(LICENSE_NOTICE_DESTINATION "${SYSINFO_DELIVERY_DIR}")
-endif()
-
+# Installed from the same list, so a notice cannot reach the build tree and
+# miss the archive.
 install(FILES ${LICENSE_NOTICES}
     DESTINATION "${LICENSE_NOTICE_DESTINATION}"
     COMPONENT delivery
