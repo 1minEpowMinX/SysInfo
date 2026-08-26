@@ -323,6 +323,18 @@ else()
     DEPLOY_TOOL_OPTIONS --no-system-d3d-compiler --no-opengl-sw")
     endif()
 
+    # The plugin types named below are the ones both platforms can name. The
+    # generic deploy tool takes every other type the platform offers, so the
+    # Linux archive also carries the eglfs device integrations and the KMS and
+    # Vulkan graphics servers behind them, which a tray application in a
+    # desktop session never loads. Wayland and XCB both stay whatever happens:
+    # which of the two answers is the session's choice, not the build's.
+    #
+    # TODO: name those types here as well, and hold the result to starting on
+    # a desktop session before it ships. A plugin cut in error costs a delivery
+    # that opens no window and reports nothing about why, and the deploy step
+    # is silent about what it leaves out, so only a machine that runs the
+    # archive can say whether the cut was right.
     qt_generate_deploy_script(
         TARGET SysInfo
         OUTPUT_SCRIPT deploy_script
