@@ -1,6 +1,7 @@
 [Desktop Entry]
 Type=Application
-Version=3.1.0
+# An optional Version key states the revision of the specification the entry
+# conforms to, never the version of the application.
 Name=SysInfo
 Comment=Collects and displays system information
 Exec=/opt/SysInfo/SysInfo
