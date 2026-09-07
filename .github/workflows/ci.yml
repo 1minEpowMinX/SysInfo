@@ -138,6 +138,19 @@ jobs:
         steps:
             - uses: actions/checkout@v5
 
+            # A malformed desktop entry installs like any other file and the
+            # desktop environment says nothing: it drops the entry, or ignores
+            # the keys it cannot read. desktop-file-validate is what turns that
+            # silence into a failure. It exits non-zero on errors alone, so its
+            # hints and warnings reach the log without stopping the run.
+            - name: Desktop entries conform to the specification
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y --no-install-recommends desktop-file-utils
+                  entries=$(git ls-files '*.desktop')
+                  test -n "$entries" || { echo "no desktop entry to validate"; exit 1; }
+                  echo "$entries" | xargs desktop-file-validate
+
             # Tracked ignored files guard
             - name: No tracked file may be under the ignore rules
               run: |
