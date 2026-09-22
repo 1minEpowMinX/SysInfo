@@ -45,25 +45,31 @@ sudo 7z x SysInfo-3.1.0-linux-x64.7z -o/opt/
 # MacOS:
 brew install p7zip
 sudo 7z x SysInfo-3.1.0-macos-x64.7z -o/Applications/
+```
 
-# Windows:
+```powershell
+# Windows — as administrator, once per machine, before the first launch:
 New-EventLog -LogName "SysInfo" -Source "SysInfo"
 Limit-EventLog -LogName "SysInfo" -MaximumSize 5MB
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-3.1.0-windows-x64.7z -o"C:\Program Files\"
+& "C:\Program Files\7-Zip\7z.exe" x SysInfo-3.1.0-windows-x64.7z -o"C:\Program Files\"
 ```
+
+> ⚠️ Register the event source before SysInfo runs for the first time. Without that registration `ReportEvent` reports success and the entries never reach a log.
 
 ### 3. Add to startup
 
 ```sh
 # Linux:
-curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/dev/SysInfo/resources/sysinfo.desktop
+curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/tags/v3.1.0/SysInfo/resources/sysinfo.desktop
 
 # MacOS:
-curl -L -o /Library/LaunchAgents/com.pivdenny.sysinfo.plist https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/main/SysInfo/extras/com.pivdenny.sysinfo.plist
+curl -L -o /Library/LaunchAgents/com.pivdenny.sysinfo.plist https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/tags/v3.1.0/SysInfo/extras/com.pivdenny.sysinfo.plist
 launchctl load /Library/LaunchAgents/com.pivdenny.sysinfo.plist
+```
 
-# Windows:
-$source = "C:\Path\To\SysInfo.exe"
+```powershell
+# Windows — a shortcut in the shared startup folder:
+$source = "C:\Program Files\SysInfo\SysInfo.exe"
 $shortcut = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\SysInfo.lnk"
 
 $WshShell = New-Object -ComObject WScript.Shell
@@ -92,10 +98,12 @@ EOF
 defaults write com.pivdenny.SysInfo Integration.AllowedExtensionIds -array \
     your-custom-id1 \
     your-custom-id2
+```
 
+```powershell
 # Windows: HKCU\Software\Pivdenny\SysInfo\Integration
-reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
-    /v AllowedExtensionIds /t REG_MULTI_SZ ^
+reg add "HKCU\Software\Pivdenny\SysInfo\Integration" `
+    /v AllowedExtensionIds /t REG_MULTI_SZ `
     /d "your-custom-id1\0your-custom-id2" /f
 ```
 
@@ -118,8 +126,7 @@ If the browser extension is installed, SysInfo automatically attaches system det
 ### ⚠️ Notes
 
 * The path examples in this guide assume default installation paths. Always check them and replace if necessary (**Including source files**).
-* The Jira Service Management integration requires the optional browser extension.
-You may need to adapt its settings or source code (e.g. URLs, ticket field mapping) to match your company’s Jira instance.
+* The Jira Service Management integration requires the optional browser extension. Point it at your own instance through `SysInfoExtension/build.config.json` — the agent origin, the Jira origins, the Firefox add-on id and the default portal and request-type ids all live there, and the manifest is rendered from them at package time. Editing the manifest or the source by hand is neither needed nor durable: the next build overwrites it. See `SysInfoExtension/README.md`.
 
 ## 📘 Author
 

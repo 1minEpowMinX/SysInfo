@@ -45,25 +45,31 @@ sudo 7z x SysInfo-3.1.0-linux-x64.7z -o/opt/
 # MacOS:
 brew install p7zip
 sudo 7z x SysInfo-3.1.0-macos-x64.7z -o/Applications/
+```
 
-# Windows:
+```powershell
+# Windows — от администратора, один раз на машину, до первого запуска:
 New-EventLog -LogName "SysInfo" -Source "SysInfo"
 Limit-EventLog -LogName "SysInfo" -MaximumSize 5MB
-"C:\Program Files\7-Zip\7z.exe" x SysInfo-3.1.0-windows-x64.7z -o"C:\Program Files\"
+& "C:\Program Files\7-Zip\7z.exe" x SysInfo-3.1.0-windows-x64.7z -o"C:\Program Files\"
 ```
+
+> ⚠️ Зарегистрируйте источник событий до первого запуска SysInfo. Без регистрации `ReportEvent` возвращает успех, а записи в журнал не попадают.
 
 ### 3. Добавить в автозагрузку
 
 ```sh
 # Linux:
-curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/dev/SysInfo/resources/sysinfo.desktop
+curl -L -o /etc/xdg/autostart/sysinfo.desktop https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/tags/v3.1.0/SysInfo/resources/sysinfo.desktop
 
 # macOS:
-curl -L -o /Library/LaunchAgents/com.pivdenny.sysinfo.plist https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/heads/main/SysInfo/extras/com.pivdenny.sysinfo.plist
+curl -L -o /Library/LaunchAgents/com.pivdenny.sysinfo.plist https://raw.githubusercontent.com/1minEpowMinX/SysInfo/refs/tags/v3.1.0/SysInfo/extras/com.pivdenny.sysinfo.plist
 launchctl load /Library/LaunchAgents/com.pivdenny.sysinfo.plist
+```
 
-# Windows:
-$source = "C:\Path\To\SysInfo.exe"
+```powershell
+# Windows — ярлык в общей папке автозагрузки:
+$source = "C:\Program Files\SysInfo\SysInfo.exe"
 $shortcut = "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\SysInfo.lnk"
 
 $WshShell = New-Object -ComObject WScript.Shell
@@ -92,10 +98,12 @@ EOF
 defaults write com.pivdenny.SysInfo Integration.AllowedExtensionIds -array \
     your-custom-id1 \
     your-custom-id2
+```
 
+```powershell
 # Windows: HKCU\Software\Pivdenny\SysInfo\Integration
-reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
-    /v AllowedExtensionIds /t REG_MULTI_SZ ^
+reg add "HKCU\Software\Pivdenny\SysInfo\Integration" `
+    /v AllowedExtensionIds /t REG_MULTI_SZ `
     /d "your-custom-id1\0your-custom-id2" /f
 ```
 
@@ -118,8 +126,7 @@ reg add "HKCU\Software\Pivdenny\SysInfo\Integration" ^
 ### ⚠️ Примечания
 
 * Примеры путей в этом руководстве предполагают использование путей установки по умолчанию. Всегда проверяйте их и при необходимости заменяйте (**включая исходные файлы**).
-* Для интеграции с Jira SM требуется дополнительное расширение для браузера.
-Возможно, вам потребуется адаптировать его настройки или исходный код (например, URL-адреса, сопоставление полей тикетов) в соответствии с экземпляром Jira вашей компании.
+* Для интеграции с Jira SM требуется дополнительное расширение для браузера. Настройте его на ваш экземпляр через `SysInfoExtension/build.config.json`: там лежат происхождение агента, домены Jira, идентификатор дополнения для Firefox и списки идентификаторов порталов и типов запросов по умолчанию, а манифест рендерится из них при сборке пакета. Править сам манифест или исходники руками не нужно и бессмысленно: следующая сборка перезапишет правку. Подробности — в `SysInfoExtension/README.md`.
 
 ## 📘 Автор
 
