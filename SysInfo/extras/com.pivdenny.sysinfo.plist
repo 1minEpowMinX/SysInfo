@@ -16,6 +16,6 @@
     <key>WorkingDirectory</key>
     <string>/Applications/SysInfo.app/Contents/MacOS</string>
     <key>Comment</key>
-    <string>SysInfo 2.0.0 — https://github.com/1minEpowMinX/SysInfo</string>
+    <string>SysInfo — https://github.com/1minEpowMinX/SysInfo</string>
   </dict>
 </plist>
